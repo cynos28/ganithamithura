@@ -13,19 +13,55 @@ import pyttsx3
 import time
 import random
 import threading
+import os
+import sys
 from typing import Dict, Optional
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from config.tutor_config import TutorConfig, StudentProfile
+from prompts.math_question_prompts import (
+    get_question_generation_prompt,
+    get_system_prompt,
+    get_fallback_question_config
+)
+
+# Load environment variables
+load_dotenv()
 
 
 class AIVoiceMathTutor:
     """AI Math Tutor with voice output and synchronized text display"""
 
-    def __init__(self):
-        """Initialize the AI Voice Math Tutor"""
+    def __init__(self, grade: int = 1, performance_level: int = 1, sublevel: str = "Starter"):
+        """Initialize the AI Voice Math Tutor
+
+        Args:
+            grade: Grade level (1, 2, or 3)
+            performance_level: Performance level (1, 2, or 3)
+            sublevel: Sublevel name (Starter, Explorer, Solver, or Champion)
+        """
         print("🚀 Initializing AI Voice Math Tutor...")
+
+        # Initialize OpenAI client
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not found in environment variables")
+        self.openai_client = OpenAI(api_key=api_key)
 
         # Initialize text-to-speech engine
         self.engine = pyttsx3.init()
         self.setup_voice()
+
+        # Create student profile with validated settings
+        self.student_profile = StudentProfile(
+            grade=grade,
+            performance_level=performance_level,
+            sublevel=sublevel
+        )
 
         # Statistics
         self.stats = {
@@ -34,15 +70,7 @@ class AIVoiceMathTutor:
             'wrong_answers': 0
         }
 
-        # Difficulty levels
-        self.difficulty_levels = {
-            'easy': {'range': (1, 10), 'operations': ['+', '-']},
-            'medium': {'range': (1, 20), 'operations': ['+', '-', '*']},
-            'hard': {'range': (1, 50), 'operations': ['+', '-', '*', '/']}
-        }
-        self.current_difficulty = 'easy'
-
-        print("✅ AI Voice Math Tutor ready!\n")
+        print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
     def setup_voice(self):
         """Setup text-to-speech voice"""
@@ -154,9 +182,62 @@ class AIVoiceMathTutor:
         except Exception as e:
             print(f"\n⚠️ Speech error: {e}")
 
-    def generate_question(self) -> Dict:
-        """Generate a math question"""
-        config = self.difficulty_levels[self.current_difficulty]
+    def generate_ai_question(self) -> Dict:
+        """Generate a math question using AI based on grade, performance level, and sublevel"""
+        try:
+            # Get prompt from external prompt file
+            prompt = get_question_generation_prompt(
+                grade=self.student_profile.grade,
+                performance_level=self.student_profile.performance_level,
+                sublevel=self.student_profile.sublevel
+            )
+
+            # Get system prompt
+            system_prompt = get_system_prompt()
+
+            # Call OpenAI API
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=200
+            )
+
+            # Parse AI response
+            ai_content = response.choices[0].message.content.strip()
+
+            # Extract JSON from response (handle markdown code blocks)
+            if "```json" in ai_content:
+                ai_content = ai_content.split("```json")[1].split("```")[0].strip()
+            elif "```" in ai_content:
+                ai_content = ai_content.split("```")[1].split("```")[0].strip()
+
+            import json
+            question_data = json.loads(ai_content)
+
+            # Ensure answer is numeric
+            if isinstance(question_data['answer'], str):
+                question_data['answer'] = float(question_data['answer'])
+
+            return question_data
+
+        except Exception as e:
+            print(f"⚠️ AI generation error: {e}")
+            print("📝 Falling back to traditional question generation")
+            return self._generate_fallback_question()
+
+    def _generate_fallback_question(self) -> Dict:
+        """Fallback question generator (traditional method)"""
+        # Get fallback config from external config file
+        config = get_fallback_question_config(
+            grade=self.student_profile.grade,
+            performance_level=self.student_profile.performance_level,
+            sublevel=self.student_profile.sublevel
+        )
+
         min_val, max_val = config['range']
         operations = config['operations']
 
@@ -196,6 +277,10 @@ class AIVoiceMathTutor:
             'answer': answer,
             'operation': operation
         }
+
+    def generate_question(self) -> Dict:
+        """Generate a math question (uses AI by default, falls back if needed)"""
+        return self.generate_ai_question()
 
     def ask_question(self, question_data: Dict):
         """
@@ -404,28 +489,54 @@ def main():
     print("🚀 Starting AI Voice Math Tutor...\n")
 
     try:
-        # Create tutor
-        tutor = AIVoiceMathTutor()
+        # Get grade level
+        print("📚 Enter Grade Level (1, 2, or 3) [default: 1]: ", end="")
+        try:
+            grade = int(input().strip())
+            if grade < 1 or grade > 3:
+                print("⚠️ Invalid grade, using default: 1")
+                grade = 1
+        except:
+            grade = 1
 
-        # Choose difficulty
-        print("\n📊 Choose difficulty:")
-        print("   1. Easy   (1-10, + and -)")
-        print("   2. Medium (1-20, +, -, ×)")
-        print("   3. Hard   (1-50, +, -, ×, ÷)")
+        # Get performance level
+        print("\n📊 Choose Performance Level (1, 2, or 3) [default: 1]: ", end="")
+        try:
+            performance_level = int(input().strip())
+            if performance_level < 1 or performance_level > 3:
+                print("⚠️ Invalid performance level, using default: 1")
+                performance_level = 1
+        except:
+            performance_level = 1
 
-        choice = input("\nEnter 1, 2, or 3 [default: 1]: ").strip()
+        # Get sublevel
+        print("\n🎯 Choose Sublevel:")
+        print("   1. Starter   - Basic foundational concepts")
+        print("   2. Explorer  - Developing skills")
+        print("   3. Solver    - Competent problem solving")
+        print("   4. Champion  - Advanced challenges")
+        print("\nEnter 1-4 [default: 1]: ", end="")
+        sublevel_options = ["Starter", "Explorer", "Solver", "Champion"]
+        try:
+            sublevel_choice = int(input().strip())
+            if sublevel_choice < 1 or sublevel_choice > 4:
+                print("⚠️ Invalid sublevel, using default: Starter")
+                sublevel = "Starter"
+            else:
+                sublevel = sublevel_options[sublevel_choice - 1]
+        except:
+            sublevel = "Starter"
 
-        if choice == '2':
-            tutor.current_difficulty = 'medium'
-            print("✅ Difficulty: Medium")
-        elif choice == '3':
-            tutor.current_difficulty = 'hard'
-            print("✅ Difficulty: Hard")
-        else:
-            tutor.current_difficulty = 'easy'
-            print("✅ Difficulty: Easy")
+        # Validate inputs using TutorConfig
+        grade = TutorConfig.validate_grade(grade)
+        performance_level = TutorConfig.validate_performance_level(performance_level)
+        sublevel = TutorConfig.validate_sublevel(sublevel)
 
+        print(f"\n✅ {TutorConfig.get_config_summary(grade, performance_level, sublevel)}")
         time.sleep(0.5)
+
+        # Create tutor with grade, performance level, and sublevel
+        tutor = AIVoiceMathTutor(grade=grade, performance_level=performance_level, sublevel=sublevel)
 
         # Number of questions
         print("\n📝 How many questions? [0 = infinite, default: 10]: ", end="")
@@ -442,8 +553,10 @@ def main():
 
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        print("\n💡 Install required package:")
-        print("   pip install pyttsx3")
+        print("\n💡 Install required packages:")
+        print("   pip install pyttsx3 openai python-dotenv")
+        print("\n💡 Set up .env file with:")
+        print("   OPENAI_API_KEY=your-api-key-here")
         import traceback
         traceback.print_exc()
 
