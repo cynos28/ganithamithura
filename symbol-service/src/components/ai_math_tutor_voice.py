@@ -15,7 +15,7 @@ import random
 import threading
 import os
 import sys
-from typing import Dict, Optional
+from typing import Dict
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -69,6 +69,10 @@ class AIVoiceMathTutor:
             'correct_answers': 0,
             'wrong_answers': 0
         }
+
+        # Track recent questions to avoid repetition
+        self.recent_questions = []
+        self.max_recent_questions = 10
 
         print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
@@ -186,11 +190,18 @@ class AIVoiceMathTutor:
         """Generate a math question using AI based on grade, performance level, and sublevel"""
         try:
             # Get prompt from external prompt file
-            prompt = get_question_generation_prompt(
+            base_prompt = get_question_generation_prompt(
                 grade=self.student_profile.grade,
                 performance_level=self.student_profile.performance_level,
                 sublevel=self.student_profile.sublevel
             )
+
+            # Add recent questions context to avoid repetition
+            if self.recent_questions:
+                recent_expressions = ", ".join([q['expression'] for q in self.recent_questions[-5:]])
+                prompt = base_prompt + f"\n\nIMPORTANT: Do NOT generate questions similar to these recent ones: {recent_expressions}\nGenerate a DIFFERENT question with different numbers and operations."
+            else:
+                prompt = base_prompt
 
             # Get system prompt
             system_prompt = get_system_prompt()
@@ -202,7 +213,7 @@ class AIVoiceMathTutor:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7,
+                temperature=0.9,  # Increased for more variety
                 max_tokens=200
             )
 
@@ -221,6 +232,11 @@ class AIVoiceMathTutor:
             # Ensure answer is numeric
             if isinstance(question_data['answer'], str):
                 question_data['answer'] = float(question_data['answer'])
+
+            # Add to recent questions to avoid repetition
+            self.recent_questions.append(question_data)
+            if len(self.recent_questions) > self.max_recent_questions:
+                self.recent_questions.pop(0)
 
             return question_data
 
@@ -241,42 +257,58 @@ class AIVoiceMathTutor:
         min_val, max_val = config['range']
         operations = config['operations']
 
-        operation = random.choice(operations)
+        # Try to generate unique question (max 10 attempts)
+        max_attempts = 10
+        for attempt in range(max_attempts):
+            operation = random.choice(operations)
 
-        if operation == '+':
-            a = random.randint(min_val, max_val)
-            b = random.randint(min_val, max_val)
-            answer = a + b
-            question_text = f"What is {a} plus {b}?"
-            expression = f"{a} + {b}"
+            if operation == '+':
+                a = random.randint(min_val, max_val)
+                b = random.randint(min_val, max_val)
+                answer = a + b
+                question_text = f"What is {a} plus {b}?"
+                expression = f"{a} + {b}"
 
-        elif operation == '-':
-            a = random.randint(min_val + 5, max_val)
-            b = random.randint(min_val, a)
-            answer = a - b
-            question_text = f"What is {a} minus {b}?"
-            expression = f"{a} - {b}"
+            elif operation == '-':
+                a = random.randint(min_val + 5, max_val)
+                b = random.randint(min_val, a)
+                answer = a - b
+                question_text = f"What is {a} minus {b}?"
+                expression = f"{a} - {b}"
 
-        elif operation == '*':
-            a = random.randint(2, 12)
-            b = random.randint(2, 12)
-            answer = a * b
-            question_text = f"What is {a} times {b}?"
-            expression = f"{a} × {b}"
+            elif operation == '*':
+                a = random.randint(2, 12)
+                b = random.randint(2, 12)
+                answer = a * b
+                question_text = f"What is {a} times {b}?"
+                expression = f"{a} × {b}"
 
-        elif operation == '/':
-            b = random.randint(2, 10)
-            answer = random.randint(2, 10)
-            a = b * answer
-            question_text = f"What is {a} divided by {b}?"
-            expression = f"{a} ÷ {b}"
+            elif operation == '/':
+                b = random.randint(2, 10)
+                answer = random.randint(2, 10)
+                a = b * answer
+                question_text = f"What is {a} divided by {b}?"
+                expression = f"{a} ÷ {b}"
 
-        return {
-            'question_text': question_text,
-            'expression': expression,
-            'answer': answer,
-            'operation': operation
-        }
+            # Check if this question is unique
+            is_duplicate = any(q['expression'] == expression for q in self.recent_questions)
+            if not is_duplicate or attempt == max_attempts - 1:
+                question_data = {
+                    'question_text': question_text,
+                    'expression': expression,
+                    'answer': answer,
+                    'operation': operation
+                }
+
+                # Add to recent questions
+                self.recent_questions.append(question_data)
+                if len(self.recent_questions) > self.max_recent_questions:
+                    self.recent_questions.pop(0)
+
+                return question_data
+
+        # This should never be reached, but just in case
+        return question_data
 
     def generate_question(self) -> Dict:
         """Generate a math question (uses AI by default, falls back if needed)"""
@@ -340,13 +372,6 @@ class AIVoiceMathTutor:
                 response = f"Not quite. You answered {user_answer}. The correct answer is {correct_answer}."
                 time.sleep(0.3)
                 self.speak_with_display(response)
-
-                # Give hint
-                hint = self.generate_hint(question_data)
-                if hint:
-                    time.sleep(0.5)
-                    self.speak_with_display(hint)
-
                 return False
 
         except KeyboardInterrupt:
@@ -354,20 +379,6 @@ class AIVoiceMathTutor:
         except Exception as e:
             print(f"\n❌ Error: {e}")
             return False
-
-    def generate_hint(self, question_data: Dict) -> Optional[str]:
-        """Generate helpful hint"""
-        operation = question_data['operation']
-        answer = question_data['answer']
-
-        hints = {
-            '+': f"Remember, addition combines numbers. The answer is {answer}.",
-            '-': f"Subtraction means taking away. The answer is {answer}.",
-            '*': f"Multiplication is repeated addition. The answer is {answer}.",
-            '/': f"Division splits into equal parts. The answer is {answer}."
-        }
-
-        return hints.get(operation)
 
     def show_stats(self):
         """Display statistics"""
