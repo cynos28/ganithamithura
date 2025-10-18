@@ -84,7 +84,7 @@ class AIVoiceMathTutor:
             # Try to find a good voice
             selected_voice = None
             for voice in voices:
-                if any(name in voice.name.lower() for name in ['samantha', 'alex', 'victoria', 'karen']):
+                if any(name in voice.name.lower() for name in ['eddie', 'alex', 'victoria', 'karen']):
                     selected_voice = voice
                     break
 
