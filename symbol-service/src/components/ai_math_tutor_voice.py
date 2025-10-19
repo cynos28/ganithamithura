@@ -34,7 +34,8 @@ from prompts.math_question_prompts import (
     get_uniqueness_prompt,
     get_correct_answer_feedback_prompt,
     get_wrong_answer_feedback_prompt,
-    get_feedback_system_prompt
+    get_feedback_system_prompt,
+    get_image_generation_prompt
 )
 
 # Load environment variables
@@ -81,6 +82,10 @@ class AIVoiceMathTutor:
         # Track recent questions to avoid repetition
         self.recent_questions = []
         self.max_recent_questions = 10
+
+        # Image generation settings
+        self.enable_images = True  # Set to False to disable image generation
+        self.image_cache = {}  # Cache generated images
 
         print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
@@ -460,9 +465,89 @@ class AIVoiceMathTutor:
             # Fallback to simple response
             return f"Not quite. The correct answer is {correct_answer}. Keep trying!"
 
+    def _generate_question_image(self, question_data: Dict) -> str:
+        """
+        Generate an AI image for the question using DALL-E.
+
+        Args:
+            question_data: Question information
+
+        Returns:
+            URL of the generated image or None if generation fails
+        """
+        if not self.enable_images:
+            return None
+
+        try:
+            # Get image generation prompt
+            image_prompt = get_image_generation_prompt(
+                question_text=question_data['question_text'],
+                expression=question_data['expression'],
+                grade=self.student_profile.grade
+            )
+
+            print("🎨 Generating image...")
+
+            # Generate image using DALL-E
+            response = self.openai_client.images.generate(
+                model="dall-e-3",
+                prompt=image_prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1
+            )
+
+            image_url = response.data[0].url
+            print("✅ Image generated!")
+            return image_url
+
+        except Exception as e:
+            print(f"⚠️ Image generation error: {e}")
+            return None
+
+    def _display_image(self, image_url: str):
+        """
+        Display the generated image in the terminal (macOS).
+
+        Args:
+            image_url: URL of the image to display
+        """
+        if not image_url:
+            return
+
+        try:
+            import urllib.request
+            import tempfile
+
+            # Download image to temp file
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                tmp_path = tmp_file.name
+                urllib.request.urlretrieve(image_url, tmp_path)
+
+            # Display image using macOS imgcat or similar
+            if platform.system() == 'Darwin':
+                # Try to use imgcat if available, otherwise open in Preview
+                try:
+                    subprocess.run(['imgcat', tmp_path], check=True)
+                except (FileNotFoundError, subprocess.CalledProcessError):
+                    # Fallback: open in default image viewer
+                    subprocess.run(['open', tmp_path], check=False)
+                    print(f"📷 Image opened in viewer")
+            else:
+                # For non-macOS systems, just show the URL
+                print(f"🖼️  Image URL: {image_url}")
+
+            # Clean up temp file after a delay
+            import atexit
+            atexit.register(lambda: os.remove(tmp_path) if os.path.exists(tmp_path) else None)
+
+        except Exception as e:
+            print(f"⚠️ Image display error: {e}")
+            print(f"🖼️  Image URL: {image_url}")
+
     def ask_question(self, question_data: Dict):
         """
-        Ask question with voice and display.
+        Ask question with voice and display, including AI-generated image.
 
         Returns:
             True if correct, False if wrong, 'quit' to exit
@@ -470,6 +555,14 @@ class AIVoiceMathTutor:
         print("\n" + "=" * 70)
         print(f"❓ Question #{self.stats['total_questions'] + 1}")
         print("=" * 70)
+
+        # Generate and display image for the question
+        if self.enable_images:
+            image_url = self._generate_question_image(question_data)
+            if image_url:
+                print()
+                self._display_image(image_url)
+                print()
 
         # Show expression
         print(f"\n📝 {question_data['expression']} = ?")
