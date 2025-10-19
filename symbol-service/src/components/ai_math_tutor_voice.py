@@ -15,6 +15,10 @@ import random
 import threading
 import os
 import sys
+import re
+import json
+import subprocess
+import platform
 from typing import Dict
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -26,7 +30,11 @@ from config.tutor_config import TutorConfig, StudentProfile
 from prompts.math_question_prompts import (
     get_question_generation_prompt,
     get_system_prompt,
-    get_fallback_question_config
+    get_fallback_question_config,
+    get_uniqueness_prompt,
+    get_correct_answer_feedback_prompt,
+    get_wrong_answer_feedback_prompt,
+    get_feedback_system_prompt
 )
 
 # Load environment variables
@@ -111,9 +119,6 @@ class AIVoiceMathTutor:
         Args:
             text: Text to speak and display
         """
-        import subprocess
-        import platform
-
         print("\n🔊 ", end="", flush=True)
 
         # Check if we're on macOS to use 'say' command (more reliable)
@@ -187,63 +192,111 @@ class AIVoiceMathTutor:
             print(f"\n⚠️ Speech error: {e}")
 
     def generate_ai_question(self) -> Dict:
-        """Generate a math question using AI based on grade, performance level, and sublevel"""
-        try:
-            # Get prompt from external prompt file
-            base_prompt = get_question_generation_prompt(
-                grade=self.student_profile.grade,
-                performance_level=self.student_profile.performance_level,
-                sublevel=self.student_profile.sublevel
-            )
+        """
+        Generate a unique, diverse math question using advanced AI.
+        Ensures questions are always different with multiple retry attempts.
+        """
+        max_attempts = 5  # Try up to 5 times to get a unique question
 
-            # Add recent questions context to avoid repetition
-            if self.recent_questions:
-                recent_expressions = ", ".join([q['expression'] for q in self.recent_questions[-5:]])
-                prompt = base_prompt + f"\n\nIMPORTANT: Do NOT generate questions similar to these recent ones: {recent_expressions}\nGenerate a DIFFERENT question with different numbers and operations."
-            else:
-                prompt = base_prompt
+        for attempt in range(max_attempts):
+            try:
+                # Get base prompt from external prompt file
+                base_prompt = get_question_generation_prompt(
+                    grade=self.student_profile.grade,
+                    performance_level=self.student_profile.performance_level,
+                    sublevel=self.student_profile.sublevel
+                )
 
-            # Get system prompt
-            system_prompt = get_system_prompt()
+                # Build comprehensive uniqueness constraints
+                if self.recent_questions:
+                    # Extract all recent question details
+                    recent_expressions = [q['expression'] for q in self.recent_questions[-10:]]
+                    recent_operations = [q.get('operation', '') for q in self.recent_questions[-5:]]
+                    recent_numbers = []
 
-            # Call OpenAI API
-            response = self.openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.9,  # Increased for more variety
-                max_tokens=200
-            )
+                    # Extract numbers from recent expressions
+                    for expr in recent_expressions[-5:]:
+                        numbers = re.findall(r'\d+', expr)
+                        recent_numbers.extend(numbers)
 
-            # Parse AI response
-            ai_content = response.choices[0].message.content.strip()
+                    # Get uniqueness prompt from prompts folder
+                    uniqueness_constraints = get_uniqueness_prompt(
+                        recent_expressions=recent_expressions,
+                        recent_operations=recent_operations,
+                        recent_numbers=recent_numbers,
+                        attempt=attempt
+                    )
 
-            # Extract JSON from response (handle markdown code blocks)
-            if "```json" in ai_content:
-                ai_content = ai_content.split("```json")[1].split("```")[0].strip()
-            elif "```" in ai_content:
-                ai_content = ai_content.split("```")[1].split("```")[0].strip()
+                    prompt = base_prompt + uniqueness_constraints
+                else:
+                    prompt = base_prompt
 
-            import json
-            question_data = json.loads(ai_content)
+                # Get system prompt from prompts folder
+                system_prompt = get_system_prompt()
 
-            # Ensure answer is numeric
-            if isinstance(question_data['answer'], str):
-                question_data['answer'] = float(question_data['answer'])
+                # Call OpenAI API with higher temperature for variety
+                response = self.openai_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=1.0,  # Maximum creativity
+                    max_tokens=200,
+                    presence_penalty=0.6,  # Discourage repetition
+                    frequency_penalty=0.6   # Encourage variety
+                )
 
-            # Add to recent questions to avoid repetition
-            self.recent_questions.append(question_data)
-            if len(self.recent_questions) > self.max_recent_questions:
-                self.recent_questions.pop(0)
+                # Parse AI response
+                ai_content = response.choices[0].message.content.strip()
 
-            return question_data
+                # Extract JSON from response (handle markdown code blocks)
+                if "```json" in ai_content:
+                    ai_content = ai_content.split("```json")[1].split("```")[0].strip()
+                elif "```" in ai_content:
+                    ai_content = ai_content.split("```")[1].split("```")[0].strip()
 
-        except Exception as e:
-            print(f"⚠️ AI generation error: {e}")
-            print("📝 Falling back to traditional question generation")
-            return self._generate_fallback_question()
+                question_data = json.loads(ai_content)
+
+                # Validate required fields
+                required_fields = ['question_text', 'expression', 'answer', 'operation']
+                if not all(field in question_data for field in required_fields):
+                    raise ValueError(f"Missing required fields. Got: {question_data.keys()}")
+
+                # Ensure answer is numeric
+                if isinstance(question_data['answer'], str):
+                    question_data['answer'] = float(question_data['answer'])
+
+                # Check if this question is truly unique
+                expression = question_data['expression']
+                is_duplicate = any(q['expression'] == expression for q in self.recent_questions)
+
+                if is_duplicate and attempt < max_attempts - 1:
+                    print(f"🔄 Duplicate detected on attempt {attempt + 1}, retrying...")
+                    continue  # Try again
+
+                # Success! Add to recent questions
+                self.recent_questions.append(question_data)
+                if len(self.recent_questions) > self.max_recent_questions:
+                    self.recent_questions.pop(0)
+
+                if attempt > 0:
+                    print(f"✅ Unique question generated on attempt {attempt + 1}")
+
+                return question_data
+
+            except json.JSONDecodeError as e:
+                print(f"⚠️ JSON parsing error on attempt {attempt + 1}: {e}")
+                if attempt < max_attempts - 1:
+                    continue  # Try again
+            except Exception as e:
+                print(f"⚠️ AI generation error on attempt {attempt + 1}: {e}")
+                if attempt < max_attempts - 1:
+                    continue  # Try again
+
+        # All attempts failed, use fallback
+        print("📝 All AI attempts exhausted, using fallback question generation")
+        return self._generate_fallback_question()
 
     def _generate_fallback_question(self) -> Dict:
         """Fallback question generator (traditional method)"""
@@ -259,6 +312,8 @@ class AIVoiceMathTutor:
 
         # Try to generate unique question (max 10 attempts)
         max_attempts = 10
+        question_data = None
+
         for attempt in range(max_attempts):
             operation = random.choice(operations)
 
@@ -289,6 +344,8 @@ class AIVoiceMathTutor:
                 a = b * answer
                 question_text = f"What is {a} divided by {b}?"
                 expression = f"{a} ÷ {b}"
+            else:
+                continue
 
             # Check if this question is unique
             is_duplicate = any(q['expression'] == expression for q in self.recent_questions)
@@ -307,12 +364,101 @@ class AIVoiceMathTutor:
 
                 return question_data
 
-        # This should never be reached, but just in case
-        return question_data
+        # Fallback if all attempts failed
+        return question_data if question_data else {
+            'question_text': 'What is 1 plus 1?',
+            'expression': '1 + 1',
+            'answer': 2,
+            'operation': '+'
+        }
 
     def generate_question(self) -> Dict:
         """Generate a math question (uses AI by default, falls back if needed)"""
         return self.generate_ai_question()
+
+    def _generate_correct_feedback(self, answer: float, question_text: str) -> str:
+        """
+        Generate AI-powered feedback for correct answers.
+
+        Args:
+            answer: The correct answer
+            question_text: The question that was answered
+
+        Returns:
+            Feedback text
+        """
+        try:
+            system_prompt = get_feedback_system_prompt()
+            user_prompt = get_correct_answer_feedback_prompt(
+                answer=answer,
+                question_text=question_text,
+                grade=self.student_profile.grade
+            )
+
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.9,  # High variety in responses
+                max_tokens=50
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ Feedback generation error: {e}")
+            # Fallback to simple responses
+            fallback_responses = [
+                f"Excellent! {answer} is correct!",
+                f"Perfect!",
+                f"Great job!",
+                f"You got it!",
+                f"Amazing work!"
+            ]
+            return random.choice(fallback_responses)
+
+    def _generate_wrong_feedback(self, user_answer: int, correct_answer: float,
+                                 question_text: str, expression: str) -> str:
+        """
+        Generate AI-powered feedback for incorrect answers.
+
+        Args:
+            user_answer: Student's incorrect answer
+            correct_answer: The correct answer
+            question_text: The question that was answered
+            expression: Mathematical expression
+
+        Returns:
+            Feedback text
+        """
+        try:
+            system_prompt = get_feedback_system_prompt()
+            user_prompt = get_wrong_answer_feedback_prompt(
+                user_answer=user_answer,
+                correct_answer=correct_answer,
+                question_text=question_text,
+                expression=expression,
+                grade=self.student_profile.grade
+            )
+
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=100
+            )
+
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            print(f"⚠️ Feedback generation error: {e}")
+            # Fallback to simple response
+            return f"Not quite. The correct answer is {correct_answer}. Keep trying!"
 
     def ask_question(self, question_data: Dict):
         """
@@ -355,22 +501,20 @@ class AIVoiceMathTutor:
             correct_answer = question_data['answer']
 
             if user_answer == correct_answer:
-                # Correct!
-                responses = [
-                    f"Excellent! {correct_answer} is correct!",
-                    f"Perfect! The answer is {correct_answer}!",
-                    f"Great job! {correct_answer} is right!",
-                    f"Well done! The answer is {correct_answer}!",
-                    f"Amazing! You got it! The answer is {correct_answer}!"
-                ]
-                response = random.choice(responses)
+                # Correct! - Generate AI feedback
                 time.sleep(0.3)
+                response = self._generate_correct_feedback(correct_answer, question_data['question_text'])
                 self.speak_with_display(response)
                 return True
             else:
-                # Wrong
-                response = f"Not quite. You answered {user_answer}. The correct answer is {correct_answer}."
+                # Wrong - Generate AI feedback
                 time.sleep(0.3)
+                response = self._generate_wrong_feedback(
+                    user_answer,
+                    correct_answer,
+                    question_data['question_text'],
+                    question_data['expression']
+                )
                 self.speak_with_display(response)
                 return False
 
@@ -472,11 +616,6 @@ class AIVoiceMathTutor:
                     self.stats['correct_answers'] += 1
                 else:
                     self.stats['wrong_answers'] += 1
-
-                # Show progress every 5 questions
-                if self.stats['total_questions'] % 5 == 0:
-                    time.sleep(0.8)
-                    self.show_stats()
 
                 time.sleep(1)
 
