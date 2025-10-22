@@ -358,28 +358,45 @@ Session Stats:
 Provide 1-2 specific, actionable recommendations to help the student improve. Be encouraging and age-appropriate."""
 
 
-def get_image_generation_prompt(question_text: str, expression: str, grade: int) -> str:
+def get_image_generation_prompt(question_text: str, grade: int) -> str:
     """
-    Generate DALL-E prompt for creating question illustration.
+    Generate DALL-E 3 prompt for clean illustrations using visual-only descriptions.
+    Focuses on the SCENE and OBJECTS only, completely avoiding any mention of quantities.
 
     Args:
-        question_text: The math question
-        expression: Mathematical expression
+        question_text: The math question text
         grade: Student's grade level
 
     Returns:
         DALL-E prompt for image generation
     """
-    return f"""Create a simple, colorful, child-friendly illustration for this math question: "{question_text}"
+    import re
 
-Style requirements:
-- Bright, cheerful colors
-- Simple, clear cartoon style appropriate for Grade {grade} children
-- Clean, uncluttered composition
-- Show the objects/characters mentioned in the question
-- Make it educational and engaging
-- No text or numbers in the image
-- Suitable for elementary school students"""
+    # Extract only the scenario/subject from the question
+    # Remove numbers, math operations, and question marks
+    visual_description = question_text
+    visual_description = re.sub(r'\b\d+\b', '', visual_description)  # Remove numbers
+    visual_description = re.sub(r'[?!.]$', '', visual_description)  # Remove punctuation
+    visual_description = re.sub(r'\b(what is|how many|calculate|find|solve|answer)\b', '', visual_description, flags=re.IGNORECASE)
+    visual_description = re.sub(r'\s+', ' ', visual_description).strip()
+
+    # Clean up common math keywords
+    visual_description = re.sub(r'\b(plus|minus|times|divided|multiply|divide|add|subtract|sum|total|left|removed|added|groups)\b', '', visual_description, flags=re.IGNORECASE)
+    visual_description = re.sub(r'\s+', ' ', visual_description).strip()
+
+    return f"""Illustration in the style of children's picture books like Pete the Cat or The Very Hungry Caterpillar.
+
+Scene: {visual_description}
+
+Art style guidelines:
+- Colorful, playful children's book illustration style
+- Soft, rounded cartoon shapes
+- Bright, cheerful colors - suitable for Grade {grade} children
+- Focus on objects and characters, not complexity
+- Warm and inviting aesthetic
+
+CRITICAL CONTENT RESTRICTIONS:
+Do not include any: numbers, digits, math symbols, letters, words, text, labels, or written content anywhere. Create only a visual picture without any writing or symbols."""
 
 
 def get_correct_answer_feedback_prompt(answer: float, question_text: str, grade: int) -> str:

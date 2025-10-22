@@ -19,7 +19,9 @@ import re
 import json
 import subprocess
 import platform
-from typing import Dict
+from typing import Dict, Optional
+from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -83,9 +85,20 @@ class AIVoiceMathTutor:
         self.recent_questions = []
         self.max_recent_questions = 10
 
+        # Track used themes to ensure variety
+        self.recent_themes = []
+        self.max_recent_themes = 8  # Don't repeat themes for 8 questions
+
         # Image generation settings
         self.enable_images = True  # Set to False to disable image generation
-        self.image_cache = {}  # Cache generated images
+        self.image_cache = {}  # Cache generated images by theme
+
+        # Pre-generation queue settings
+        self.question_queue = Queue(maxsize=5)  # Queue for pre-generated questions
+        self.queue_target_size = 3  # Maintain 3 questions in queue
+        self.generation_executor = ThreadPoolExecutor(max_workers=3)  # Parallel generation
+        self.queue_worker_thread = None
+        self.queue_worker_running = False
 
         print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
@@ -200,6 +213,7 @@ class AIVoiceMathTutor:
         """
         Generate a unique, diverse math question using advanced AI.
         Ensures questions are always different with multiple retry attempts.
+        Avoids repeating themes for better variety.
         """
         max_attempts = 5  # Try up to 5 times to get a unique question
 
@@ -213,6 +227,8 @@ class AIVoiceMathTutor:
                 )
 
                 # Build comprehensive uniqueness constraints
+                uniqueness_parts = []
+
                 if self.recent_questions:
                     # Extract all recent question details
                     recent_expressions = [q['expression'] for q in self.recent_questions[-10:]]
@@ -231,8 +247,22 @@ class AIVoiceMathTutor:
                         recent_numbers=recent_numbers,
                         attempt=attempt
                     )
+                    uniqueness_parts.append(uniqueness_constraints)
 
-                    prompt = base_prompt + uniqueness_constraints
+                # Add theme avoidance constraints
+                if self.recent_themes:
+                    theme_constraint = f"""
+
+AVOID THESE RECENTLY USED THEMES:
+{', '.join(self.recent_themes[-self.max_recent_themes:])}
+
+YOU MUST use a COMPLETELY DIFFERENT theme/object that is NOT in the list above!
+Choose fresh, creative contexts that haven't been used recently.
+"""
+                    uniqueness_parts.append(theme_constraint)
+
+                if uniqueness_parts:
+                    prompt = base_prompt + ''.join(uniqueness_parts)
                 else:
                     prompt = base_prompt
 
@@ -284,6 +314,13 @@ class AIVoiceMathTutor:
                 self.recent_questions.append(question_data)
                 if len(self.recent_questions) > self.max_recent_questions:
                     self.recent_questions.pop(0)
+
+                # Track the theme to avoid repetition
+                theme = self._extract_theme_from_question(question_data['question_text'])
+                if theme:
+                    self.recent_themes.append(theme)
+                    if len(self.recent_themes) > self.max_recent_themes:
+                        self.recent_themes.pop(0)
 
                 if attempt > 0:
                     print(f"✅ Unique question generated on attempt {attempt + 1}")
@@ -377,6 +414,118 @@ class AIVoiceMathTutor:
             'operation': '+'
         }
 
+    def _generate_complete_question_parallel(self) -> Dict:
+        """
+        Generate a complete question with text, image, and audio in parallel.
+        This is much faster than sequential generation.
+
+        Returns:
+            Complete question dictionary with all assets
+        """
+        start_time = time.time()
+
+        # Step 1: Generate question text first (required for image/audio)
+        question_data = self.generate_ai_question()
+
+        # Step 2: Generate image and audio in parallel
+        futures = {}
+
+        if self.enable_images:
+            futures['image'] = self.generation_executor.submit(
+                self._generate_question_image,
+                question_data
+            )
+
+        # Wait for all parallel tasks to complete
+        for key, future in futures.items():
+            try:
+                if key == 'image':
+                    image_url = future.result(timeout=30)  # Max 30s for image
+                    question_data['image_url'] = image_url
+            except Exception as e:
+                print(f"⚠️ Parallel generation error ({key}): {e}")
+                if key == 'image':
+                    question_data['image_url'] = None
+
+        elapsed = time.time() - start_time
+        # Only show timing in background generation (not shown to user during session)
+        if elapsed > 5:
+            print(f"⏱️  Question generated in {elapsed:.1f}s")
+
+        return question_data
+
+    def _queue_worker(self):
+        """
+        Background worker that continuously maintains the question queue.
+        Runs in a separate thread and generates questions ahead of time.
+        """
+        print("🔄 Question pre-generation worker started")
+
+        while self.queue_worker_running:
+            try:
+                # Check if queue needs more questions
+                current_size = self.question_queue.qsize()
+
+                if current_size < self.queue_target_size:
+                    # Generate a question in background
+                    question_data = self._generate_complete_question_parallel()
+
+                    # Add to queue (non-blocking)
+                    try:
+                        self.question_queue.put(question_data, block=False)
+                        print(f"✓ Pre-generated question added to queue (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
+                    except:
+                        pass  # Queue full, skip
+
+                else:
+                    # Queue is healthy, sleep a bit
+                    time.sleep(1)
+
+            except Exception as e:
+                print(f"⚠️ Queue worker error: {e}")
+                time.sleep(2)  # Wait before retrying
+
+        print("🛑 Question pre-generation worker stopped")
+
+    def start_queue_worker(self):
+        """Start the background queue worker"""
+        if not self.queue_worker_running:
+            self.queue_worker_running = True
+            self.queue_worker_thread = threading.Thread(
+                target=self._queue_worker,
+                daemon=True,
+                name="QuestionQueueWorker"
+            )
+            self.queue_worker_thread.start()
+
+            # Pre-generate initial questions
+            print("🚀 Pre-generating initial questions...")
+            time.sleep(0.5)  # Give worker time to start
+
+    def stop_queue_worker(self):
+        """Stop the background queue worker"""
+        self.queue_worker_running = False
+        if self.queue_worker_thread:
+            self.queue_worker_thread.join(timeout=2)
+
+    def get_next_question(self) -> Dict:
+        """
+        Get next question from queue (instant if pre-generated) or generate if queue empty.
+
+        Returns:
+            Question dictionary
+        """
+        try:
+            # Try to get from queue (non-blocking)
+            question_data = self.question_queue.get(block=False)
+            print(f"⚡ Question ready instantly! (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
+            return question_data
+
+        except:
+            # Queue empty, generate now (rare case)
+            print("⏳ Queue empty, generating question now...")
+            return self._generate_complete_question_parallel()
+
     def generate_question(self) -> Dict:
         """Generate a math question (uses AI by default, falls back if needed)"""
         return self.generate_ai_question()
@@ -465,9 +614,73 @@ class AIVoiceMathTutor:
             # Fallback to simple response
             return f"Not quite. The correct answer is {correct_answer}. Keep trying!"
 
+    def _extract_theme_from_question(self, question_text: str) -> Optional[str]:
+        """
+        Extract theme from question text for caching.
+
+        Args:
+            question_text: The question text
+
+        Returns:
+            Theme keyword (e.g., 'apples', 'candies') or None
+        """
+        # Common themes that can share images
+        themes = [
+            'apple', 'candy', 'candies', 'toy', 'toys', 'sticker', 'stickers',
+            'book', 'books', 'pencil', 'pencils', 'marble', 'marbles',
+            'cookie', 'cookies', 'flower', 'flowers', 'bird', 'birds',
+            'car', 'cars', 'ball', 'balls', 'student', 'students',
+            'coin', 'coins', 'card', 'cards', 'pizza', 'pizzas',
+            'chocolate', 'chocolates', 'stamp', 'stamps', 'crayon', 'crayons',
+            'balloon', 'balloons', 'star', 'stars', 'shell', 'shells'
+        ]
+
+        question_lower = question_text.lower()
+        for theme in themes:
+            if theme in question_lower:
+                # Return base theme (singular form)
+                return theme.rstrip('s') if theme.endswith('s') else theme
+
+        return None
+
+    def _get_image_cache_key(self, question_data: Dict) -> Optional[str]:
+        """
+        Generate a cache key for images based on theme and operation.
+        Only cache similar visual scenarios, not exact numbers.
+
+        Args:
+            question_data: Question information
+
+        Returns:
+            Cache key or None
+        """
+        theme = self._extract_theme_from_question(question_data['question_text'])
+        if not theme:
+            return None
+
+        # Extract operation
+        expression = question_data.get('expression', '')
+        operation = None
+        if '+' in expression:
+            operation = 'add'
+        elif '-' in expression:
+            operation = 'sub'
+        elif '×' in expression or '*' in expression:
+            operation = 'mul'
+        elif '÷' in expression or '/' in expression:
+            operation = 'div'
+
+        if operation:
+            # Cache key: theme + operation (e.g., "apple_add", "cookie_sub")
+            # This way "5 apples + 3" and "7 apples + 2" can share an image
+            return f"{theme}_{operation}"
+
+        return None
+
     def _generate_question_image(self, question_data: Dict) -> str:
         """
-        Generate an AI image for the question using DALL-E.
+        Generate an AI image that visually represents the math problem using DALL-E.
+        Uses smart caching based on theme and operation type.
 
         Args:
             question_data: Question information
@@ -479,14 +692,24 @@ class AIVoiceMathTutor:
             return None
 
         try:
-            # Get image generation prompt
+            # Check cache first - only for same theme + operation combinations
+            cache_key = self._get_image_cache_key(question_data)
+            if cache_key and cache_key in self.image_cache:
+                # Reuse cached image for similar scenarios
+                cached_url = self.image_cache[cache_key]
+                print(f"♻️  Reusing cached image for '{cache_key}'")
+                return cached_url
+
+            # Get enhanced image generation prompt
             image_prompt = get_image_generation_prompt(
                 question_text=question_data['question_text'],
-                expression=question_data['expression'],
                 grade=self.student_profile.grade
             )
 
-            print("🎨 Generating image...")
+            # Debug: Show the prompt being sent to DALL-E
+            print(f"📝 Image prompt:\n{image_prompt}\n")
+
+            print("🎨 Generating visual illustration...")
 
             # Generate image using DALL-E
             response = self.openai_client.images.generate(
@@ -499,6 +722,11 @@ class AIVoiceMathTutor:
 
             image_url = response.data[0].url
             print("✅ Image generated!")
+
+            # Cache by theme+operation if applicable
+            if cache_key:
+                self.image_cache[cache_key] = image_url
+
             return image_url
 
         except Exception as e:
@@ -556,13 +784,11 @@ class AIVoiceMathTutor:
         print(f"❓ Question #{self.stats['total_questions'] + 1}")
         print("=" * 70)
 
-        # Generate and display image for the question
-        if self.enable_images:
-            image_url = self._generate_question_image(question_data)
-            if image_url:
-                print()
-                self._display_image(image_url)
-                print()
+        # Display pre-generated image if available
+        if self.enable_images and 'image_url' in question_data and question_data['image_url']:
+            print()
+            self._display_image(question_data['image_url'])
+            print()
 
         # Show expression
         print(f"\n📝 {question_data['expression']} = ?")
@@ -655,7 +881,7 @@ class AIVoiceMathTutor:
 
     def run_session(self, num_questions: int = 10):
         """
-        Run tutoring session.
+        Run tutoring session with pre-generation queue for instant questions.
 
         Args:
             num_questions: Number of questions (0 = infinite)
@@ -664,6 +890,9 @@ class AIVoiceMathTutor:
         print("🎓 AI VOICE MATH TUTOR")
         print("   Voice with Synchronized Letter-by-Letter Display")
         print("=" * 70)
+
+        # Start queue worker for instant question delivery
+        self.start_queue_worker()
 
         # Welcome
         welcome = "Hello! I am your AI math tutor. Let's practice math together!"
@@ -681,7 +910,15 @@ class AIVoiceMathTutor:
         print("   ✅ Type 'quit' to exit anytime")
         print("\n" + "-" * 70)
 
-        time.sleep(1.5)
+        # Wait for initial questions to be pre-generated
+        print("\n⏳ Preparing questions...")
+        wait_time = 0
+        while self.question_queue.qsize() < 1 and wait_time < 15:
+            time.sleep(0.5)
+            wait_time += 0.5
+
+        print("✅ Ready!\n")
+        time.sleep(0.5)
 
         try:
             question_count = 0
@@ -693,8 +930,8 @@ class AIVoiceMathTutor:
                     self.speak_with_display(completion)
                     break
 
-                # Generate question
-                question_data = self.generate_question()
+                # Get pre-generated question (instant!)
+                question_data = self.get_next_question()
                 self.stats['total_questions'] += 1
                 question_count += 1
 
@@ -718,6 +955,12 @@ class AIVoiceMathTutor:
             self.speak_with_display(goodbye)
 
         finally:
+            # Stop queue worker
+            self.stop_queue_worker()
+
+            # Shutdown executor
+            self.generation_executor.shutdown(wait=False)
+
             # Final stats
             if self.stats['total_questions'] > 0:
                 time.sleep(0.8)
