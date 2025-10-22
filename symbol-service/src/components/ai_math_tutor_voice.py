@@ -92,13 +92,15 @@ class AIVoiceMathTutor:
         # Image generation settings
         self.enable_images = True  # Set to False to disable image generation
         self.image_cache = {}  # Cache generated images by theme
+        self.image_cache_size = 20  # Limit cache to 20 items to balance memory
 
-        # Pre-generation queue settings
-        self.question_queue = Queue(maxsize=5)  # Queue for pre-generated questions
-        self.queue_target_size = 3  # Maintain 3 questions in queue
-        self.generation_executor = ThreadPoolExecutor(max_workers=3)  # Parallel generation
+        # Pre-generation queue settings - OPTIMIZED for speed
+        self.question_queue = Queue(maxsize=10)  # Larger queue buffer (was 5)
+        self.queue_target_size = 5  # Keep 5 questions ready (was 3)
+        self.generation_executor = ThreadPoolExecutor(max_workers=4)  # More parallel workers (was 3)
         self.queue_worker_thread = None
         self.queue_worker_running = False
+        self.queue_check_interval = 0.2  # Faster queue check (was default ~1s)
 
         print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
@@ -457,7 +459,7 @@ Choose fresh, creative contexts that haven't been used recently.
     def _queue_worker(self):
         """
         Background worker that continuously maintains the question queue.
-        Runs in a separate thread and generates questions ahead of time.
+        Optimized for faster generation with parallel processing.
         """
         print("🔄 Question pre-generation worker started")
 
@@ -473,17 +475,24 @@ Choose fresh, creative contexts that haven't been used recently.
                     # Add to queue (non-blocking)
                     try:
                         self.question_queue.put(question_data, block=False)
-                        print(f"✓ Pre-generated question added to queue (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
+                        print(f"✓ Question ready (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
                     except:
                         pass  # Queue full, skip
 
                 else:
-                    # Queue is healthy, sleep a bit
-                    time.sleep(1)
+                    # Queue is healthy, check frequently for faster response
+                    time.sleep(self.queue_check_interval)
+
+                # Manage image cache size to prevent memory bloat
+                if len(self.image_cache) > self.image_cache_size:
+                    # Remove oldest cached images
+                    oldest_keys = list(self.image_cache.keys())[:-self.image_cache_size]
+                    for key in oldest_keys:
+                        del self.image_cache[key]
 
             except Exception as e:
                 print(f"⚠️ Queue worker error: {e}")
-                time.sleep(2)  # Wait before retrying
+                time.sleep(self.queue_check_interval)
 
         print("🛑 Question pre-generation worker stopped")
 
@@ -498,9 +507,9 @@ Choose fresh, creative contexts that haven't been used recently.
             )
             self.queue_worker_thread.start()
 
-            # Pre-generate initial questions
+            # Pre-generate initial questions (shorter wait for faster startup)
             print("🚀 Pre-generating initial questions...")
-            time.sleep(0.5)  # Give worker time to start
+            time.sleep(0.2)  # Reduced from 0.5s for faster startup
 
     def stop_queue_worker(self):
         """Stop the background queue worker"""
@@ -706,9 +715,6 @@ Choose fresh, creative contexts that haven't been used recently.
                 grade=self.student_profile.grade
             )
 
-            # Debug: Show the prompt being sent to DALL-E
-            print(f"📝 Image prompt:\n{image_prompt}\n")
-
             print("🎨 Generating visual illustration...")
 
             # Generate image using DALL-E
@@ -910,15 +916,16 @@ Choose fresh, creative contexts that haven't been used recently.
         print("   ✅ Type 'quit' to exit anytime")
         print("\n" + "-" * 70)
 
-        # Wait for initial questions to be pre-generated
+        # Wait for initial questions to be pre-generated (optimized wait)
         print("\n⏳ Preparing questions...")
         wait_time = 0
-        while self.question_queue.qsize() < 1 and wait_time < 15:
-            time.sleep(0.5)
-            wait_time += 0.5
+        max_wait = 10  # Reduced from 15s
+        while self.question_queue.qsize() < 1 and wait_time < max_wait:
+            time.sleep(0.2)  # Check more frequently (was 0.5s)
+            wait_time += 0.2
 
         print("✅ Ready!\n")
-        time.sleep(0.5)
+        time.sleep(0.2)  # Reduced from 0.5s
 
         try:
             question_count = 0
