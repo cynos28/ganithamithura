@@ -55,8 +55,6 @@ class AIVoiceMathTutor:
             performance_level: Performance level (1, 2, or 3)
             sublevel: Sublevel name (Starter, Explorer, Solver, or Champion)
         """
-        print("🚀 Initializing AI Voice Math Tutor...")
-
         # Initialize OpenAI client
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
@@ -102,7 +100,6 @@ class AIVoiceMathTutor:
         self.queue_worker_running = False
         self.queue_check_interval = 0.2  # Faster queue check (was default ~1s)
 
-        print(f"✅ AI Voice Math Tutor ready! {self.student_profile}\n")
 
     def setup_voice(self):
         """Setup text-to-speech voice"""
@@ -118,19 +115,16 @@ class AIVoiceMathTutor:
 
             if selected_voice:
                 self.engine.setProperty('voice', selected_voice.id)
-                print(f"🔊 Voice: {selected_voice.name}")
             else:
                 if voices:
                     self.engine.setProperty('voice', voices[0].id)
-                    print(f"🔊 Voice: {voices[0].name}")
 
             # Speech settings
             self.engine.setProperty('rate', 140)  # Speed
             self.engine.setProperty('volume', 1.0)  # Volume
 
-        except Exception as e:
-            print(f"⚠️ Voice setup warning: {e}")
-            print("Using default voice")
+        except Exception:
+            pass  # Voice setup failed, use default
 
     def speak_with_display(self, text: str):
         """
@@ -166,8 +160,7 @@ class AIVoiceMathTutor:
                 # Wait for speech to complete
                 speech_process.wait(timeout=10)
 
-            except Exception as e:
-                print(f"\n⚠️ macOS say error: {e}")
+            except Exception:
                 # Fallback to pyttsx3
                 self._speak_with_pyttsx3(text)
         else:
@@ -208,8 +201,8 @@ class AIVoiceMathTutor:
             # Wait for speech to complete
             speech_thread.join(timeout=10)
 
-        except Exception as e:
-            print(f"\n⚠️ Speech error: {e}")
+        except Exception:
+            pass  # Speech error, continue
 
     def generate_ai_question(self) -> Dict:
         """
@@ -309,7 +302,6 @@ Choose fresh, creative contexts that haven't been used recently.
                 is_duplicate = any(q['expression'] == expression for q in self.recent_questions)
 
                 if is_duplicate and attempt < max_attempts - 1:
-                    print(f"🔄 Duplicate detected on attempt {attempt + 1}, retrying...")
                     continue  # Try again
 
                 # Success! Add to recent questions
@@ -324,22 +316,16 @@ Choose fresh, creative contexts that haven't been used recently.
                     if len(self.recent_themes) > self.max_recent_themes:
                         self.recent_themes.pop(0)
 
-                if attempt > 0:
-                    print(f"✅ Unique question generated on attempt {attempt + 1}")
-
                 return question_data
 
-            except json.JSONDecodeError as e:
-                print(f"⚠️ JSON parsing error on attempt {attempt + 1}: {e}")
+            except json.JSONDecodeError:
                 if attempt < max_attempts - 1:
                     continue  # Try again
-            except Exception as e:
-                print(f"⚠️ AI generation error on attempt {attempt + 1}: {e}")
+            except Exception:
                 if attempt < max_attempts - 1:
                     continue  # Try again
 
         # All attempts failed, use fallback
-        print("📝 All AI attempts exhausted, using fallback question generation")
         return self._generate_fallback_question()
 
     def _generate_fallback_question(self) -> Dict:
@@ -424,8 +410,6 @@ Choose fresh, creative contexts that haven't been used recently.
         Returns:
             Complete question dictionary with all assets
         """
-        start_time = time.time()
-
         # Step 1: Generate question text first (required for image/audio)
         question_data = self.generate_ai_question()
 
@@ -444,15 +428,9 @@ Choose fresh, creative contexts that haven't been used recently.
                 if key == 'image':
                     image_url = future.result(timeout=30)  # Max 30s for image
                     question_data['image_url'] = image_url
-            except Exception as e:
-                print(f"⚠️ Parallel generation error ({key}): {e}")
+            except Exception:
                 if key == 'image':
                     question_data['image_url'] = None
-
-        elapsed = time.time() - start_time
-        # Only show timing in background generation (not shown to user during session)
-        if elapsed > 5:
-            print(f"⏱️  Question generated in {elapsed:.1f}s")
 
         return question_data
 
@@ -461,8 +439,6 @@ Choose fresh, creative contexts that haven't been used recently.
         Background worker that continuously maintains the question queue.
         Optimized for faster generation with parallel processing.
         """
-        print("🔄 Question pre-generation worker started")
-
         while self.queue_worker_running:
             try:
                 # Check if queue needs more questions
@@ -475,7 +451,6 @@ Choose fresh, creative contexts that haven't been used recently.
                     # Add to queue (non-blocking)
                     try:
                         self.question_queue.put(question_data, block=False)
-                        print(f"✓ Question ready (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
                     except:
                         pass  # Queue full, skip
 
@@ -490,11 +465,8 @@ Choose fresh, creative contexts that haven't been used recently.
                     for key in oldest_keys:
                         del self.image_cache[key]
 
-            except Exception as e:
-                print(f"⚠️ Queue worker error: {e}")
+            except Exception:
                 time.sleep(self.queue_check_interval)
-
-        print("🛑 Question pre-generation worker stopped")
 
     def start_queue_worker(self):
         """Start the background queue worker"""
@@ -508,7 +480,6 @@ Choose fresh, creative contexts that haven't been used recently.
             self.queue_worker_thread.start()
 
             # Pre-generate initial questions (shorter wait for faster startup)
-            print("🚀 Pre-generating initial questions...")
             time.sleep(0.2)  # Reduced from 0.5s for faster startup
 
     def stop_queue_worker(self):
@@ -527,12 +498,10 @@ Choose fresh, creative contexts that haven't been used recently.
         try:
             # Try to get from queue (non-blocking)
             question_data = self.question_queue.get(block=False)
-            print(f"⚡ Question ready instantly! (Queue: {self.question_queue.qsize()}/{self.queue_target_size})")
             return question_data
 
         except:
             # Queue empty, generate now (rare case)
-            print("⏳ Queue empty, generating question now...")
             return self._generate_complete_question_parallel()
 
     def generate_question(self) -> Dict:
@@ -570,8 +539,7 @@ Choose fresh, creative contexts that haven't been used recently.
 
             return response.choices[0].message.content.strip()
 
-        except Exception as e:
-            print(f"⚠️ Feedback generation error: {e}")
+        except Exception:
             # Fallback to simple responses
             fallback_responses = [
                 f"Excellent! {answer} is correct!",
@@ -618,8 +586,7 @@ Choose fresh, creative contexts that haven't been used recently.
 
             return response.choices[0].message.content.strip()
 
-        except Exception as e:
-            print(f"⚠️ Feedback generation error: {e}")
+        except Exception:
             # Fallback to simple response
             return f"Not quite. The correct answer is {correct_answer}. Keep trying!"
 
@@ -706,7 +673,6 @@ Choose fresh, creative contexts that haven't been used recently.
             if cache_key and cache_key in self.image_cache:
                 # Reuse cached image for similar scenarios
                 cached_url = self.image_cache[cache_key]
-                print(f"♻️  Reusing cached image for '{cache_key}'")
                 return cached_url
 
             # Get enhanced image generation prompt
@@ -714,8 +680,6 @@ Choose fresh, creative contexts that haven't been used recently.
                 question_text=question_data['question_text'],
                 grade=self.student_profile.grade
             )
-
-            print("🎨 Generating visual illustration...")
 
             # Generate image using DALL-E
             response = self.openai_client.images.generate(
@@ -727,7 +691,6 @@ Choose fresh, creative contexts that haven't been used recently.
             )
 
             image_url = response.data[0].url
-            print("✅ Image generated!")
 
             # Cache by theme+operation if applicable
             if cache_key:
@@ -735,8 +698,7 @@ Choose fresh, creative contexts that haven't been used recently.
 
             return image_url
 
-        except Exception as e:
-            print(f"⚠️ Image generation error: {e}")
+        except Exception:
             return None
 
     def _display_image(self, image_url: str):
@@ -766,18 +728,13 @@ Choose fresh, creative contexts that haven't been used recently.
                 except (FileNotFoundError, subprocess.CalledProcessError):
                     # Fallback: open in default image viewer
                     subprocess.run(['open', tmp_path], check=False)
-                    print(f"📷 Image opened in viewer")
-            else:
-                # For non-macOS systems, just show the URL
-                print(f"🖼️  Image URL: {image_url}")
 
             # Clean up temp file after a delay
             import atexit
             atexit.register(lambda: os.remove(tmp_path) if os.path.exists(tmp_path) else None)
 
-        except Exception as e:
-            print(f"⚠️ Image display error: {e}")
-            print(f"🖼️  Image URL: {image_url}")
+        except Exception:
+            pass
 
     def ask_question(self, question_data: Dict):
         """
@@ -786,19 +743,12 @@ Choose fresh, creative contexts that haven't been used recently.
         Returns:
             True if correct, False if wrong, 'quit' to exit
         """
-        print("\n" + "=" * 70)
-        print(f"❓ Question #{self.stats['total_questions'] + 1}")
-        print("=" * 70)
-
         # Display pre-generated image if available
         if self.enable_images and 'image_url' in question_data and question_data['image_url']:
-            print()
             self._display_image(question_data['image_url'])
-            print()
 
-        # Show expression
-        print(f"\n📝 {question_data['expression']} = ?")
-        time.sleep(0.3)
+        # Show expression and speak question
+        print(f"{question_data['expression']} = ?")
 
         # Speak and display question
         self.speak_with_display(question_data['question_text'])
@@ -807,7 +757,7 @@ Choose fresh, creative contexts that haven't been used recently.
 
         # Get answer
         try:
-            print("\n💡 Your answer: ", end="", flush=True)
+            print("Your answer: ", end="", flush=True)
             user_input = input().strip()
 
             # Check quit
@@ -845,8 +795,7 @@ Choose fresh, creative contexts that haven't been used recently.
 
         except KeyboardInterrupt:
             return 'quit'
-        except Exception as e:
-            print(f"\n❌ Error: {e}")
+        except Exception:
             return False
 
     def show_stats(self):
@@ -858,14 +807,10 @@ Choose fresh, creative contexts that haven't been used recently.
         if total > 0:
             accuracy = (correct / total) * 100
 
-            print("\n" + "=" * 70)
-            print("📊 YOUR PROGRESS")
-            print("=" * 70)
-            print(f"   Total Questions:  {total}")
-            print(f"   Correct Answers:  {correct} ✓")
-            print(f"   Wrong Answers:    {wrong} ✗")
-            print(f"   Accuracy:         {accuracy:.1f}%")
-            print("=" * 70)
+            print(f"Total Questions: {total}")
+            print(f"Correct: {correct}")
+            print(f"Wrong: {wrong}")
+            print(f"Accuracy: {accuracy:.1f}%")
 
             # Speak stats
             stats_msg = f"You answered {total} questions. You got {correct} correct. That is {accuracy:.0f} percent!"
@@ -892,11 +837,6 @@ Choose fresh, creative contexts that haven't been used recently.
         Args:
             num_questions: Number of questions (0 = infinite)
         """
-        print("\n" + "=" * 70)
-        print("🎓 AI VOICE MATH TUTOR")
-        print("   Voice with Synchronized Letter-by-Letter Display")
-        print("=" * 70)
-
         # Start queue worker for instant question delivery
         self.start_queue_worker()
 
@@ -909,22 +849,13 @@ Choose fresh, creative contexts that haven't been used recently.
         instructions = "I will speak questions. You type your answer. Type quit to exit."
         self.speak_with_display(instructions)
 
-        print("\n📋 Instructions:")
-        print("   ✅ Watch and listen as questions appear letter by letter")
-        print("   ✅ Type your numeric answer")
-        print("   ✅ Press Enter to submit")
-        print("   ✅ Type 'quit' to exit anytime")
-        print("\n" + "-" * 70)
-
         # Wait for initial questions to be pre-generated (optimized wait)
-        print("\n⏳ Preparing questions...")
         wait_time = 0
         max_wait = 10  # Reduced from 15s
         while self.question_queue.qsize() < 1 and wait_time < max_wait:
             time.sleep(0.2)  # Check more frequently (was 0.5s)
             wait_time += 0.2
 
-        print("✅ Ready!\n")
         time.sleep(0.2)  # Reduced from 0.5s
 
         try:
@@ -957,7 +888,6 @@ Choose fresh, creative contexts that haven't been used recently.
                 time.sleep(1)
 
         except KeyboardInterrupt:
-            print("\n\n👋 Session interrupted")
             goodbye = "Goodbye! Great job practicing!"
             self.speak_with_display(goodbye)
 
@@ -971,9 +901,6 @@ Choose fresh, creative contexts that haven't been used recently.
             # Final stats
             if self.stats['total_questions'] > 0:
                 time.sleep(0.8)
-                print("\n" + "=" * 70)
-                print("📊 FINAL RESULTS")
-                print("=" * 70)
                 self.show_stats()
 
 
