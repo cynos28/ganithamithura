@@ -14,21 +14,220 @@ import random
 import re
 import time
 import subprocess
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Tuple
 from dotenv import load_dotenv
+from difflib import SequenceMatcher
+import unicodedata
+import string
 
 # Load environment variables
 load_dotenv()
+
+class ImprovedNumberDetector:
+    """Ultra-comprehensive number detection - catches ALL variations"""
+
+    def __init__(self):
+        """Initialize with all possible number word variations"""
+        # EXHAUSTIVE mapping of every possible way to say each number
+        self.all_number_variations = {
+            # 0
+            0: ['zero', 'oh', 'o', 'zero', 'ziro', 'zeros'],
+            # 1
+            1: ['one', 'won', 'wan', 'wun', 'uh', 'un', 'awn'],
+            # 2
+            2: ['two', 'to', 'too', 'tu', 'tew', 'tuh', 'toe', 'twu'],
+            # 3
+            3: ['three', 'tree', 'free', 'tre', 'thre', 'fri', 'thee'],
+            # 4
+            4: ['four', 'for', 'fo', 'faw', 'fir', 'fore', 'foe', 'foor'],
+            # 5
+            5: ['five', 'hive', 'dive', 'fiv', 'faiv', 'hiv', 'fyve', 'fibe'],
+            # 6
+            6: ['six', 'sex', 'sicks', 'sik', 'siks', 'sics', 'sikz', 'sickz'],
+            # 7
+            7: ['seven', 'sev', 'sevin', 'sevn', 'seben', 'sevven'],
+            # 8
+            8: ['eight', 'ate', 'ait', 'eyt', 'ayt', 'ight', 'eighty', 'eiht', 'ate', 'et'],
+            # 9
+            9: ['nine', 'wine', 'mine', 'nain', 'nin', 'nuy', 'nain', 'nayn', 'nyne'],
+            # 10
+            10: ['ten', 'pen', 'hen', 'tin', 'tun', 'tenn', 'tan'],
+            # 11-19
+            11: ['eleven', 'leven', 'levun'],
+            12: ['twelve', 'twelv', 'twelf'],
+            13: ['thirteen', 'therteen', 'thirteen'],
+            14: ['fourteen', 'forteen'],
+            15: ['fifteen', 'fiveteen'],
+            16: ['sixteen', 'sixteen'],
+            17: ['seventeen', 'seventeen'],
+            18: ['eighteen', 'eighteen', 'eightteen'],
+            19: ['nineteen', 'nineeen'],
+            # 20, 30, 40, 50, 60, 70, 80, 90
+            20: ['twenty', 'tweny', 'twenty'],
+            30: ['thirty', 'thurty', 'dirty'],
+            40: ['forty', 'fourty', 'forti'],
+            50: ['fifty', 'fity', 'fifty'],
+            60: ['sixty', 'sixy'],
+            70: ['seventy', 'sevnty'],
+            80: ['eighty', 'ighty', 'eightty'],
+            90: ['ninety', 'nety', 'ninity'],
+        }
+
+    def clean_text(self, text: str) -> str:
+        """Clean and normalize text"""
+        text = text.lower().strip()
+        text = re.sub(r'\s+', ' ', text)
+        text = text.translate(str.maketrans('', '', string.punctuation))
+        return text
+
+    def extract_digits(self, speech: str) -> Optional[int]:
+        """Extract explicit digits from speech"""
+        match = re.search(r'\b(\d+)\b', speech)
+        if match:
+            return int(match.group(1))
+        return None
+
+    def similarity_ratio(self, s1: str, s2: str) -> float:
+        """Calculate similarity between two strings"""
+        return SequenceMatcher(None, s1, s2).ratio()
+
+    def debug_find_numbers(self, speech: str) -> List[Dict]:
+        """Debug helper - show all detected numbers and their methods"""
+        if not speech:
+            return []
+
+        speech_clean = self.clean_text(speech)
+        results = []
+
+        # Check explicit digits
+        digit = self.extract_digits(speech)
+        if digit is not None:
+            results.append({'number': digit, 'method': 'explicit_digit', 'confidence': 1.0})
+
+        # Check exact word matches
+        speech_words = speech_clean.split()
+        for word in speech_words:
+            for number, variations in self.all_number_variations.items():
+                if word in variations:
+                    results.append({'number': number, 'method': 'exact_word', 'match': word, 'confidence': 1.0})
+
+        return results
+
+    def detect_with_confidence(self, speech: str, expected_range: Optional[Tuple[int, int]] = None) -> Dict:
+        """
+        Comprehensive number detection that catches ALL variations
+
+        Detection methods (in order of priority):
+        1. Explicit digits (8 → 8)
+        2. Exact word match (eight → 8, ate → 8)
+        3. Substring match (contains "eight")
+        4. Fuzzy match (phonetically similar)
+        5. Character similarity (highest match)
+        """
+        if not speech:
+            return {'number': None, 'confidence': 0.0, 'method': 'none', 'is_valid': False}
+
+        speech_clean = self.clean_text(speech)
+        candidates = []
+
+        # METHOD 1: Extract explicit digits first (highest priority)
+        digit = self.extract_digits(speech)
+        if digit is not None:
+            candidates.append((digit, 1.0, 'explicit_digit'))
+
+        # METHOD 2: Exact word matching - check each word
+        speech_words = speech_clean.split()
+        for word in speech_words:
+            for number, variations in self.all_number_variations.items():
+                if word in variations:
+                    candidates.append((number, 1.0, 'exact_word'))
+
+        # METHOD 3: Substring matching - word contains number word
+        for word in speech_words:
+            for number, variations in self.all_number_variations.items():
+                for variation in variations:
+                    if len(variation) >= 3 and variation in word:
+                        candidates.append((number, 0.95, 'substring'))
+                    elif variation in word and len(variation) >= 2:
+                        candidates.append((number, 0.90, 'substring'))
+
+        # METHOD 4: Fuzzy matching - similar sounding words
+        for word in speech_words:
+            for number, variations in self.all_number_variations.items():
+                for variation in variations:
+                    similarity = self.similarity_ratio(word, variation)
+                    # Accept matches above 65% similarity
+                    if similarity >= 0.65:
+                        confidence = min(0.95, similarity * 0.95)
+                        candidates.append((number, confidence, 'fuzzy_match'))
+
+        # METHOD 5: Character-level matching as last resort
+        # For very short or distorted speech, match by character overlap
+        for word in speech_words:
+            if len(word) >= 2:
+                for number, variations in self.all_number_variations.items():
+                    for variation in variations:
+                        if len(variation) >= 2:
+                            # Calculate character overlap
+                            overlap = sum(1 for c in word if c in variation)
+                            if overlap >= len(word) / 2:  # At least 50% char overlap
+                                confidence = (overlap / max(len(word), len(variation))) * 0.85
+                                candidates.append((number, confidence, 'char_overlap'))
+
+        if not candidates:
+            return {'number': None, 'confidence': 0.0, 'method': 'none', 'is_valid': False}
+
+        # Deduplicate: keep the highest confidence score for each number
+        best_candidates = {}
+        for number, confidence, method in candidates:
+            key = number
+            if key not in best_candidates or confidence > best_candidates[key][1]:
+                best_candidates[key] = (number, confidence, method)
+
+        candidates = list(best_candidates.values())
+
+        # Filter by expected range if provided
+        if expected_range:
+            min_val, max_val = expected_range
+            range_candidates = [c for c in candidates if min_val <= c[0] <= max_val]
+            if range_candidates:
+                candidates = range_candidates
+
+        # Sort by confidence (highest first)
+        candidates.sort(key=lambda x: x[1], reverse=True)
+
+        if not candidates:
+            return {'number': None, 'confidence': 0.0, 'method': 'none', 'is_valid': False}
+
+        number, confidence, method = candidates[0]
+
+        # Check if valid range
+        is_valid = True
+        if expected_range:
+            min_val, max_val = expected_range
+            is_valid = min_val <= number <= max_val
+
+        return {
+            'number': number,
+            'confidence': confidence,
+            'method': method,
+            'is_valid': is_valid,
+            'alternatives': [{'number': c[0], 'confidence': c[1], 'method': c[2]} for c in candidates[1:4]]
+        }
+
 
 class SimpleVoiceMathTutor:
     def __init__(self, openai_api_key: str):
         """Initialize the Simple Voice Math Tutor"""
         self.openai_client = openai.OpenAI(api_key=openai_api_key)
         self.recognizer = sr.Recognizer()
-        
+
+        # Initialize improved number detector
+        self.number_detector = ImprovedNumberDetector()
+
         # Check for system TTS alternatives
         self.setup_voice_system()
-        
+
         # Setup microphone
         self.setup_microphone()
         
@@ -150,11 +349,13 @@ class SimpleVoiceMathTutor:
                 self.microphone = sr.Microphone()
                 print("✅ Using default microphone")
             
-            # Optimal settings
-            self.recognizer.energy_threshold = 300
-            self.recognizer.dynamic_energy_threshold = True
-            self.recognizer.pause_threshold = 1.0
-            self.recognizer.phrase_threshold = 0.3
+            # MAXIMUM SENSITIVITY for single number detection
+            # These settings are optimized for detecting SHORT utterances like "one", "two", etc.
+            self.recognizer.energy_threshold = 4000  # VERY HIGH = catches even quiet speech
+            self.recognizer.dynamic_energy_threshold = False  # DISABLE dynamic - use fixed threshold
+            self.recognizer.pause_threshold = 0.3  # Very short pause threshold
+            self.recognizer.phrase_threshold = 0.1  # Accept very small phrases
+            self.recognizer.non_speaking_duration = 0.2  # Stop listening after 0.2s silence
             
             # Calibrate
             print("📊 Calibrating microphone (stay quiet for 3 seconds)...")
@@ -168,110 +369,152 @@ class SimpleVoiceMathTutor:
             self.microphone = sr.Microphone()
     
     def listen_for_answer(self, timeout: int = 15) -> Optional[str]:
-        """Listen for user's answer"""
+        """
+        Listen for user's answer with MAXIMUM SENSITIVITY for short number utterances
+        Optimized specifically for detecting single words like "one", "two", etc.
+        """
         try:
             print("🎤 Listening for your answer... (speak clearly)")
-            print("💡 Say just the number (like 'two' or 'five')")
-            
+            print("💡 Say just ONE number word (like 'one', 'two', 'eight', 'five')")
+
             with self.microphone as source:
-                # Quick ambient adjustment
+                # Minimal ambient noise adjustment for short utterances
+                print("   📊 Preparing microphone...")
+                # Very short adjustment to avoid cutting off quiet speech
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
-                
-                # Listen
-                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=8)
-            
-            print("🔄 Processing your speech...")
-            
-            # Try recognition with multiple attempts
+
+                # OPTIMIZED for SHORT utterances
+                print("   🎙️ Ready - say your number now...\n")
+
+                # Listen parameters optimized for SHORT SPEECH:
+                # - timeout: max 15 seconds to START speaking
+                # - phrase_time_limit: only 3 seconds to complete the utterance
+                #   (numbers are short, so 3 seconds is plenty)
+                audio = self.recognizer.listen(
+                    source,
+                    timeout=timeout,           # 15 seconds to start
+                    phrase_time_limit=3        # Only need 3 seconds for a number word
+                )
+
+            print("🔄 Processing your speech...\n")
+
+            # STRATEGY 1: Primary Google Recognition (en-US)
             try:
-                # Primary attempt
                 text = self.recognizer.recognize_google(audio, language='en-US')
-                print(f"✅ You said: '{text}'")
+                print(f"✅ Detected: '{text}'")
                 return text.strip()
-                
             except sr.UnknownValueError:
-                # Try with different settings
-                try:
-                    text = self.recognizer.recognize_google(audio, language='en-US', show_all=True)
-                    if text and 'alternative' in text:
-                        best = text['alternative'][0]['transcript']
-                        print(f"✅ You said (alt): '{best}'")
-                        return best.strip()
-                except:
-                    pass
-                    
-                print("❓ Could not understand - please try again")
+                print("   ⚠️ Strategy 1 (en-US) failed, trying alternatives...")
+            except sr.RequestError as e:
+                print(f"⚠️ API error: {e}")
                 return None
-                
+
+            # STRATEGY 2: Google Recognition with alternatives (en-US)
+            try:
+                result = self.recognizer.recognize_google(audio, language='en-US', show_all=True)
+                if result and len(result) > 0:
+                    for alt in result:
+                        if 'transcript' in alt:
+                            text = alt['transcript'].strip()
+                            print(f"✅ Detected (alt): '{text}'")
+                            return text
+            except:
+                print("   ⚠️ Strategy 2 (en-US + alternatives) failed...")
+
+            # STRATEGY 3: Try with different language hint (en-IN - India English)
+            # Sometimes works better for different accents
+            try:
+                text = self.recognizer.recognize_google(audio, language='en-IN')
+                print(f"✅ Detected (en-IN): '{text}'")
+                return text.strip()
+            except:
+                print("   ⚠️ Strategy 3 (en-IN) failed...")
+
+            # STRATEGY 4: Try with en-GB (British English)
+            try:
+                text = self.recognizer.recognize_google(audio, language='en-GB')
+                print(f"✅ Detected (en-GB): '{text}'")
+                return text.strip()
+            except:
+                print("   ⚠️ Strategy 4 (en-GB) failed...")
+
+            # STRATEGY 5: Get all alternatives from en-US with show_all and pick the shortest
+            # (numbers are usually short words)
+            try:
+                result = self.recognizer.recognize_google(audio, language='en-US', show_all=True)
+                if result and len(result) > 0:
+                    # Sort by length - numbers are usually short
+                    sorted_alts = sorted(
+                        [alt.get('transcript', '').strip() for alt in result if 'transcript' in alt],
+                        key=len
+                    )
+                    if sorted_alts and sorted_alts[0]:
+                        text = sorted_alts[0]
+                        print(f"✅ Detected (shortest alt): '{text}'")
+                        return text
+            except:
+                pass
+
+            print("❌ Could not detect speech - please speak louder and clearer")
+            return None
+
         except sr.WaitTimeoutError:
-            print("⏰ No speech detected - please speak louder")
+            print("⏰ No speech detected - please speak louder and clearer")
+            return None
+        except sr.RequestError as e:
+            print(f"❌ Network/API error: {e}")
             return None
         except Exception as e:
             print(f"❌ Listening error: {e}")
             return None
     
-    def extract_number(self, speech: str) -> Optional[int]:
-        """Extract number from speech with comprehensive matching"""
+    def extract_number(self, speech: str, expected_range: Optional[Tuple[int, int]] = None) -> Optional[int]:
+        """
+        Extract number from speech using improved detector with context awareness
+
+        Args:
+            speech: The recognized speech text
+            expected_range: Optional (min, max) range for the expected answer
+
+        Returns:
+            Detected number or None
+        """
         if not speech:
             return None
-            
-        speech_lower = speech.lower().strip()
-        print(f"🔍 Analyzing: '{speech_lower}'")
-        
-        # Comprehensive number mapping including common mishearings
-        number_words = {
-            # Standard numbers
-            'zero': 0, 'oh': 0,
-            'one': 1, 'won': 1, 'wan': 1,
-            'two': 2, 'to': 2, 'too': 2, 'tu': 2,
-            'three': 3, 'tree': 3, 'free': 3,
-            'four': 4, 'for': 4, 'fore': 4, 'floor': 4,
-            'five': 5, 'hive': 5, 'dive': 5,
-            'six': 6, 'sex': 6, 'sicks': 6, 'sick': 6,
-            'seven': 7, 'heaven': 7, 'eleven': 7,  # sometimes misheard
-            'eight': 8, 'ate': 8, 'weight': 8, 'gate': 8,
-            'nine': 9, 'wine': 9, 'nein': 9, 'mine': 9,
-            'ten': 10, 'pen': 10, 'hen': 10,
-            'eleven': 11, 'twelve': 12, 'thirteen': 13,
-            'fourteen': 14, 'fifteen': 15, 'sixteen': 16,
-            'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
-            'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50
-        }
-        
-        # Direct word match
-        for word, value in number_words.items():
-            if word in speech_lower:
-                print(f"✅ Found '{word}' = {value}")
-                return value
-        
-        # Digit search
-        digit_match = re.search(r'\b(\d+)\b', speech)
-        if digit_match:
-            number = int(digit_match.group(1))
-            print(f"✅ Found digit: {number}")
+
+        # DEBUG: Show what we received from speech recognition
+        print(f"🔍 Speech received: '{speech}'")
+
+        # DEBUG: Show what the detector found
+        debug_matches = self.number_detector.debug_find_numbers(speech)
+        if debug_matches:
+            print(f"   📋 Debug matches found: {debug_matches}")
+        else:
+            print(f"   📋 Debug: No exact matches found")
+
+        # Use the improved detector with optional context
+        result = self.number_detector.detect_with_confidence(speech, expected_range)
+        number = result['number']
+        confidence = result['confidence']
+        method = result['method']
+        is_valid = result['is_valid']
+
+        if number is not None:
+            confidence_pct = int(confidence * 100)
+            status = "✅" if confidence >= 0.75 else "⚠️"
+            range_status = f"(in range)" if is_valid else f"(out of range!)"
+            print(f"{status} Found: {number} | Confidence: {confidence_pct}% | Method: {method} {range_status}")
+
+            # Show alternatives if confidence is low
+            if confidence < 0.75 and result.get('alternatives'):
+                alternatives_str = ', '.join(f"{a['number']}({int(a['confidence']*100)}%)" for a in result['alternatives'][:2])
+                print(f"   📋 Alternatives: {alternatives_str}")
+
             return number
-        
-        # Phonetic variations
-        phonetic_map = {
-            'to': 2, 'too': 2, 'tue': 2,
-            'for': 4, 'fore': 4, 'four': 4,
-            'ate': 8, 'weight': 8,
-            'won': 1, 'one': 1,
-            'tree': 3, 'free': 3,
-            'hive': 5, 'five': 5,
-            'sex': 6, 'six': 6, 'sicks': 6,
-            'heaven': 7, 'seven': 7,
-            'wine': 9, 'nine': 9, 'mine': 9,
-            'pen': 10, 'ten': 10
-        }
-        
-        for word, value in phonetic_map.items():
-            if word in speech_lower:
-                print(f"✅ Phonetic match '{word}' = {value}")
-                return value
-        
-        print(f"❌ No number found in '{speech_lower}'")
-        return None
+        else:
+            print(f"❌ No number detected in '{speech.lower().strip()}'")
+            print(f"   📋 Debug: Speech length={len(speech)}, cleaned='{self.number_detector.clean_text(speech)}'")
+            return None
     
     def generate_question(self) -> Dict:
         """Generate a simple math question"""
@@ -346,9 +589,12 @@ class SimpleVoiceMathTutor:
             if any(word in user_speech.lower() for word in ['quit', 'exit', 'stop']):
                 return "quit"
             
-            # Extract the number
-            user_answer = self.extract_number(user_speech)
+            # Extract the number with context awareness (expected range)
+            # Add some buffer to the expected answer range for flexibility
             correct_answer = question_data['answer']
+            min_expected = max(0, correct_answer - 10)  # Allow some tolerance
+            max_expected = correct_answer + 10
+            user_answer = self.extract_number(user_speech, expected_range=(min_expected, max_expected))
             
             if user_answer is None:
                 if attempt < max_attempts - 1:
