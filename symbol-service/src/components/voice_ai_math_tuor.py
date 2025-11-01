@@ -20,6 +20,19 @@ from difflib import SequenceMatcher
 import unicodedata
 import string
 
+# Try to import audio processing libraries if available
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    PYDUB_AVAILABLE = False
+
 # Load environment variables
 load_dotenv()
 
@@ -112,6 +125,59 @@ class ImprovedNumberDetector:
                     results.append({'number': number, 'method': 'exact_word', 'match': word, 'confidence': 1.0})
 
         return results
+
+    def find_best_number_match(self, speech: str) -> Optional[Tuple[int, float]]:
+        """
+        Aggressive fallback: find the single best number match using all methods
+        Returns (number, confidence) or None
+        """
+        if not speech:
+            return None
+
+        speech_clean = self.clean_text(speech)
+        best_match = None
+        best_confidence = 0.0
+
+        # Check all numbers and find the one with highest match score
+        for number, variations in self.all_number_variations.items():
+            for variation in variations:
+                # Calculate multiple match types
+                scores = []
+
+                # Exact match
+                if variation == speech_clean or speech_clean == variation:
+                    scores.append(1.0)
+
+                # Full word match
+                if variation in speech_clean.split():
+                    scores.append(0.99)
+
+                # Substring match (word contains variation)
+                if variation in speech_clean:
+                    scores.append(0.90)
+
+                # Fuzzy similarity
+                sim = self.similarity_ratio(variation, speech_clean)
+                if sim >= 0.5:
+                    scores.append(sim * 0.85)
+
+                # Character overlap
+                if len(variation) >= 2 and len(speech_clean) >= 2:
+                    char_overlap = sum(1 for c in variation if c in speech_clean)
+                    if char_overlap >= len(variation) / 2:
+                        overlap_score = (char_overlap / max(len(variation), len(speech_clean))) * 0.75
+                        scores.append(overlap_score)
+
+                if scores:
+                    max_score = max(scores)
+                    if max_score > best_confidence:
+                        best_confidence = max_score
+                        best_match = number
+
+        if best_match is not None and best_confidence >= 0.5:
+            return (best_match, best_confidence)
+
+        return None
 
     def detect_with_confidence(self, speech: str, expected_range: Optional[Tuple[int, int]] = None) -> Dict:
         """
@@ -368,32 +434,36 @@ class SimpleVoiceMathTutor:
             print(f"⚠️ Microphone setup error: {e}")
             self.microphone = sr.Microphone()
     
-    def listen_for_answer(self, timeout: int = 15) -> Optional[str]:
+    def listen_for_answer(self, timeout: int = 15, retry_count: int = 0) -> Optional[str]:
         """
         Listen for user's answer with MAXIMUM SENSITIVITY for short number utterances
-        Optimized specifically for detecting single words like "one", "two", etc.
+        Implements retry logic with confidence checking
         """
         try:
-            print("🎤 Listening for your answer... (speak clearly)")
-            print("💡 Say just ONE number word (like 'one', 'two', 'eight', 'five')")
+            if retry_count == 0:
+                print("🎤 Listening for your answer... (speak clearly)")
+                print("💡 Say just ONE number word (like 'one', 'two', 'eight', 'five')")
 
             with self.microphone as source:
-                # Minimal ambient noise adjustment for short utterances
-                print("   📊 Preparing microphone...")
-                # Very short adjustment to avoid cutting off quiet speech
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                # Prepare microphone with adaptive settings based on retry count
+                if retry_count == 0:
+                    print("   📊 Preparing microphone...")
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                else:
+                    print(f"   🔄 Retry {retry_count}: Re-adjusting sensitivity...")
+                    # Increase ambient adjustment on retries
+                    adjustment_duration = min(1.5, 0.5 + (retry_count * 0.3))
+                    self.recognizer.adjust_for_ambient_noise(source, duration=adjustment_duration)
 
-                # OPTIMIZED for SHORT utterances
                 print("   🎙️ Ready - say your number now...\n")
 
-                # Listen parameters optimized for SHORT SPEECH:
-                # - timeout: max 15 seconds to START speaking
-                # - phrase_time_limit: only 3 seconds to complete the utterance
-                #   (numbers are short, so 3 seconds is plenty)
+                # OPTIMIZED for SHORT utterances with adaptive retry
+                # On retry, slightly adjust the phrase_time_limit
+                phrase_limit = 3 + (retry_count * 0.5)  # 3s → 3.5s → 4s on retries
                 audio = self.recognizer.listen(
                     source,
-                    timeout=timeout,           # 15 seconds to start
-                    phrase_time_limit=3        # Only need 3 seconds for a number word
+                    timeout=timeout,
+                    phrase_time_limit=min(5, phrase_limit)
                 )
 
             print("🔄 Processing your speech...\n")
@@ -512,6 +582,23 @@ class SimpleVoiceMathTutor:
 
             return number
         else:
+            # FALLBACK: Try aggressive best-match detection
+            print(f"❌ Primary detection failed, trying aggressive fallback...")
+            fallback_match = self.number_detector.find_best_number_match(speech)
+
+            if fallback_match:
+                fallback_number, fallback_confidence = fallback_match
+                fallback_conf_pct = int(fallback_confidence * 100)
+                print(f"⚠️ Fallback found: {fallback_number} | Confidence: {fallback_conf_pct}%")
+
+                # Check if in expected range
+                if expected_range:
+                    min_val, max_val = expected_range
+                    in_range = min_val <= fallback_number <= max_val
+                    print(f"   📍 Range check: {in_range} (expected {min_val}-{max_val})")
+
+                return fallback_number
+
             print(f"❌ No number detected in '{speech.lower().strip()}'")
             print(f"   📋 Debug: Speech length={len(speech)}, cleaned='{self.number_detector.clean_text(speech)}'")
             return None
@@ -572,12 +659,12 @@ class SimpleVoiceMathTutor:
                 print(f"\n🔄 Attempt {attempt + 1}: {retry_text}")
                 self.speak(retry_text)
             
-            # Listen for answer
-            user_speech = self.listen_for_answer()
-            
+            # Listen for answer with retry support
+            user_speech = self.listen_for_answer(retry_count=attempt)
+
             if user_speech is None:
                 if attempt < max_attempts - 1:
-                    self.speak("I didn't hear you. Let me ask again.")
+                    self.speak("I didn't hear you. Speak louder and clearer. Let me ask again.")
                     continue
                 else:
                     # Give the answer
