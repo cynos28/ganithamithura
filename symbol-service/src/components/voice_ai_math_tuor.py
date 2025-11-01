@@ -648,23 +648,16 @@ class SimpleVoiceMathTutor:
         print("🎓 SIMPLE VOICE MATH TUTOR")
         print("   Reliable Speech Recognition • Simple Questions")
         print("="*60)
-        
-        # Welcome
-        welcome = "Hello! I'm your math tutor."
-        self.speak(welcome)
-        
-        instructions = "I'll ask simple math questions. Say just the number answer."
-        self.speak(instructions)
-        
+
         print("\n📋 Instructions:")
         print("   ✅ Listen to the question")
         print("   ✅ Say just the number (like 'three' or 'seven')")
         print("   ✅ Speak clearly and close to microphone")
         print("   ✅ Say 'quit' to exit anytime")
         print("-" * 60)
-        
-        # Brief pause
-        time.sleep(2)
+
+        # Skip welcome messages - go straight to questions
+        print("\n🚀 Starting questions...\n")
         
         try:
             while True:
