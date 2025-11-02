@@ -1,0 +1,2 @@
+[console_scripts]
+shape-service = app.main:app
