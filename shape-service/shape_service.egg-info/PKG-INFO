@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: shape-service
+Version: 0.1.0
+Summary: Add your description here
+Author-email: Dilshan Kumara <140689829+Dilshankumara0122@users.noreply.github.com>
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.120.4
+Requires-Dist: motor>=3.7.1
+Requires-Dist: uvicorn[standard]>=0.38.0
