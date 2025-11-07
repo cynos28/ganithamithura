@@ -11,6 +11,13 @@ dependencies = [
     "fastapi>=0.120.4",
     "motor>=3.7.1",
     "uvicorn[standard]>=0.38.0",
+    "numpy",
+    "Pillow",
+    "transformers",
+    "python-multipart",
+    "torch",
+    "pytest",
+    "httpx",
 ]
 
 [project.scripts]
