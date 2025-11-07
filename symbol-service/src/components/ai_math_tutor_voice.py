@@ -90,13 +90,15 @@ class AIVoiceMathTutor:
         # Image generation settings
         self.enable_images = True  # Set to False to disable image generation
         self.image_cache = {}  # Cache generated images by theme
+        self.image_cache_size = 20  # Limit cache to 20 items to balance memory
 
-        # Pre-generation queue settings
-        self.question_queue = Queue(maxsize=5)  # Queue for pre-generated questions
-        self.queue_target_size = 3  # Maintain 3 questions in queue
-        self.generation_executor = ThreadPoolExecutor(max_workers=3)  # Parallel generation
+        # Pre-generation queue settings - OPTIMIZED for speed
+        self.question_queue = Queue(maxsize=10)  # Larger queue buffer (was 5)
+        self.queue_target_size = 5  # Keep 5 questions ready (was 3)
+        self.generation_executor = ThreadPoolExecutor(max_workers=4)  # More parallel workers (was 3)
         self.queue_worker_thread = None
         self.queue_worker_running = False
+        self.queue_check_interval = 0.2  # Faster queue check (was default ~1s)
 
 
     def setup_voice(self):
@@ -435,7 +437,7 @@ Choose fresh, creative contexts that haven't been used recently.
     def _queue_worker(self):
         """
         Background worker that continuously maintains the question queue.
-        Runs in a separate thread and generates questions ahead of time.
+        Optimized for faster generation with parallel processing.
         """
         while self.queue_worker_running:
             try:
@@ -453,8 +455,15 @@ Choose fresh, creative contexts that haven't been used recently.
                         pass  # Queue full, skip
 
                 else:
-                    # Queue is healthy, sleep a bit
-                    time.sleep(1)
+                    # Queue is healthy, check frequently for faster response
+                    time.sleep(self.queue_check_interval)
+
+                # Manage image cache size to prevent memory bloat
+                if len(self.image_cache) > self.image_cache_size:
+                    # Remove oldest cached images
+                    oldest_keys = list(self.image_cache.keys())[:-self.image_cache_size]
+                    for key in oldest_keys:
+                        del self.image_cache[key]
 
             except Exception:
                 time.sleep(self.queue_check_interval)
@@ -842,9 +851,10 @@ Choose fresh, creative contexts that haven't been used recently.
 
         # Wait for initial questions to be pre-generated (optimized wait)
         wait_time = 0
-        while self.question_queue.qsize() < 1 and wait_time < 15:
-            time.sleep(0.5)
-            wait_time += 0.5
+        max_wait = 10  # Reduced from 15s
+        while self.question_queue.qsize() < 1 and wait_time < max_wait:
+            time.sleep(0.2)  # Check more frequently (was 0.5s)
+            wait_time += 0.2
 
         time.sleep(0.2)  # Reduced from 0.5s
 
