@@ -12,6 +12,18 @@ class UserController:
         self.users_collection = self.db["users"]
 
     async def login(self, form_data: OAuth2PasswordRequestForm = Depends()):
+        """
+        Authenticates a user and provides a JWT access token.
+
+        Args:
+            form_data: The user's login credentials (username and password) from a form.
+
+        Raises:
+            HTTPException: 401 if the username or password is incorrect.
+
+        Returns:
+            A dictionary containing the access token and token type ("bearer").
+        """
         user = await self.users_collection.find_one({"user_name": form_data.username})
         if not user or not verify_password(form_data.password, user["password"]):
             raise HTTPException(
@@ -26,6 +38,18 @@ class UserController:
         return {"access_token": access_token, "token_type": "bearer"}
 
     async def register(self, user_data: UserCreate):
+        """
+        Registers a new user in the database.
+
+        Args:
+            user_data: The data for the new user, including username and password.
+
+        Raises:
+            HTTPException: 400 if the username is already registered.
+
+        Returns:
+            A confirmation message indicating successful user creation.
+        """
         user = await self.users_collection.find_one({"user_name": user_data.username})
         if user:
             raise HTTPException(status_code=400, detail="Username already registered")
