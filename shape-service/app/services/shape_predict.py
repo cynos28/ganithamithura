@@ -2,7 +2,9 @@ import numpy as np
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 import requests
-from io import BytesIO
+
+feature_extractor = AutoImageProcessor.from_pretrained('0-ma/mobilenet-v2-geometric-shapes')
+model = AutoModelForImageClassification.from_pretrained('0-ma/mobilenet-v2-geometric-shapes')
 
 def get_shape_from_image(image_input):
     """
@@ -26,13 +28,15 @@ def get_shape_from_image(image_input):
     
     if isinstance(image_input, str):
         # Assume it's a URL
-        image = Image.open(requests.get(image_input, stream=True).raw)
+        try:
+            response = requests.get(image_input, stream=True, timeout=10)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            image = Image.open(response.raw)
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f"Could not retrieve image from URL: {e}")
     else:
         # Assume it's a file-like object
         image = Image.open(image_input)
-    
-    feature_extractor = AutoImageProcessor.from_pretrained('0-ma/mobilenet-v2-geometric-shapes')
-    model = AutoModelForImageClassification.from_pretrained('0-ma/mobilenet-v2-geometric-shapes')
     
     inputs = feature_extractor(images=image, return_tensors="pt")
     logits = model(**inputs)['logits'].cpu().detach().numpy()
