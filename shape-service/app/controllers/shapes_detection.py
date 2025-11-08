@@ -7,6 +7,20 @@ class ShapesDetectionController:
     def __init__(self):
         pass
     async def detect_shape(self,request: Request, image_file: UploadFile = File(None)):
+        """
+        Detects the shape from an image provided either as a file upload or a URL.
+        Args:
+            request: The FastAPI Request object, used to inspect headers and body.
+            image_file: An optional UploadFile object for direct file uploads.
+
+        Raises:
+            HTTPException: 
+                - 400: If no image is provided as a file or URL.
+                - 500: For any internal server errors during shape detection.
+
+        Returns:
+            A dictionary containing the detected shape.
+        """
         try:
             content_type = request.headers.get("content-type", "")
             if "application/json" in content_type:

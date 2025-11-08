@@ -5,6 +5,16 @@ import requests
 from io import BytesIO
 
 def get_shape_from_image(image_input):
+    """
+    Identifies the geometric shape in an image using a pre-trained model.
+
+    Args:
+        image_input: The input image, which can be a string (URL) or a
+                     file-like object (e.g., from an uploaded file).
+
+    Returns:
+        A string representing the predicted shape label (e.g., "Circle", "Square").
+    """
     labels = [
         "None",
         "Circle",

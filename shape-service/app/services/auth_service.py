@@ -18,14 +18,44 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/shapes-patterns/token")
 
 
 def verify_password(plain_password, hashed_password):
+    """
+    Verifies a plain-text password against a hashed password.
+
+    Args:
+        plain_password: The password to verify.
+        hashed_password: The hashed password to compare against.
+
+    Returns:
+        True if the passwords match, False otherwise.
+    """
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password):
+    """
+    Hashes a plain-text password using the configured password context.
+
+    Args:
+        password: The password to hash.
+
+    Returns:
+        The hashed password string.
+    """
     return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """
+    Creates a new JWT access token.
+
+    Args:
+        data: The data to encode into the token (e.g., user identifier).
+        expires_delta: An optional timedelta object for token expiration. 
+                       Defaults to 15 minutes if not provided.
+
+    Returns:
+        The encoded JWT access token as a string.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -37,6 +67,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
+    """
+    Decodes a JWT token to retrieve the current user.
+
+    Args:
+        token: The JWT token from the request's Authorization header.
+
+    Raises:
+        HTTPException: 401 if the token is invalid, expired, or the user is not found.
+
+    Returns:
+        The user document from the database corresponding to the token's subject.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
