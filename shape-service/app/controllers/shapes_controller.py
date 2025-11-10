@@ -19,3 +19,17 @@ class ShapesController:
                 shapes.append(document)
             return shapes
         raise HTTPException(status_code=404, detail="Shape not found")
+    
+    async def get_image_by_id(self, image_id: str):
+        shape = await self.db.shapes.find_one({"id": image_id})
+        if shape:
+            data = {
+                "id": shape["id"],
+                "name": shape["name"],
+                "description": shape["description"],
+                "image_url": shape["image_url"],
+            }
+            return data
+        raise HTTPException(status_code=404, detail="Shape not found")
+
+
