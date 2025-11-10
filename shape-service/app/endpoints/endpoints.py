@@ -30,3 +30,8 @@ async def register_user(user_data: UserCreate):
 @router.get("/shapes/")
 async def get_shapes():
     return await shapes_controller.get_shapes()
+
+@router.get("/images/{image_id}")
+async def get_image_by_id(image_id: str):
+    return await shapes_controller.get_image_by_id(image_id)
+
