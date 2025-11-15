@@ -6,6 +6,17 @@ from datetime import datetime, timedelta
 
 class GameController:
     async def start_game(self, user: dict):
+        """
+        Initializes and starts a game session for a given user.
+
+        Args:
+            user (dict): A dictionary containing user information, specifically
+                         "user_name" to identify the user.
+
+        Returns:
+            dict: A dictionary containing the game data for the current or next level.
+                  The "_id" field is removed from the returned game data.
+        """
         try:
             db = get_database()
             users_collection = db["users"]
