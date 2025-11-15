@@ -3,10 +3,18 @@ Math Question Generation Prompts
 Centralized prompts for AI-based question generation, hints, explanations, and recommendations
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from components.curriculum_helper import CurriculumHelper
+
 
 def get_question_generation_prompt(grade: int, performance_level: int, sublevel: str) -> str:
     """
     Generate enhanced AI prompt for math question generation based on grade, performance level, and sublevel.
+
+    Uses detailed curriculum specifications with operand ranges, result constraints, and operation types.
 
     Args:
         grade: Grade level (1, 2, or 3)
@@ -24,30 +32,314 @@ def get_question_generation_prompt(grade: int, performance_level: int, sublevel:
         3: ["students", "apples", "coins", "cards", "pizzas", "chocolates", "stamps"]
     }
 
-    # Define difficulty-specific approaches
-    difficulty_guidance = {
+    # Get curriculum spec from CurriculumHelper (single source of truth)
+    spec = CurriculumHelper.get_spec(grade, performance_level, sublevel)
+
+    # Fallback to simple addition if no spec found
+    if not spec:
+        spec = {
+            'operations': ['addition'],
+            'operand_max': 10,
+            'result_max': 20,
+            'focus': 'Basic addition'
+        }
+
+    # Build curriculum spec for prompt (kept for reference)
+    curriculum_spec = spec
+
+    # Old embedded curriculum_specs (kept for backward compatibility but not used)
+    curriculum_specs = {
         1: {
-            "Starter": "Use single-digit numbers (1-10). Focus on basic addition and subtraction. Make it simple and concrete.",
-            "Explorer": "Use numbers up to 20. Introduce simple patterns. Can include basic multiplication (2, 5, 10 tables).",
-            "Solver": "Use numbers up to 30. Include two-step thinking. Mix operations strategically.",
-            "Champion": "Use numbers up to 50. Create engaging word problems. Challenge logical thinking."
+            1: {
+                "Starter": {
+                    "operations": ["addition"],
+                    "operand_max": 5,
+                    "result_max": 7,
+                    "focus": "Small combinations totaling no higher than 7",
+                    "examples": "2+3=5, 1+4=5, 3+2=5"
+                },
+                "Explorer": {
+                    "operations": ["addition", "doubles", "near-doubles"],
+                    "operand_max": 8,
+                    "result_min": 5,
+                    "result_max": 9,
+                    "focus": "Doubles and near-doubles patterns (addends ≤8, results 5-9)",
+                    "examples": "3+4=7, 4+4=8, 3+5=8"
+                },
+                "Solver": {
+                    "operations": ["addition"],
+                    "operand_max": 9,
+                    "result_max": 11,
+                    "focus": "Combining numbers reaching up to 11 (addends ≤9, results ≤11)",
+                    "examples": "7+3=10, 6+5=11, 5+4=9"
+                },
+                "Champion": {
+                    "operations": ["addition"],
+                    "operand_max": 9,
+                    "result_min": 10,
+                    "result_max": 14,
+                    "focus": "Building larger facts up to 14 with strategy paths (near-doubles, make 10)",
+                    "examples": "8+6=14, 7+5=12, 9+5=14"
+                }
+            },
+            2: {
+                "Starter": {
+                    "operations": ["addition", "missing_addend"],
+                    "operand_max": 15,
+                    "result_max": 15,
+                    "focus": "One unknown in addition equations (□ + a = b, target ≤15)",
+                    "examples": "□+4=9, □+3=7, 6+□=11"
+                },
+                "Explorer": {
+                    "operations": ["addition"],
+                    "operand_min": 5,
+                    "operand_max": 9,
+                    "result_min": 12,
+                    "result_max": 15,
+                    "focus": "Addition crossing 10 (5≤addends≤9, 12≤results≤15)",
+                    "examples": "9+6=15, 8+7=15, 7+5=12"
+                },
+                "Solver": {
+                    "operations": ["three_addend_addition"],
+                    "operand_max": 9,
+                    "result_max": 15,
+                    "focus": "Three-addend problems with grouping (≤9 each, ≤15 total)",
+                    "examples": "4+5+3=12, 3+6+2=11, 5+5+3=13"
+                },
+                "Champion": {
+                    "operations": ["addition"],
+                    "operand_min": 6,
+                    "operand_max": 10,
+                    "result_min": 10,
+                    "result_max": 17,
+                    "focus": "Larger combinations up to 17 (6-10 addends, 10-17 results)",
+                    "examples": "9+8=17, 10+5=15, 8+9=17"
+                }
+            },
+            3: {
+                "Starter": {
+                    "operations": ["addition", "missing_addend"],
+                    "operand_min": 5,
+                    "operand_max": 10,
+                    "result_max": 18,
+                    "focus": "Missing addend with higher targets (5≤addends≤10, ≤18)",
+                    "examples": "□+8=16, □+7=15, 9+□=18"
+                },
+                "Explorer": {
+                    "operations": ["addition", "doubles", "near-doubles"],
+                    "operand_max": 10,
+                    "operand_min": 8,
+                    "result_max": 20,
+                    "focus": "Two-addend with large numbers (≥8 addends, ≤20 results)",
+                    "examples": "8+8=16, 8+9=17, 10+9=19"
+                },
+                "Solver": {
+                    "operations": ["three_addend_addition"],
+                    "operand_max": 9,
+                    "result_max": 20,
+                    "focus": "Three-addend approaching 20 (≤9 each, ≤20 total)",
+                    "examples": "6+7+5=18, 7+6+4=17, 8+5+4=17"
+                },
+                "Champion": {
+                    "operations": ["addition", "missing_addend"],
+                    "result_target": 20,
+                    "missing_max": 12,
+                    "focus": "Target 20 with missing numbers (results=20, missing≤12)",
+                    "examples": "□+9=20, 8+7+□=20, 10+□=20"
+                }
+            }
         },
         2: {
-            "Starter": "Use numbers 1-20. Basic operations with clear patterns. Build confidence.",
-            "Explorer": "Use numbers up to 50. Introduce multiplication and division. Create relatable scenarios.",
-            "Solver": "Use numbers up to 100. Multi-step problems. Combine different operations.",
-            "Champion": "Use numbers up to 200. Complex word problems. Real-world applications."
+            1: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 20,
+                    "result_max": 20,
+                    "focus": "Single-step add/subtract (≤20 operands, ≤20 results)",
+                    "examples": "6+8=14, 17-9=8, 15-7=8"
+                },
+                "Explorer": {
+                    "operations": ["multiplication"],
+                    "factors_max": 5,
+                    "product_max": 30,
+                    "focus": "Multiplication as repeated addition (factors≤5, products≤30)",
+                    "examples": "3×4=12, 5×2=10, 4×5=20"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication"],
+                    "operand_max": 30,
+                    "result_max": 40,
+                    "focus": "Mixed operations with comparisons (≤30 operands, ≤40 results)",
+                    "examples": "6×3 > 18-4, 5×4 = 20"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 20,
+                    "result_max": 30,
+                    "focus": "Two-step equations with BODMAS (operands≤20, results≤30)",
+                    "examples": "(3×4)+8=20, 18-(2×3)=12"
+                }
+            },
+            2: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 30,
+                    "result_max": 50,
+                    "focus": "Two-digit with regrouping (≤30, ≤50 results)",
+                    "examples": "27+14=41, 45-19=26, 32+18=50"
+                },
+                "Explorer": {
+                    "operations": ["multiplication"],
+                    "factors_max": 10,
+                    "product_max": 50,
+                    "focus": "Multiplication tables 2-10 (factors≤10, products≤50)",
+                    "examples": "6×5=30, 10×4=40, 7×6=42"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication"],
+                    "operand_max": 30,
+                    "result_max": 50,
+                    "focus": "Comparing expressions (≤30 operands, ≤50 results)",
+                    "examples": "24-9 > 4×4, 6×5 < 31"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 50,
+                    "result_max": 60,
+                    "focus": "Multi-operation with BODMAS (operands≤50, results≤60)",
+                    "examples": "(8×3)-10=14, (6×4)+12=36"
+                }
+            },
+            3: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 70,
+                    "result_max": 100,
+                    "focus": "Two-digit with regrouping near 100 (≤70, ≤100 results)",
+                    "examples": "64+27=91, 95-38=57, 70+23=93"
+                },
+                "Explorer": {
+                    "operations": ["multiplication"],
+                    "factors_max": 10,
+                    "product_max": 100,
+                    "focus": "Full multiplication mastery 2-10 (factors≤10, products≤100)",
+                    "examples": "9×7=63, 8×9=72, 10×10=100"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication"],
+                    "operand_max": 12,
+                    "result_max": 100,
+                    "focus": "Comparing multiplication and addition (≤12 operands)",
+                    "examples": "6×9=54, 7×8 > 60"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 20,
+                    "result_max": 100,
+                    "focus": "Multi-operation fluency with BODMAS (operands≤20)",
+                    "examples": "(5×8)-14=26, (6×7)+12=54"
+                }
+            }
         },
         3: {
-            "Starter": "Use numbers up to 50. Reinforce fundamentals with variety.",
-            "Explorer": "Use numbers up to 100. Practical applications. Introduce fractions conceptually.",
-            "Solver": "Use numbers up to 500. Complex scenarios. Multi-step reasoning required.",
-            "Champion": "Use numbers up to 1000. Advanced word problems. Real-world mathematical thinking."
+            1: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 50,
+                    "result_max": 60,
+                    "focus": "Multi-digit add/subtract with regrouping (≤50, ≤60)",
+                    "examples": "34+27=61, 56-18=38, 45+12=57"
+                },
+                "Explorer": {
+                    "operations": ["multiplication"],
+                    "factors_min": 6,
+                    "factors_max": 9,
+                    "product_max": 81,
+                    "focus": "Multiplication tables 6-9 (6≤factors≤9, ≤81)",
+                    "examples": "6×7=42, 8×9=72, 7×8=56"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication"],
+                    "operand_max": 50,
+                    "result_max": 60,
+                    "focus": "Comparison with computed results (≤50, ≤60)",
+                    "examples": "3×9 > 28, 45-8=37"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 30,
+                    "result_max": 60,
+                    "focus": "Multi-operation integration (operands≤30, ≤60)",
+                    "examples": "(5×6)-10=20, (3×9)+12=39"
+                }
+            },
+            2: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 70,
+                    "result_max": 80,
+                    "focus": "Add/subtract within 80 range (≤70, ≤80)",
+                    "examples": "64+13=77, 75-19=56, 55+20=75"
+                },
+                "Explorer": {
+                    "operations": ["addition", "multiplication"],
+                    "factors_max": 10,
+                    "product_max": 80,
+                    "focus": "Multiplication with addition comparisons (factors≤10)",
+                    "examples": "8×6 > 50, 9×7 < 70"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 30,
+                    "result_max": 80,
+                    "focus": "Three-operation with BODMAS (≤30, ≤80)",
+                    "examples": "(9×4)-16+8=28, (7×5)-10=25"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication"],
+                    "operand_max": 15,
+                    "result_max": 80,
+                    "focus": "Estimation and multi-step (operands≤15)",
+                    "examples": "(5×6)+8=38, (8×9)+5=77"
+                }
+            },
+            3: {
+                "Starter": {
+                    "operations": ["addition", "subtraction"],
+                    "operand_max": 90,
+                    "result_max": 100,
+                    "focus": "Add/subtract near 100 with regrouping (≤90, ≤100)",
+                    "examples": "58+37=95, 94-28=66, 75+18=93"
+                },
+                "Explorer": {
+                    "operations": ["multiplication"],
+                    "multiplicand_max": 20,
+                    "multiplier_max": 10,
+                    "product_max": 100,
+                    "focus": "Two-digit × one-digit (multiplicand≤20, multiplier≤10)",
+                    "examples": "12×8=96, 9×9=81, 15×6=90"
+                },
+                "Solver": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 20,
+                    "result_max": 100,
+                    "focus": "Mixed operations with BODMAS (operands≤20, ≤100)",
+                    "examples": "(7×8)-24=32, 9×5+15=60"
+                },
+                "Champion": {
+                    "operations": ["addition", "subtraction", "multiplication", "brackets"],
+                    "operand_max": 20,
+                    "result_approx": 100,
+                    "focus": "Multi-step targeting ≈100 (operands≤20)",
+                    "examples": "(6×9)+(8×6)=102, (9×8)+25=97"
+                }
+            }
         }
     }
 
+    # Use the curriculum spec from CurriculumHelper (already retrieved above)
+
     contexts = grade_contexts.get(grade, grade_contexts[1])
-    guidance = difficulty_guidance.get(performance_level, difficulty_guidance[1]).get(sublevel, "")
 
     prompt = f"""You are an expert math educator creating an engaging, educational question for a Grade {grade} student.
 
@@ -56,8 +348,15 @@ STUDENT PROFILE:
 - Performance Level: {performance_level} (1=Beginning, 2=Intermediate, 3=Advanced)
 - Sublevel: {sublevel}
 
-DIFFICULTY GUIDANCE:
-{guidance}
+CURRICULUM SPECIFICATIONS:
+- Focus: {spec.get('focus', 'Building mathematical skills')}
+- Operations: {', '.join(spec.get('operations', ['addition']))}
+- Operand Range: {spec.get('operand_min', 0)} to {spec.get('operand_max', 20)}
+- Result Range: {spec.get('result_min', 0)} to {spec.get('result_max', 20)}
+- Examples: {spec.get('examples', 'N/A')}
+
+REQUIREMENTS FOR THIS LEVEL:
+{spec.get('focus', 'Create an age-appropriate mathematical question.')}
 
 CREATIVE REQUIREMENTS:
 1. Use relatable contexts: {', '.join(contexts[:4])} (or similar age-appropriate items)
