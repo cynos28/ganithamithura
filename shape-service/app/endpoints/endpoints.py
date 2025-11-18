@@ -6,7 +6,7 @@ from app.models.model import UserCreate
 from app.controllers.shapes_controller import ShapesController
 from app.services.auth_service import get_current_user
 from app.controllers.game_controller import GameController
-
+from app.models.model import UserCreate, GameAnswer
 
 
 router = APIRouter()
@@ -40,4 +40,8 @@ async def get_image_by_id(image_id: str):
 @router.get("/game/start")
 async def start_game(user: dict = Depends(get_current_user)):
     return await game_controller.start_game(user)
+
+@router.post("/game/check-answers")
+async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_current_user)):
+    return await game_controller.check_answers(game_answer, user)
 
