@@ -25,6 +25,8 @@ class AIQuestionGenerator:
     TEMPERATURE = 0.7
     MAX_TOKENS = 200
     _client = None
+    _recent_questions = []
+    _max_recent = 10
 
     @staticmethod
     def _get_client():
@@ -40,6 +42,7 @@ class AIQuestionGenerator:
     def generate_question(grade: int, level: int, sublevel: str) -> Dict:
         """
         Generate a curriculum-aligned question using AI.
+        Prevents duplicate questions from being generated.
 
         Args:
             grade: Student grade (1, 2, or 3)
@@ -56,32 +59,45 @@ class AIQuestionGenerator:
         # Get prompt from prompts module
         prompt = get_ai_question_generation_prompt(grade, sublevel, curriculum_info)
 
-        try:
-            client = AIQuestionGenerator._get_client()
-            response = client.chat.completions.create(
-                model=AIQuestionGenerator.MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=AIQuestionGenerator.TEMPERATURE,
-                max_tokens=AIQuestionGenerator.MAX_TOKENS
-            )
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            try:
+                client = AIQuestionGenerator._get_client()
+                response = client.chat.completions.create(
+                    model=AIQuestionGenerator.MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=AIQuestionGenerator.TEMPERATURE,
+                    max_tokens=AIQuestionGenerator.MAX_TOKENS
+                )
 
-            response_text = response.choices[0].message.content.strip()
-            question_data = json.loads(response_text)
+                response_text = response.choices[0].message.content.strip()
+                question_data = json.loads(response_text)
 
-            # Validate response
-            if AIQuestionGenerator._validate_response(question_data):
-                question_data['answer'] = int(question_data['answer'])
-                return question_data
-            else:
-                print("⚠️ Invalid response format from AI")
+                # Validate response
+                if AIQuestionGenerator._validate_response(question_data):
+                    question_data['answer'] = int(question_data['answer'])
+
+                    # Check if question is duplicate
+                    if not AIQuestionGenerator._is_duplicate(question_data):
+                        AIQuestionGenerator._add_recent_question(question_data)
+                        return question_data
+                    else:
+                        if attempt < max_attempts - 1:
+                            print("⚠️ Duplicate question, regenerating...")
+                            continue
+                else:
+                    print("⚠️ Invalid response format from AI")
+                    return AIQuestionGenerator.fallback_question()
+
+            except json.JSONDecodeError:
+                print("⚠️ Could not parse AI response")
+                return AIQuestionGenerator.fallback_question()
+            except Exception as e:
+                print(f"⚠️ AI generation error: {e}")
                 return AIQuestionGenerator.fallback_question()
 
-        except json.JSONDecodeError:
-            print("⚠️ Could not parse AI response")
-            return AIQuestionGenerator.fallback_question()
-        except Exception as e:
-            print(f"⚠️ AI generation error: {e}")
-            return AIQuestionGenerator.fallback_question()
+        # If we exhausted attempts, return fallback
+        return AIQuestionGenerator.fallback_question()
 
     @staticmethod
     def _validate_response(question_data: Dict) -> bool:
@@ -90,10 +106,40 @@ class AIQuestionGenerator:
         return all(key in question_data for key in required_keys)
 
     @staticmethod
+    def _is_duplicate(question_data: Dict) -> bool:
+        """
+        Check if question is a duplicate of recent questions.
+
+        Args:
+            question_data: Question dictionary to check
+
+        Returns:
+            True if duplicate, False otherwise
+        """
+        expression = question_data.get('expression', '').strip()
+        for recent in AIQuestionGenerator._recent_questions:
+            if recent.get('expression', '').strip() == expression:
+                return True
+        return False
+
+    @staticmethod
+    def _add_recent_question(question_data: Dict):
+        """
+        Add question to recent questions list.
+
+        Args:
+            question_data: Question dictionary to add
+        """
+        AIQuestionGenerator._recent_questions.append(question_data)
+        # Keep only the most recent questions
+        if len(AIQuestionGenerator._recent_questions) > AIQuestionGenerator._max_recent:
+            AIQuestionGenerator._recent_questions.pop(0)
+
+    @staticmethod
     def fallback_question() -> Dict:
         """Return a fallback question if AI generation fails."""
         return {
-            'question': 'What is 2 plus 2?',
+            'question': '2 plus 2',
             'expression': '2 + 2',
             'answer': 4
         }
