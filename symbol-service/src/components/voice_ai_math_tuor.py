@@ -21,12 +21,13 @@ import subprocess
 import threading
 from typing import Optional, Dict
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from core.base_math_tutor import BaseMathTutor
-from core.curriculum_helper import CurriculumHelper
+from core.ai_question_generator import AIQuestionGenerator
 from config.voice_microphone_config import VoiceConfig, MicrophoneConfig
 
 # Load environment variables
@@ -255,128 +256,6 @@ class SimpleVoiceMathTutor(BaseMathTutor):
         print(f"❌ No number found in '{speech_lower}'")
         return None
 
-    def generate_question(self) -> Dict:
-        """Generate curriculum-aligned question."""
-        spec = CurriculumHelper.get_spec(
-            self.student_profile.grade,
-            self.student_profile.level,
-            self.student_profile.sublevel
-        )
-
-        if not spec:
-            # Fallback to simple addition
-            return {'question': '1 plus 1', 'expression': '1 + 1', 'answer': 2, 'operation': '+'}
-
-        operations = spec.get('operations', ['addition'])
-        operation = random.choice(operations)
-
-        # Handle different operation types
-        if operation == 'addition':
-            return self._generate_addition(spec)
-        elif operation == 'three_addend':
-            return self._generate_three_addend(spec)
-        elif operation == 'subtraction':
-            return self._generate_subtraction(spec)
-        elif operation == 'multiplication':
-            return self._generate_multiplication(spec)
-        elif operation == 'missing_addend':
-            return self._generate_missing_addend(spec)
-        else:
-            # Fallback to addition
-            return self._generate_addition(spec)
-
-    def _generate_addition(self, spec: Dict) -> Dict:
-        """Generate two-addend addition question."""
-        operand_min = spec.get('operand_min', 0)
-        operand_max = spec.get('operand_max', 10)
-        result_max = spec.get('result_max', 20)
-
-        a = random.randint(operand_min, operand_max)
-        b = random.randint(operand_min, operand_max)
-        while a + b > result_max:
-            b = random.randint(operand_min, operand_max)
-
-        answer = a + b
-        return {
-            'question': f"{a} plus {b}",
-            'expression': f"{a} + {b}",
-            'answer': answer,
-            'operation': '+'
-        }
-
-    def _generate_three_addend(self, spec: Dict) -> Dict:
-        """Generate three-addend addition question."""
-        operand_min = spec.get('operand_min', 1)
-        operand_max = spec.get('operand_max', 10)
-        result_max = spec.get('result_max', 20)
-
-        a = random.randint(operand_min, operand_max)
-        b = random.randint(operand_min, operand_max)
-        c = random.randint(operand_min, operand_max)
-        while a + b + c > result_max:
-            c = random.randint(operand_min, operand_max)
-
-        answer = a + b + c
-        return {
-            'question': f"{a} plus {b} plus {c}",
-            'expression': f"{a} + {b} + {c}",
-            'answer': answer,
-            'operation': '+'
-        }
-
-    def _generate_subtraction(self, spec: Dict) -> Dict:
-        """Generate subtraction question."""
-        operand_max = spec.get('operand_max', 20)
-        result_max = spec.get('result_max', 20)
-
-        b = random.randint(0, min(operand_max // 2, 10))
-        a = random.randint(b, operand_max)
-        while a - b > result_max:
-            a = random.randint(b, operand_max)
-
-        answer = a - b
-        return {
-            'question': f"{a} minus {b}",
-            'expression': f"{a} - {b}",
-            'answer': answer,
-            'operation': '-'
-        }
-
-    def _generate_multiplication(self, spec: Dict) -> Dict:
-        """Generate multiplication question."""
-        factors_min = spec.get('factors_min', 2)
-        factors_max = spec.get('factors_max', 10)
-        product_max = spec.get('product_max', 100)
-
-        a = random.randint(factors_min, factors_max)
-        b = random.randint(factors_min, factors_max)
-        while a * b > product_max:
-            b = random.randint(factors_min, factors_max)
-
-        answer = a * b
-        return {
-            'question': f"{a} times {b}",
-            'expression': f"{a} × {b}",
-            'answer': answer,
-            'operation': '×'
-        }
-
-    def _generate_missing_addend(self, spec: Dict) -> Dict:
-        """Generate missing addend question (□ + a = b)."""
-        operand_min = spec.get('operand_min', 0)
-        operand_max = spec.get('operand_max', 10)
-        result_max = spec.get('result_max', 20)
-
-        b = random.randint(5, result_max)
-        a = random.randint(operand_min, min(operand_max, b))
-        unknown = b - a
-
-        return {
-            'question': f"blank plus {a} equals {b}",
-            'expression': f"□ + {a} = {b}",
-            'answer': unknown,
-            'operation': 'missing_addend'
-        }
 
     def ask_question(self, question_data: Dict) -> bool:
         """Ask a question and get the answer."""
@@ -452,7 +331,12 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         try:
             while True:
-                question_data = self.generate_question()
+                # Generate AI question based on student profile
+                question_data = AIQuestionGenerator.generate_question(
+                    self.student_profile.grade,
+                    self.student_profile.level,
+                    self.student_profile.sublevel
+                )
                 self.stats['total_questions'] += 1
 
                 result = self.ask_question(question_data)
