@@ -25,9 +25,9 @@ from dotenv import load_dotenv
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from base_math_tutor import BaseMathTutor
-from curriculum_helper import CurriculumHelper
-from prompts.math_question_prompts import get_question_generation_prompt
+from core.base_math_tutor import BaseMathTutor
+from core.curriculum_helper import CurriculumHelper
+from config.voice_microphone_config import VoiceConfig, MicrophoneConfig
 
 # Load environment variables
 load_dotenv()
@@ -63,47 +63,30 @@ class SimpleVoiceMathTutor(BaseMathTutor):
         """Setup voice system using macOS 'say' command or text-only."""
         print("🔊 Setting up voice system...")
 
-        try:
-            # Check if 'say' command exists
-            result = subprocess.run(['which', 'say'],
-                                  capture_output=True,
-                                  timeout=2,
-                                  text=True)
-            if result.returncode != 0:
-                raise Exception("'say' command not found")
+        # Detect the best available voice method
+        self.voice_method = VoiceConfig.detect_voice_method()
 
-            self.voice_method = 'macos_say'
+        if self.voice_method == 'macos_say':
             print("✅ Using macOS 'say' command for voice")
 
             # Get available voices
             try:
-                result = subprocess.run(['say', '-v', '?'],
-                                      capture_output=True,
-                                      text=True,
-                                      timeout=5)
-                voices = result.stdout.strip().split('\n')
+                voices = VoiceConfig.get_available_voices()
                 print(f"🔊 Found {len(voices)} macOS voices")
 
                 # Select preferred voice
-                preferred_names = ['samantha', 'alex', 'allison', 'ava', 'karen', 'susan', 'victoria']
-                for voice_line in voices:
-                    voice_name = voice_line.split()[0] if voice_line else ""
-                    if any(name in voice_name.lower() for name in preferred_names):
-                        self.selected_voice = voice_name
-                        print(f"✅ Selected voice: {voice_name}")
-                        break
+                self.selected_voice = VoiceConfig.select_preferred_voice(voices)
 
-                if not self.selected_voice:
+                if self.selected_voice:
+                    print(f"✅ Selected voice: {self.selected_voice}")
+                else:
                     print("✅ Using system default voice")
 
             except subprocess.TimeoutExpired:
                 print("⚠️ Voice list retrieval timed out - using system default")
             except Exception as e:
                 print(f"⚠️ Could not get voice list: {e} - using system default")
-
-        except Exception as e:
-            print(f"⚠️ macOS 'say' not available: {e}")
-            self.voice_method = 'text_only'
+        else:
             print("📖 Using text-only mode")
 
     def speak(self, text: str):
@@ -115,7 +98,7 @@ class SimpleVoiceMathTutor(BaseMathTutor):
                 cmd = ['say']
                 if self.selected_voice:
                     cmd.extend(['-v', self.selected_voice])
-                cmd.extend(['-r', '120'])  # Slow speech rate
+                cmd.extend(['-r', str(VoiceConfig.SPEECH_RATE)])
                 cmd.append(text)
 
                 process = subprocess.Popen(
@@ -124,7 +107,7 @@ class SimpleVoiceMathTutor(BaseMathTutor):
                     stderr=subprocess.DEVNULL
                 )
                 try:
-                    process.wait(timeout=15)
+                    process.wait(timeout=VoiceConfig.SPEAK_TIMEOUT)
                     print("✅ Speech completed")
                 except subprocess.TimeoutExpired:
                     print("⚠️ Speech timeout - moving forward")
@@ -146,13 +129,9 @@ class SimpleVoiceMathTutor(BaseMathTutor):
         try:
             # List available microphones
             mic_list = sr.Microphone.list_microphone_names()
-            best_mic = None
 
-            # Prefer built-in MacBook microphone
-            for i, name in enumerate(mic_list):
-                if "MacBook" in name and "Microphone" in name:
-                    best_mic = i
-                    break
+            # Select the best microphone device
+            best_mic = MicrophoneConfig.select_microphone_device(mic_list)
 
             if best_mic is not None:
                 self.microphone = sr.Microphone(device_index=best_mic)
@@ -161,15 +140,16 @@ class SimpleVoiceMathTutor(BaseMathTutor):
                 self.microphone = sr.Microphone()
                 print("✅ Using default microphone")
 
-            # Configure recognizer
-            self.recognizer.energy_threshold = 300
-            self.recognizer.dynamic_energy_threshold = True
-            self.recognizer.pause_threshold = 1.0
+            # Configure recognizer with settings from config
+            settings = MicrophoneConfig.get_recognizer_settings()
+            self.recognizer.energy_threshold = settings['energy_threshold']
+            self.recognizer.dynamic_energy_threshold = settings['dynamic_energy_threshold']
+            self.recognizer.pause_threshold = settings['pause_threshold']
 
             # Calibrate microphone
-            print("📊 Calibrating microphone (stay quiet for 3 seconds)...")
+            print(f"📊 Calibrating microphone (stay quiet for {MicrophoneConfig.CALIBRATION_DURATION} seconds)...")
             with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=3)
+                self.recognizer.adjust_for_ambient_noise(source, duration=MicrophoneConfig.CALIBRATION_DURATION)
 
             print(f"✅ Calibrated! Energy: {self.recognizer.energy_threshold:.1f}")
 
@@ -177,14 +157,17 @@ class SimpleVoiceMathTutor(BaseMathTutor):
             print(f"⚠️ Microphone setup error: {e}")
             self.microphone = sr.Microphone()
 
-    def listen_for_answer(self, timeout: int = 15) -> Optional[str]:
+    def listen_for_answer(self, timeout: int = None) -> Optional[str]:
         """Listen for user's answer."""
+        if timeout is None:
+            timeout = MicrophoneConfig.LISTEN_TIMEOUT
+
         try:
             print("🎤 Listening for your answer... (speak clearly)")
 
             with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
-                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=8)
+                self.recognizer.adjust_for_ambient_noise(source, duration=MicrophoneConfig.LISTEN_AMBIENT_DURATION)
+                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=MicrophoneConfig.PHRASE_TIME_LIMIT)
 
             print("🔄 Processing your speech...")
 
@@ -201,7 +184,7 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
                 thread = threading.Thread(target=recognize, daemon=True)
                 thread.start()
-                thread.join(timeout=10)  # 10 second timeout for Google API
+                thread.join(timeout=MicrophoneConfig.GOOGLE_API_TIMEOUT)
 
                 if error[0]:
                     if isinstance(error[0], sr.UnknownValueError):
