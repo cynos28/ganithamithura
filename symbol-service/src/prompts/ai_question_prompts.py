@@ -8,13 +8,42 @@ Uses CurriculumHelper specifications to ensure grade and level-specific content.
 import json
 
 
+def _convert_operations_to_names(operations: list) -> list:
+    """
+    Convert operation symbols from curriculum_spec.py to readable names.
+
+    Args:
+        operations: List of operations (e.g., ['+', '-', '×'])
+
+    Returns:
+        List of operation names (e.g., ['addition', 'subtraction', 'multiplication'])
+    """
+    symbol_to_name = {
+        '+': 'addition',
+        '-': 'subtraction',
+        '×': 'multiplication',
+        'x': 'multiplication',
+        '*': 'multiplication',
+        'unknown_addend': 'missing_addend',
+        'brackets': 'brackets',
+    }
+
+    converted = []
+    for op in operations:
+        name = symbol_to_name.get(op, op)
+        if name not in converted:
+            converted.append(name)
+
+    return converted if converted else ['addition']
+
+
 def _get_grade_name(grade: int) -> str:
     """Get grade name for prompt."""
     grade_names = {1: "Grade 1", 2: "Grade 2", 3: "Grade 3"}
     return grade_names.get(grade, "Grade 1")
 
 
-def get_ai_question_generation_prompt(grade: int, level: int, sublevel: str, curriculum_info: str) -> str:
+def get_ai_question_generation_prompt(grade: int, level: int, sublevel: str, curriculum_info: str, forced_operation: str = None) -> str:
     """
     Build the prompt for OpenAI to generate a math question.
     Uses curriculum specifications from CurriculumHelper to generate grade and level-specific questions.
@@ -24,6 +53,7 @@ def get_ai_question_generation_prompt(grade: int, level: int, sublevel: str, cur
         level: Performance level (1, 2, or 3)
         sublevel: Sublevel (Starter, Explorer, Solver, Champion)
         curriculum_info: JSON string with curriculum specifications from CurriculumHelper.get_spec()
+        forced_operation: Optional operation to force (for variety in non-Champion levels)
 
     Returns:
         Formatted prompt string for OpenAI
@@ -35,12 +65,12 @@ def get_ai_question_generation_prompt(grade: int, level: int, sublevel: str, cur
         curriculum_spec = {}
 
     # Build detailed prompt based on curriculum spec
-    detailed_prompt = _build_detailed_prompt(grade, level, sublevel, curriculum_spec)
+    detailed_prompt = _build_detailed_prompt(grade, level, sublevel, curriculum_spec, forced_operation)
 
     return detailed_prompt
 
 
-def _build_detailed_prompt(grade: int, level: int, sublevel: str, spec: dict) -> str:
+def _build_detailed_prompt(grade: int, level: int, sublevel: str, spec: dict, forced_operation: str = None) -> str:
     """
     Build detailed prompt using curriculum specification details.
 
@@ -49,6 +79,7 @@ def _build_detailed_prompt(grade: int, level: int, sublevel: str, spec: dict) ->
         level: Performance level (1, 2, or 3)
         sublevel: Student sublevel (Starter, Explorer, Solver, Champion)
         spec: Curriculum specification dictionary from CurriculumHelper
+        forced_operation: Optional operation to force for variety (for non-Champion levels)
 
     Returns:
         Formatted prompt string for OpenAI
@@ -60,6 +91,10 @@ RESPOND WITH ONLY THIS JSON (no other text):
 
     # Extract key specifications
     operations = spec.get('operations', ['addition'])
+
+    # Convert operation symbols to names if needed (from curriculum_spec.py)
+    operations = _convert_operations_to_names(operations)
+
     operand_min = spec.get('operand_min', 0)
     operand_max = spec.get('operand_max', 10)
     result_min = spec.get('result_min', 0)
@@ -77,30 +112,110 @@ RESPOND WITH ONLY THIS JSON (no other text):
     if not simple_operations:
         simple_operations = ['addition']
 
+    # Build focused examples based on operations and focus
+    examples = _build_examples_for_focus(grade, level, sublevel, simple_operations)
+
+    # Determine operation strategy based on sublevel
+    is_champion = sublevel == 'Champion'
+
+    # Build operation instructions more explicitly
+    if forced_operation and not is_champion:
+        # For non-champion with forced operation: be VERY explicit
+        operation_rule = f"MUST use the '{forced_operation}' operation ONLY. Create a question with exactly one {forced_operation} operation. Example: if {forced_operation}='multiplication' then use '5 × 3', if 'addition' use '12 + 8', if 'subtraction' use '20 - 7'."
+    elif len(simple_operations) > 1:
+        if is_champion:
+            operation_rule = f"MUST use multiple operations in a SINGLE question. Mix and combine {', '.join(simple_operations)} (e.g., '(3 × 4) + 8 = 20'). NO single-operation questions."
+        else:
+            # For non-champion: explicitly list operations
+            operation_rule = f"Generate question using EXACTLY ONE of these operations: {' OR '.join(simple_operations)}"
+    else:
+        operation_rule = f"Use only {simple_operations[0]} operation."
+
     return f"""CURRICULUM: Grade {grade}, Level {level}, {sublevel}
+LEARNING FOCUS: {focus if focus else 'General math practice'}
 Operands: {operand_min}-{operand_max}
 Results: {result_min}-{result_max}
-Allowed operations: {', '.join(simple_operations)}
+Allowed Operations: {', '.join(simple_operations)}
 
-Generate ONE child-friendly math question:
+Generate ONE child-friendly math question aligned with the LEARNING FOCUS:
 
-RULES:
-1. Create a SHORT, FUN, relatable scenario for a {_get_grade_name(grade)} student
-2. Use simple words children understand
-3. Include a relatable context (toys, animals, fruits, friends, etc.)
-4. Question format: "[Scenario] How many [item]?"
-5. Keep operands between {operand_min}-{operand_max}
-6. Keep result between {result_min}-{result_max}
-7. Use ONLY these operations: {', '.join(simple_operations)}
+OPERATION REQUIREMENT (MANDATORY):
+{operation_rule}
+
+CRITICAL RULES:
+1. MUST focus on: {focus if focus else 'varied math operations'}
+2. Create a SHORT, FUN, relatable scenario for a {_get_grade_name(grade)} student
+3. Use simple words children understand
+4. Include relatable context (toys, animals, fruits, school, friends, etc.)
+5. Question format: "[Scenario] How many/much [item]?"
+6. Keep operands between {operand_min}-{operand_max}
+7. Keep result between {result_min}-{result_max}
 8. NO "What is", NO "Calculate", NO complex language
+9. EXTREMELY IMPORTANT: Make each question COMPLETELY DIFFERENT
+   - Different scenario/story context (NOT boxes, baskets, or packs - use animals, toys, food, people, etc.)
+   - Different numbers/operands
+   - NEVER repeat similar problem types
+10. DO NOT create similar questions - be extremely creative
 
-Examples for Grade {grade}:
-- "Sarah has 8 apples. She gets 5 more. How many apples does she have?"
-- "There are 12 toys. 4 toys are red. How many are not red?"
-- "Each box has 6 candies. Tom has 3 boxes. How many candies total?"
+SPECIFIC EXAMPLES for {_get_grade_name(grade)} {sublevel}:
+{examples}
 
 RESPOND WITH ONLY THIS JSON (no extra text):
-{{"question": "child-friendly story with math", "expression": "A op B", "answer": number}}"""
+{{"question": "child-friendly story with math", "expression": "A op B" or "A op B op C", "answer": number}}"""
+
+
+def _build_examples_for_focus(grade: int, level: int, sublevel: str, operations: list) -> str:
+    """
+    Build curriculum-specific examples based on grade, level, and focus.
+
+    Args:
+        grade: Student grade (1, 2, or 3)
+        level: Performance level (1, 2, or 3)
+        sublevel: Student sublevel
+        operations: List of allowed operations
+
+    Returns:
+        Formatted examples string
+    """
+    # Examples for different grades and sublevels
+    if grade == 1:
+        if sublevel == 'Starter':
+            return '- "Maria has 3 apples. She gets 2 more. How many apples does Maria have?" (3 + 2 = 5)'
+        elif sublevel == 'Explorer':
+            return '- "Emma has 5 toys and 5 more toys. How many toys does Emma have?" (5 + 5 = 10)'
+        elif sublevel == 'Solver':
+            return '- "Leo has 7 stickers. He gets 4 more. How many stickers does Leo have?" (7 + 4 = 11)'
+        elif sublevel == 'Champion':
+            return '- "Zara has 8 pencils. Her friend gives her 6 more. How many pencils does Zara have?" (8 + 6 = 14)'
+
+    elif grade == 2:
+        if sublevel == 'Starter':
+            return '- "Alex has 12 marbles. He gives 5 to his friend. How many marbles does Alex have left?" (12 - 5 = 7)\n- "There are 6 flowers. Each flower has 3 petals. How many petals total?" (6 × 3 = 18)'
+        elif sublevel == 'Explorer':
+            return '- "Sam has 4 groups of 6 stickers. How many stickers total?" (4 × 6 = 24)'
+        elif sublevel == 'Solver':
+            return '- "Tom has 15 toys. He gives away 6 and buys 4 more. How many does he have?" (15 - 6 + 4 = 13)\n- "There are 3 boxes. Each box has 5 pencils. How many pencils total?" (3 × 5 = 15)'
+        elif sublevel == 'Champion':
+            return '- "Lisa has 20 candies. She eats 8 and gets 12 more. How many does she have?" (20 - 8 + 12 = 24)\n- "(3 × 4) + 8 = 20"'
+
+    elif grade == 3:
+        if sublevel == 'Starter':
+            return '- "Jordan has 35 stickers. He gives 18 to a friend. How many does he have left?" (35 - 18 = 17)\n- "There are 7 groups of 8 apples. How many apples total?" (7 × 8 = 56)'
+        elif sublevel == 'Explorer':
+            return '- "Mia has 15 toy cars. She gets 12 more. How many does she have?" (15 + 12 = 27)\n- "Each student has 9 crayons. There are 8 students. How many crayons total?" (9 × 8 = 72)'
+        elif sublevel == 'Solver':
+            return '''- "Noah had 20 candies. He ate 5 and then got 8 more. How many candies does he have?" (20 - 5 + 8 = 23)
+- "Each student planted 6 trees. There are 3 students. How many trees total?" (6 × 3 = 18)
+- "There were 30 pencils. Tom lost 12. How many are left?" (30 - 12 = 18)
+- "(6 × 3) + 7 = 25"
+- "(15 - 4) + (2 × 3) = 17"
+- "A store had 25 books. They sold 8 and got 5 new ones. How many books now?" (25 - 8 + 5 = 22)
+- "Emma made 4 groups of 9 cookies. How many cookies?" (4 × 9 = 36)'''
+        elif sublevel == 'Champion':
+            return '- "Lily has 50 stickers. She gives away 15 and then buys 2 packs of 12. How many stickers does she have?" (50 - 15 + (2 × 12) = 59)\n- "(8 × 7) - 16 + 5 = 37"\n- "Two students have 12 marbles each. Another student has 8. How many marbles total?" ((2 × 12) + 8 = 32)'
+
+    # Default fallback
+    return '- "Sarah has 5 items. She gets 3 more. How many total?" (5 + 3 = 8)'
 
 
 def _get_example_for_operations(operations: list, operand_min: int, operand_max: int) -> str:
