@@ -141,10 +141,10 @@ CURRICULUM = {
             },
             'Explorer': {
                 'description': 'Multiplication as repeated addition',
-                'operations': ['×'],
+                'operations': ['×','+', '-'],
                 'factors_max': 5,
                 'product_max': 30,
-                'examples': ['3 × 4 = 12', '5 × 2 = 10'],
+                'examples': ['3 × 4 = 12', '5 - 2 = 3', '4 + 4 = 8'],
                 'focus': 'Equal groups, conceptual understanding'
             },
             'Solver': {
@@ -157,7 +157,7 @@ CURRICULUM = {
             },
             'Champion': {
                 'description': 'Two-step equations combining operations',
-                'operations': ['+', '-', '×'],
+                'operations': ['+', '-', '×','>', '<', '='],
                 'operand_max': 20,
                 'result_max': 30,
                 'examples': ['(3 × 4) + 8 = 20', '18 − (2 × 3) = 12'],
@@ -175,7 +175,7 @@ CURRICULUM = {
             },
             'Explorer': {
                 'description': 'Multiplication tables 2-10',
-                'operations': ['×'],
+                'operations': ['×','+', '-'],
                 'factors_max': 10,
                 'product_max': 50,
                 'examples': ['6 × 5 = 30', '10 × 4 = 40'],
@@ -209,7 +209,7 @@ CURRICULUM = {
             },
             'Explorer': {
                 'description': 'Multiplication table mastery (2-10)',
-                'operations': ['×'],
+                'operations': ['×','+', '-'],
                 'factors_max': 10,
                 'product_max': 100,
                 'examples': ['9 × 7 = 63', '8 × 9 = 72'],
@@ -246,7 +246,7 @@ CURRICULUM = {
             },
             'Explorer': {
                 'description': 'Multiplication tables 6-9',
-                'operations': ['×'],
+                'operations': ['×','+', '-'],
                 'factors_max': 9,
                 'factors_min': 6,
                 'product_max': 81,
@@ -315,7 +315,7 @@ CURRICULUM = {
             },
             'Explorer': {
                 'description': 'Two-digit × one-digit multiplication',
-                'operations': ['×'],
+                'operations': ['×','+', '-'],
                 'multiplicand_max': 20,
                 'multiplier_max': 10,
                 'product_max': 100,
