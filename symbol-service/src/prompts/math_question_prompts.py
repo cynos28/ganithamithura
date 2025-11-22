@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from components.curriculum_helper import CurriculumHelper
+from components.core.curriculum_helper import CurriculumHelper
 
 
 def get_question_generation_prompt(grade: int, performance_level: int, sublevel: str) -> str:
