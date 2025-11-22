@@ -223,12 +223,13 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         for attempt in range(max_attempts):
             if attempt == 0:
-                question_text = f"What is {question_data['question']}?"
+                # Just ask the question directly without "What is"
+                question_text = question_data['question']
                 print(f"\n❓ Question #{self.stats['total_questions']}: {question_text}")
                 print(f"   📝 {question_data['expression']} = ?")
                 self.speak(question_text)
             else:
-                retry_text = f"Try again. What is {question_data['question']}?"
+                retry_text = f"Try again. {question_data['question']}"
                 print(f"\n🔄 Attempt {attempt + 1}: {retry_text}")
                 self.speak(retry_text)
 
