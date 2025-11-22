@@ -52,12 +52,12 @@ class AIQuestionGenerator:
         Returns:
             Dictionary with 'question', 'expression', and 'answer' keys
         """
-        # Get curriculum spec for student profile
+        # Get curriculum spec for student profile (grade, level, sublevel)
         spec = CurriculumHelper.get_spec(grade, level, sublevel)
         curriculum_info = json.dumps(spec) if spec else "Basic arithmetic"
 
-        # Get prompt from prompts module
-        prompt = get_ai_question_generation_prompt(grade, sublevel, curriculum_info)
+        # Get prompt from prompts module with all profile info
+        prompt = get_ai_question_generation_prompt(grade, level, sublevel, curriculum_info)
 
         max_attempts = 3
         for attempt in range(max_attempts):
