@@ -15,19 +15,18 @@ import speech_recognition as sr
 import os
 import sys
 import random
-import re
 import time
 import subprocess
 import threading
 from typing import Optional, Dict
 from dotenv import load_dotenv
-from openai import OpenAI
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from core.base_math_tutor import BaseMathTutor
 from core.ai_question_generator import AIQuestionGenerator
+from core.number_extractor import NumberExtractor
 from config.voice_microphone_config import VoiceConfig, MicrophoneConfig
 
 # Load environment variables
@@ -214,47 +213,8 @@ class SimpleVoiceMathTutor(BaseMathTutor):
             return None
 
     def extract_number(self, speech: str) -> Optional[int]:
-        """Extract number from speech with phonetic matching."""
-        if not speech:
-            return None
-
-        speech_lower = speech.lower().strip()
-        print(f"🔍 Analyzing: '{speech_lower}'")
-
-        # Comprehensive number mapping
-        number_words = {
-            'zero': 0, 'oh': 0,
-            'one': 1, 'won': 1, 'wan': 1,
-            'two': 2, 'to': 2, 'too': 2, 'tu': 2,
-            'three': 3, 'tree': 3, 'free': 3,
-            'four': 4, 'for': 4, 'fore': 4, 'floor': 4,
-            'five': 5, 'hive': 5, 'dive': 5,
-            'six': 6, 'sex': 6, 'sicks': 6, 'sick': 6,
-            'seven': 7, 'heaven': 7,
-            'eight': 8, 'ate': 8, 'weight': 8, 'gate': 8,
-            'nine': 9, 'wine': 9, 'nein': 9, 'mine': 9,
-            'ten': 10, 'pen': 10, 'hen': 10,
-            'eleven': 11, 'twelve': 12, 'thirteen': 13,
-            'fourteen': 14, 'fifteen': 15, 'sixteen': 16,
-            'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
-            'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50
-        }
-
-        # Direct word match
-        for word, value in number_words.items():
-            if word in speech_lower:
-                print(f"✅ Found '{word}' = {value}")
-                return value
-
-        # Digit search
-        digit_match = re.search(r'\b(\d+)\b', speech)
-        if digit_match:
-            number = int(digit_match.group(1))
-            print(f"✅ Found digit: {number}")
-            return number
-
-        print(f"❌ No number found in '{speech_lower}'")
-        return None
+        """Extract number from speech using NumberExtractor."""
+        return NumberExtractor.extract(speech)
 
 
     def ask_question(self, question_data: Dict) -> bool:
