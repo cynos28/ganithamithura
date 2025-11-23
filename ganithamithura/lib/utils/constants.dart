@@ -81,21 +81,47 @@ class NumberWords {
 }
 
 class AppColors {
-  // Module Colors
-  static const int measurementColor = 0xFF4CAF50; // Green
-  static const int numberColor = 0xFF2196F3; // Blue
-  static const int shapeColor = 0xFFFF9800; // Orange
-  static const int symbolColor = 0xFF9C27B0; // Purple
+  // Module Colors (from Figma design)
+  static const int measurementColor = 0xFFFFD1C2; // Orange-light background
+  static const int measurementBorder = 0xFFFFD1C2; // Orange-light border
+  static const int numberColor = 0xFFA6ADED; // Purple-light
+  static const int numberBorder = 0xFFA6ADED; // Purple-light border
+  static const int shapeColor = 0xFFBADFDB; // Green-light
+  static const int shapeBorder = 0xFFBADFDB; // Green-light border
+  static const int symbolColor = 0xFFFFA4A4; // Rose-light
+  static const int symbolBorder = 0xFFFFA4A4; // Rose-light border
   
-  // Status Colors
+  // Text Colors
+  static const int textBlack = 0xFF273444;
+  static const int subText1 = 0xFF334156;
+  static const int subText2 = 0xFF49596E;
+  
+  // Background Colors
+  static const int white = 0xFFFFFFFF;
+  static const int backgroundColor = 0xFFFFFFFF;
+  
+  // Activity Card Colors
+  static const int timeCardBg = 0xFFEEF1FF; // rgba(238,241,255,0.64)
+  static const int completedCardBg = 0xFFECFAE5; // rgba(236,250,229,0.64)
+  static const int progressBadgeBg = 0xFFF08787; // rgba(240,135,135,0.16)
+  static const int progressBadgeText = 0xFFF08787;
+  
+  // Navigation & UI
+  static const int navActiveColor = 0xFF8CA9FF;
+  static const int navInactiveColor = 0x7F49596E; // rgba(73,89,110,0.5)
+  static const int dailyTipBg = 0xFF8CA9FF;
+  
+  // Border Colors
+  static const int borderLight = 0x3D49596E; // rgba(73,89,110,0.24)
+  
+  // Status Colors (legacy)
   static const int successColor = 0xFF4CAF50;
   static const int errorColor = 0xFFF44336;
   static const int warningColor = 0xFFFFC107;
   static const int infoColor = 0xFF2196F3;
   
-  // UI Colors
+  // Legacy UI Colors
   static const int primaryColor = 0xFF6200EE;
   static const int secondaryColor = 0xFF03DAC6;
-  static const int backgroundColor = 0xFFF5F5F5;
   static const int disabledColor = 0xFFBDBDBD;
 }
