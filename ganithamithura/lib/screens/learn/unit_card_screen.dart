@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
+import 'package:ganithamithura/screens/units/units_list_screen.dart';
 
 class UnitCardScreen extends StatefulWidget {
   const UnitCardScreen({super.key});
@@ -71,7 +72,10 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
                       onTap: () {
-                        // Navigate to Length learning
+                        Get.to(() => const UnitsListScreen(
+                          grade: 3,
+                          topic: 'Length',
+                        ));
                       },
                     ),
                     _buildUnitCard(
@@ -82,7 +86,10 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
                       onTap: () {
-                        // Navigate to Area learning
+                        Get.to(() => const UnitsListScreen(
+                          grade: 3,
+                          topic: 'Area',
+                        ));
                       },
                     ),
                     _buildUnitCard(
@@ -93,7 +100,10 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
                       onTap: () {
-                        // Navigate to Capacity learning
+                        Get.to(() => const UnitsListScreen(
+                          grade: 3,
+                          topic: 'Capacity',
+                        ));
                       },
                     ),
                     _buildUnitCard(
@@ -104,7 +114,10 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
                       onTap: () {
-                        // Navigate to Weight learning
+                        Get.to(() => const UnitsListScreen(
+                          grade: 3,
+                          topic: 'Weight',
+                        ));
                       },
                     ),
                   ],
