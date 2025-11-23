@@ -103,6 +103,7 @@ class AppColors {
   // Background Colors
   static const int white = 0xFFFFFFFF;
   static const int backgroundColor = 0xFFFFFFFF;
+  static const int splashBackground = 0xFFF6F7FF; // Light purple-blue for splash screen
   
   // Activity Card Colors
   static const int timeCardBg = 0xFFEEF1FF; // rgba(238,241,255,0.64)
