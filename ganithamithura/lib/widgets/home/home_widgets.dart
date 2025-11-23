@@ -34,26 +34,27 @@ class ResourceCard extends StatelessWidget {
           border: Border.all(color: borderColor, width: 1.5),
           borderRadius: BorderRadius.circular(16),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Icon
             Container(
-              width: 46,
-              height: 46,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 color: borderColor.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                size: 28,
+                size: 26,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 8),
             // Title
             Text(
               title,
@@ -61,21 +62,23 @@ class ResourceCard extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Color(AppColors.textBlack),
-                height: 1.2,
+                height: 1.1,
               ),
             ),
             const SizedBox(height: 2),
             // Subtitle
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Color(AppColors.subText1),
-                height: 1.3,
+            Flexible(
+              child: Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Color(AppColors.subText1),
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -129,7 +132,7 @@ class TodayActivityCard extends StatelessWidget {
                   Text(
                     activityTitle,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.w600,
                       color: Color(AppColors.textBlack),
                       height: 1.2,
@@ -139,7 +142,7 @@ class TodayActivityCard extends StatelessWidget {
                   Text(
                     activitySubtitle,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(AppColors.subText1),
                       height: 1.3,
@@ -157,7 +160,7 @@ class TodayActivityCard extends StatelessWidget {
                 child: Text(
                   progressBadge,
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: Color(AppColors.progressBadgeText),
                     height: 1.2,
@@ -234,7 +237,7 @@ class _StatCard extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: Color(AppColors.subText1),
                   height: 1.2,
@@ -247,7 +250,7 @@ class _StatCard extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Color(AppColors.subText1),
               height: 1.2,
@@ -290,7 +293,7 @@ class LearningTipCard extends StatelessWidget {
           const Text(
             'Daily Tip 💡',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.w600,
               color: Colors.white,
               height: 1.2,
@@ -300,7 +303,7 @@ class LearningTipCard extends StatelessWidget {
           Text(
             tipText,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w400,
               fontStyle: FontStyle.italic,
               color: Colors.white,
@@ -410,7 +413,7 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isActive
                     ? const Color(AppColors.navActiveColor)
