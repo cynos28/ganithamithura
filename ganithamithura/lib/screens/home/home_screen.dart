@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Text(
                     'Resources',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(AppColors.textBlack),
                     ),
@@ -75,13 +75,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // Resource Cards Grid
                   _buildResourceGrid(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 32),
 
                   // Learning Tips Section
                   const Text(
                     'Learning Tips',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(AppColors.textBlack),
                     ),
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const Text(
           'Hi, Shehan👋',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.w600,
             color: Color(AppColors.textBlack),
           ),
@@ -130,14 +130,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const Icon(
               Icons.local_fire_department,
-              size: 12,
+              size: 14,
               color: Color(AppColors.subText2),
             ),
             const SizedBox(width: 4),
             const Text(
               '5 day streak',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w400,
                 color: Color(AppColors.subText2),
               ),
