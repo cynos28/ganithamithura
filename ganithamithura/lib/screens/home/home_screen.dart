@@ -4,6 +4,7 @@ import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
 import 'package:ganithamithura/screens/number/number_home_screen.dart';
 import 'package:ganithamithura/screens/measurements/measurement_home_screen.dart';
+import 'package:ganithamithura/screens/learn/learn_screen.dart';
 
 /// HomeScreen - Main entry point with personalized dashboard
 class HomeScreen extends StatefulWidget {
@@ -19,6 +20,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onNavTap(int index) {
     if (index == 0) {
       // Already on home
+      return;
+    }
+    if (index == 1) {
+      // Navigate to Learn screen
+      Get.to(() => const LearnScreen());
       return;
     }
     // TODO: Navigate to other screens when ready
