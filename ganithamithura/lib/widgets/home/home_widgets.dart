@@ -107,13 +107,26 @@ class TodayActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      height: 156,
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(
-          color: const Color(AppColors.borderLight),
-          width: 0.6,
+        gradient: const LinearGradient(
+          begin: Alignment(0.50, 0.00),
+          end: Alignment(0.64, 1.00),
+          colors: [Color(0xFF2EB872), Color(0xFFA3DE83)],
         ),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          width: 0.60,
+          color: const Color(0x3D49596D),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0C000000),
+            blurRadius: 54,
+            offset: Offset(24, 26),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -125,134 +138,157 @@ class TodayActivityCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Title section
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    activityTitle,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: Color(AppColors.textBlack),
-                      height: 1.2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      activityTitle,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    activitySubtitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(AppColors.subText1),
-                      height: 1.3,
+                    const SizedBox(height: 2),
+                    Text(
+                      activitySubtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFFD9FFC5),
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               // Progress badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(AppColors.progressBadgeBg).withOpacity(0.16),
+                  color: const Color(0xFFFEFFE4),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   progressBadge,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    color: Color(AppColors.progressBadgeText),
+                    color: Color(0xFFF08787),
                     height: 1.2,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Stats row
-          Row(
-            children: [
-              // Time today card
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.access_time,
-                  label: 'Time today',
-                  value: timeToday,
-                  backgroundColor: const Color(AppColors.timeCardBg).withOpacity(0.64),
+          Expanded(
+            child: Row(
+              children: [
+                // Time today card
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 12,
+                              color: Color(0xFF334156),
+                            ),
+                            const SizedBox(width: 4),
+                            const Flexible(
+                              child: Text(
+                                'Time today',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF334156),
+                                  height: 1.2,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          timeToday,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF334156),
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              // Completed tasks card
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.check_circle_outline,
-                  label: 'Completed',
-                  value: completedTasks,
-                  backgroundColor: const Color(AppColors.completedCardBg).withOpacity(0.64),
+                const SizedBox(width: 16),
+                // Completed tasks card
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_outline,
+                              size: 12,
+                              color: Color(0xFF334156),
+                            ),
+                            const SizedBox(width: 4),
+                            const Flexible(
+                              child: Text(
+                                'Completed',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF334156),
+                                  height: 1.2,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          completedTasks,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF334156),
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Internal stat card widget
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color backgroundColor;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.backgroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon and label
-          Row(
-            children: [
-              Icon(
-                icon,
-                size: 12,
-                color: const Color(AppColors.subText1),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: Color(AppColors.subText1),
-                  height: 1.2,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          // Value
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(AppColors.subText1),
-              height: 1.2,
+              ],
             ),
           ),
         ],
