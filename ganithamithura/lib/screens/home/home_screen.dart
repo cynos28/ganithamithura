@@ -1,150 +1,232 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
-import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
+import 'package:ganithamithura/widgets/home/home_widgets.dart';
 import 'package:ganithamithura/screens/number/number_home_screen.dart';
+import 'package:ganithamithura/screens/measurements/measurement_home_screen.dart';
 
-/// HomeScreen - Main entry point with 4 module buttons
-class HomeScreen extends StatelessWidget {
+/// HomeScreen - Main entry point with personalized dashboard
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-  
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentNavIndex = 0;
+
+  void _onNavTap(int index) {
+    if (index == 0) {
+      // Already on home
+      return;
+    }
+    // TODO: Navigate to other screens when ready
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be available soon',
+      backgroundColor: const Color(AppColors.infoColor),
+      colorText: Colors.white,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(AppColors.backgroundColor),
+      backgroundColor: const Color(AppColors.backgroundColor),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.standardPadding),
-          child: Column(
-            children: [
-              // App Title
-              _buildHeader(),
-              const SizedBox(height: 32),
-              
-              // Module Grid
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  children: [
-                    // Measurement Module
-                    ModuleButton(
-                      title: 'Measurement',
-                      icon: Icons.straighten,
-                      color: Color(AppColors.measurementColor),
-                      isEnabled: false, // TODO: Phase 2
-                      onTap: () {
-                        // TODO: Phase 2 - Navigate to Measurement
-                        Get.snackbar(
-                          'Coming Soon',
-                          'Measurement module will be available in Phase 2',
-                          backgroundColor: Color(AppColors.infoColor),
-                          colorText: Colors.white,
-                        );
-                      },
-                    ),
-                    
-                    // Number Module (Enabled - Phase 1)
-                    ModuleButton(
-                      title: 'Numbers',
-                      icon: Icons.pin,
-                      color: Color(AppColors.numberColor),
-                      isEnabled: true,
-                      onTap: () {
-                        Get.to(() => const NumberHomeScreen());
-                      },
-                    ),
-                    
-                    // Shape Module
-                    ModuleButton(
-                      title: 'Shapes',
-                      icon: Icons.category,
-                      color: Color(AppColors.shapeColor),
-                      isEnabled: false, // TODO: Phase 2
-                      onTap: () {
-                        // TODO: Phase 2 - Navigate to Shapes
-                        Get.snackbar(
-                          'Coming Soon',
-                          'Shapes module will be available in Phase 2',
-                          backgroundColor: Color(AppColors.infoColor),
-                          colorText: Colors.white,
-                        );
-                      },
-                    ),
-                    
-                    // Symbol Module
-                    ModuleButton(
-                      title: 'Symbols',
-                      icon: Icons.abc,
-                      color: Color(AppColors.symbolColor),
-                      isEnabled: false, // TODO: Phase 2
-                      onTap: () {
-                        // TODO: Phase 2 - Navigate to Symbols
-                        Get.snackbar(
-                          'Coming Soon',
-                          'Symbols module will be available in Phase 2',
-                          backgroundColor: Color(AppColors.infoColor),
-                          colorText: Colors.white,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Footer
-              _buildFooter(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Icon(
-              Icons.school,
-              size: 40,
-              color: Color(AppColors.primaryColor),
+            // Main content with scroll
+            SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 32,
+                bottom: 90, // Space for bottom nav
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Greeting section
+                  _buildGreeting(),
+                  const SizedBox(height: 16),
+
+                  // Today's Activity Card
+                  const TodayActivityCard(
+                    activityTitle: "Today's Activity",
+                    activitySubtitle: 'Trace, read & say',
+                    timeToday: '25 min',
+                    completedTasks: '8 tasks',
+                    progressBadge: 'Great progress!',
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Resources Section
+                  const Text(
+                    'Resources',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(AppColors.textBlack),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Resource Cards Grid
+                  _buildResourceGrid(),
+                  const SizedBox(height: 32),
+
+                  // Learning Tips Section
+                  const Text(
+                    'Learning Tips',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(AppColors.textBlack),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Daily Tip Card
+                  const LearningTipCard(
+                    tipText:
+                        "When measuring with a ruler, always start from the 0 mark, not the edge! This helps you get accurate measurements every time.",
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Ganitha Mithura',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+
+            // Bottom Navigation Bar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: BottomNavBar(
+                currentIndex: _currentNavIndex,
+                onTap: _onNavTap,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Choose a learning module',
+      ),
+    );
+  }
+
+  Widget _buildGreeting() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Hi, Shehan👋',
           style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
+            fontSize: 26,
+            fontWeight: FontWeight.w600,
+            color: Color(AppColors.textBlack),
           ),
+        ),
+        const SizedBox(height: 2),
+        Row(
+          children: [
+            const Icon(
+              Icons.local_fire_department,
+              size: 14,
+              color: Color(AppColors.subText2),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              '5 day streak',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Color(AppColors.subText2),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
-  
-  Widget _buildFooter() {
-    return Text(
-      'Phase 1: Numbers Module (50% MVP)',
-      style: TextStyle(
-        fontSize: 12,
-        color: Colors.grey[500],
-      ),
+
+  Widget _buildResourceGrid() {
+    return Column(
+      children: [
+        // First row: Numbers and Symbols
+        Row(
+          children: [
+            Expanded(
+              child: ResourceCard(
+                title: 'Numbers',
+                subtitle: 'Trace, read & say',
+                icon: Icons.pin,
+                backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.numberBorder),
+                iconColor: const Color(AppColors.numberIcon),
+                onTap: () => Get.to(() => const NumberHomeScreen()),
+                isEnabled: true,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ResourceCard(
+                title: 'Symbols',
+                subtitle: '+ − × ÷ stories & quizzes',
+                icon: Icons.calculate,
+                backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.symbolBorder),
+                iconColor: const Color(AppColors.symbolIcon),
+                onTap: () {
+                  Get.snackbar(
+                    'Coming Soon',
+                    'Symbols module will be available soon',
+                    backgroundColor: const Color(AppColors.infoColor),
+                    colorText: Colors.white,
+                  );
+                },
+                isEnabled: false,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Second row: Measurements and Shapes
+        Row(
+          children: [
+            Expanded(
+              child: ResourceCard(
+                title: 'Measurement',
+                subtitle: 'Length, Area, Capacity, Weight',
+                icon: Icons.straighten,
+                backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.measurementBorder),
+                iconColor: const Color(AppColors.measurementIcon),
+                onTap: () => Get.to(() => const MeasurementHomeScreen()),
+                isEnabled: true,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ResourceCard(
+                title: 'Shapes',
+                subtitle: 'Hunt & build 2D/3D',
+                icon: Icons.category,
+                backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.shapeBorder),
+                iconColor: const Color(AppColors.shapeIcon),
+                onTap: () {
+                  Get.snackbar(
+                    'Coming Soon',
+                    'Shapes module will be available soon',
+                    backgroundColor: const Color(AppColors.infoColor),
+                    colorText: Colors.white,
+                  );
+                },
+                isEnabled: false,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
