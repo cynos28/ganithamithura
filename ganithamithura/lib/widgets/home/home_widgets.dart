@@ -8,6 +8,7 @@ class ResourceCard extends StatelessWidget {
   final IconData icon;
   final Color backgroundColor;
   final Color borderColor;
+  final Color iconColor;
   final VoidCallback onTap;
   final bool isEnabled;
 
@@ -18,6 +19,7 @@ class ResourceCard extends StatelessWidget {
     required this.icon,
     required this.backgroundColor,
     required this.borderColor,
+    required this.iconColor,
     required this.onTap,
     this.isEnabled = true,
   });
@@ -50,7 +52,7 @@ class ResourceCard extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 26,
-                color: Colors.white,
+                color: iconColor,
               ),
             ),
             const SizedBox(height: 8),
