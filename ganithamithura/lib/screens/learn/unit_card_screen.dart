@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
 import 'package:ganithamithura/screens/units/units_list_screen.dart';
+import 'package:ganithamithura/screens/learn/learn_units_screen.dart';
 
 class UnitCardScreen extends StatefulWidget {
   const UnitCardScreen({super.key});
@@ -55,6 +56,21 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+              
+              // Learn Units Card - Special Featured Card
+              _buildLearnUnitsCard(),
+              
+              const SizedBox(height: 20),
+              
+              const Text(
+                'Practice by Topic',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(AppColors.textBlack),
+                ),
+              ),
+              const SizedBox(height: 12),
               
               // Content - Measurement Units Grid
               Expanded(
@@ -130,6 +146,104 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
+      ),
+    );
+  }
+
+  Widget _buildLearnUnitsCard() {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => const LearnUnitsScreen());
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF667EEA).withOpacity(0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.school,
+                size: 40,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Learn Units',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Understand m, cm, L, mL, kg, g',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Start Learning',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF667EEA),
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: 14,
+                          color: Color(0xFF667EEA),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
