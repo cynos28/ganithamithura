@@ -8,8 +8,9 @@ import 'package:ganithamithura/screens/home/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize storage service
-  await StorageService.instance.init();
+  // Initialize storage service asynchronously
+  // Don't block app launch - initialize in background
+  StorageService.instance.init();
   
   runApp(const GanithamithuraApp());
 }
