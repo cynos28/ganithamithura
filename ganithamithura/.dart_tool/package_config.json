@@ -417,9 +417,9 @@
     },
     {
       "name": "meta",
-      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/meta-1.16.0",
+      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/meta-1.17.0",
       "packageUri": "lib/",
-      "languageVersion": "2.12"
+      "languageVersion": "3.5"
     },
     {
       "name": "mime",
@@ -723,7 +723,7 @@
     },
     {
       "name": "test_api",
-      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/test_api-0.7.6",
+      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/test_api-0.7.7",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
@@ -863,12 +863,12 @@
       "name": "ganithamithura",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.10"
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.9.2",
+  "generatorVersion": "3.10.1",
   "flutterRoot": "file:///Users/shehandulmina/development/flutter",
-  "flutterVersion": "3.35.7",
+  "flutterVersion": "3.38.3",
   "pubCache": "file:///Users/shehandulmina/.pub-cache"
 }
