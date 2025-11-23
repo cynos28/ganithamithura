@@ -161,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.pin,
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.numberBorder),
+                iconColor: const Color(AppColors.numberIcon),
                 onTap: () => Get.to(() => const NumberHomeScreen()),
                 isEnabled: true,
               ),
@@ -173,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.calculate,
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.symbolBorder),
+                iconColor: const Color(AppColors.symbolIcon),
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
@@ -197,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.straighten,
                 backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.measurementBorder),
+                iconColor: const Color(AppColors.measurementIcon),
                 onTap: () => Get.to(() => const MeasurementHomeScreen()),
                 isEnabled: true,
               ),
@@ -209,6 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.category,
                 backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.shapeBorder),
+                iconColor: const Color(AppColors.shapeIcon),
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',

@@ -84,12 +84,16 @@ class AppColors {
   // Module Colors (from Figma design)
   static const int measurementColor = 0xFFFFD1C2; // Orange-light background
   static const int measurementBorder = 0xFFFFD1C2; // Orange-light border
+  static const int measurementIcon = 0xFFFF8C52; // Orange - higher contrast
   static const int numberColor = 0xFFA6ADED; // Purple-light
   static const int numberBorder = 0xFFA6ADED; // Purple-light border
+  static const int numberIcon = 0xFF6B7FFF; // Purple - higher contrast
   static const int shapeColor = 0xFFBADFDB; // Green-light
   static const int shapeBorder = 0xFFBADFDB; // Green-light border
+  static const int shapeIcon = 0xFF2EB872; // Green - higher contrast
   static const int symbolColor = 0xFFFFA4A4; // Rose-light
   static const int symbolBorder = 0xFFFFA4A4; // Rose-light border
+  static const int symbolIcon = 0xFFFF6B6B; // Rose - higher contrast
   
   // Text Colors
   static const int textBlack = 0xFF273444;
