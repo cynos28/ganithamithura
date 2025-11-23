@@ -27,7 +27,7 @@ class ResourceCard extends StatelessWidget {
     return GestureDetector(
       onTap: isEnabled ? onTap : null,
       child: Container(
-        height: 144,
+        height: 148,
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor, width: 1.5),
