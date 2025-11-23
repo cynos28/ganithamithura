@@ -153,64 +153,72 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         // First row: Numbers and Symbols
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ResourceCard(
-              title: 'Numbers',
-              subtitle: 'Trace, read & say',
-              icon: Icons.pin,
-              backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
-              borderColor: const Color(AppColors.numberBorder),
-              onTap: () => Get.to(() => const NumberHomeScreen()),
-              isEnabled: true,
+            Expanded(
+              child: ResourceCard(
+                title: 'Numbers',
+                subtitle: 'Trace, read & say',
+                icon: Icons.pin,
+                backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.numberBorder),
+                onTap: () => Get.to(() => const NumberHomeScreen()),
+                isEnabled: true,
+              ),
             ),
-            ResourceCard(
-              title: 'Symbols',
-              subtitle: '+ − × ÷ stories & quizzes',
-              icon: Icons.calculate,
-              backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
-              borderColor: const Color(AppColors.symbolBorder),
-              onTap: () {
-                Get.snackbar(
-                  'Coming Soon',
-                  'Symbols module will be available soon',
-                  backgroundColor: const Color(AppColors.infoColor),
-                  colorText: Colors.white,
-                );
-              },
-              isEnabled: false,
+            const SizedBox(width: 16),
+            Expanded(
+              child: ResourceCard(
+                title: 'Symbols',
+                subtitle: '+ − × ÷ stories & quizzes',
+                icon: Icons.calculate,
+                backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.symbolBorder),
+                onTap: () {
+                  Get.snackbar(
+                    'Coming Soon',
+                    'Symbols module will be available soon',
+                    backgroundColor: const Color(AppColors.infoColor),
+                    colorText: Colors.white,
+                  );
+                },
+                isEnabled: false,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 16),
         // Second row: Measurements and Shapes
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ResourceCard(
-              title: 'Measurements',
-              subtitle: 'Length, Area, Capacity, Weight',
-              icon: Icons.straighten,
-              backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
-              borderColor: const Color(AppColors.measurementBorder),
-              onTap: () => Get.to(() => const MeasurementHomeScreen()),
-              isEnabled: true,
+            Expanded(
+              child: ResourceCard(
+                title: 'Measurement',
+                subtitle: 'Length, Area, Capacity, Weight',
+                icon: Icons.straighten,
+                backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.measurementBorder),
+                onTap: () => Get.to(() => const MeasurementHomeScreen()),
+                isEnabled: true,
+              ),
             ),
-            ResourceCard(
-              title: 'Shapes',
-              subtitle: 'Hunt & build 2D/3D',
-              icon: Icons.category,
-              backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
-              borderColor: const Color(AppColors.shapeBorder),
-              onTap: () {
-                Get.snackbar(
-                  'Coming Soon',
-                  'Shapes module will be available soon',
-                  backgroundColor: const Color(AppColors.infoColor),
-                  colorText: Colors.white,
-                );
-              },
-              isEnabled: false,
+            const SizedBox(width: 16),
+            Expanded(
+              child: ResourceCard(
+                title: 'Shapes',
+                subtitle: 'Hunt & build 2D/3D',
+                icon: Icons.category,
+                backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.shapeBorder),
+                onTap: () {
+                  Get.snackbar(
+                    'Coming Soon',
+                    'Shapes module will be available soon',
+                    backgroundColor: const Color(AppColors.infoColor),
+                    colorText: Colors.white,
+                  );
+                },
+                isEnabled: false,
+              ),
             ),
           ],
         ),

@@ -28,7 +28,6 @@ class ResourceCard extends StatelessWidget {
       onTap: isEnabled ? onTap : null,
       child: Container(
         height: 144,
-        width: 171,
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor, width: 1.5),
@@ -59,7 +58,7 @@ class ResourceCard extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 19,
                 fontWeight: FontWeight.w600,
                 color: Color(AppColors.textBlack),
                 height: 1.1,
