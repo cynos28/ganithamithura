@@ -27,10 +27,6 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
       return;
     }
     
-    setState(() {
-      _selectedIndex = index;
-    });
-    
     // TODO: Navigate to other tabs when ready
     Get.snackbar(
       'Coming Soon',

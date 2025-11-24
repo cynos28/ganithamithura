@@ -78,9 +78,10 @@ class _UnitsListScreenState extends State<UnitsListScreen> {
       return;
     }
     
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == _selectedIndex) {
+      // Already on current tab
+      return;
+    }
     
     // TODO: Handle other navigation items
     Get.snackbar(
