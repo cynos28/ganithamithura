@@ -12,11 +12,11 @@ router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 
 @router.post("/", response_model=DocumentResponse)
 async def upload_document(
-    file: UploadFile = File(...),
-    title: str = Form(...),
-    grade_levels: str = Form(...),  # Comma-separated: "1,2,3,4"
-    topic: str = Form(...),
-    uploaded_by: str = Form(...)
+    file: UploadFile = File(..., description="Document file (PDF, DOCX, or TXT)"),
+    grade_levels: str = Form("5", description="Comma-separated grade levels", example="5,6,7"),
+    topic: str = Form("Length", description="Topic name (e.g., Length, Area, Weight)", example="Length"),
+    title: str = Form(None, description="Document title (optional, uses filename if not provided)"),
+    uploaded_by: str = Form(None, description="Uploader ID (optional)")
 ):
     """
     Upload and process a document
@@ -25,7 +25,20 @@ async def upload_document(
     - Extracts text content
     - Creates embeddings and stores in vector database
     - Returns document metadata
+    
+    Required fields:
+    - file: The document file (PDF, DOCX, TXT)
+    - grade_levels: Comma-separated grades (e.g., "5,6,7")
+    - topic: Topic name (e.g., "Length", "Area", "Capacity", "Weight")
+    
+    Optional fields:
+    - title: Document title (defaults to filename)
+    - uploaded_by: Teacher/uploader ID
     """
+    
+    # Use filename as title if not provided
+    if not title:
+        title = file.filename
     
     # Validate file extension
     file_ext = file.filename.split('.')[-1].lower()
@@ -57,7 +70,25 @@ async def upload_document(
             )
         
         # Parse grade levels
-        grade_list = [int(g.strip()) for g in grade_levels.split(',')]
+        # Check for common mistakes from Swagger UI
+        if grade_levels.lower() in ['string', 'str', 'example']:
+            raise HTTPException(
+                status_code=400,
+                detail="Please replace the example 'string' with actual grade levels (e.g., '5' or '5,6,7')"
+            )
+        
+        try:
+            grade_list = [int(g.strip()) for g in grade_levels.split(',') if g.strip()]
+            if not grade_list:
+                raise ValueError("No grades provided")
+            # Validate grade ranges (assuming grades 1-12)
+            if any(g < 1 or g > 12 for g in grade_list):
+                raise ValueError("Grade levels must be between 1 and 12")
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid grade_levels. Use comma-separated numbers (e.g., '5,6,7'). Error: {str(e)}"
+            )
         
         # Create document record in MongoDB
         document = DocumentModel(
@@ -65,7 +96,7 @@ async def upload_document(
             content=text_content,
             grade_levels=grade_list,
             topic=topic,
-            uploaded_by=uploaded_by,
+            uploaded_by=uploaded_by or "anonymous",
             status="processing"
         )
         await document.insert()
@@ -111,6 +142,11 @@ async def upload_document(
         )
         
     except Exception as e:
+        # Log the full error for debugging
+        import traceback
+        print(f"❌ Error uploading document: {str(e)}")
+        print(traceback.format_exc())
+        
         # If document was created, update status to failed
         if 'document' in locals():
             document.status = "failed"

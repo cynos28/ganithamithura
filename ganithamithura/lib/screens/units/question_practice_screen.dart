@@ -48,7 +48,14 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
     });
 
     try {
-      final question = await _apiService.getNextQuestion(widget.unit.id);
+      // Try to get adaptive question from RAG service
+      final ragQuestion = await _apiService.getAdaptiveQuestion(
+        unitId: int.tryParse(widget.unit.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1,
+      );
+      
+      // Convert RAG question to Question model
+      final question = ragQuestion.toQuestion();
+      
       setState(() {
         _currentQuestion = question;
         _questionHistory.add(question);
@@ -56,10 +63,22 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        _error = 'Failed to load question. Please try again.';
-        _isLoading = false;
-      });
+      // Fallback to mock questions if RAG service is unavailable
+      debugPrint('RAG service unavailable, using mock data: $e');
+      try {
+        final question = await _apiService.getNextQuestion(widget.unit.id);
+        setState(() {
+          _currentQuestion = question;
+          _questionHistory.add(question);
+          _currentQuestionIndex = _questionHistory.length - 1;
+          _isLoading = false;
+        });
+      } catch (e2) {
+        setState(() {
+          _error = 'Failed to load question. Please try again.';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -71,6 +90,32 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
     final timeTaken = DateTime.now().difference(_questionStartTime!).inSeconds;
 
     try {
+      // Try adaptive answer submission first
+      try {
+        final adaptiveFeedback = await _apiService.submitAdaptiveAnswer(
+          questionId: _currentQuestion!.questionId,
+          answer: _currentQuestion!.options[_selectedAnswer!],
+          timeTaken: timeTaken,
+        );
+        
+        // Convert to AnswerResponse
+        final response = AnswerResponse(
+          isCorrect: adaptiveFeedback.isCorrect,
+          correctIndex: _currentQuestion!.options.indexOf(adaptiveFeedback.correctAnswer),
+          explanation: adaptiveFeedback.explanation,
+        );
+        
+        setState(() {
+          _answerFeedback = response;
+          _showingFeedback = true;
+          _isSubmitting = false;
+        });
+        return;
+      } catch (e) {
+        debugPrint('Adaptive submission failed, trying regular: $e');
+      }
+      
+      // Fallback to regular submission
       final response = await _apiService.submitAnswer(
         questionId: _currentQuestion!.questionId,
         selectedIndex: _selectedAnswer!,
