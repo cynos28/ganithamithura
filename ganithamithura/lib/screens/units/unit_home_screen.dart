@@ -41,10 +41,21 @@ class _UnitHomeScreenState extends State<UnitHomeScreen> {
   }
 
   void _onNavItemTapped(int index) {
-    setState(() => _selectedIndex = index);
     if (index == 0) {
+      // Go back
       Get.back();
+      return;
     }
+    
+    setState(() => _selectedIndex = index);
+    
+    // TODO: Handle other navigation items
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be available soon',
+      backgroundColor: const Color(AppColors.infoColor),
+      colorText: Colors.white,
+    );
   }
 
   Color _getTopicColor() {

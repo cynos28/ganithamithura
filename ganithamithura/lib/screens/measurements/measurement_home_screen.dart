@@ -19,15 +19,20 @@ class _MeasurementHomeScreenState extends State<MeasurementHomeScreen> {
     if (index == 0) {
       // Navigate to home
       Get.back();
-    } else {
-      // TODO: Navigate to other screens when ready
-      Get.snackbar(
-        'Coming Soon',
-        'This feature will be available soon',
-        backgroundColor: const Color(AppColors.infoColor),
-        colorText: Colors.white,
-      );
+      return;
     }
+    
+    setState(() {
+      _currentNavIndex = index;
+    });
+    
+    // TODO: Navigate to other screens when ready
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be available soon',
+      backgroundColor: const Color(AppColors.infoColor),
+      colorText: Colors.white,
+    );
   }
 
   @override
