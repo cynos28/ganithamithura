@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 # Document Schemas
 class DocumentUpload(BaseModel):
     title: str
-    grade_levels: List[int] = Field(..., description="List of grade levels (1-4)")
+    grade_levels: List[int] = Field(..., description="List of kindergarten grade levels (1-4)")
     topic: str
     uploaded_by: str
 
@@ -75,10 +75,10 @@ class QuestionUpdate(BaseModel):
 
 # Question Generation Schemas
 class QuestionGenerationRequest(BaseModel):
-    document_id: str  # MongoDB ObjectId as string
-    grade_levels: List[int] = [1, 2, 3, 4]
-    questions_per_grade: int = 10
-    question_types: List[str] = ["mcq", "short_answer"]
+    document_id: str = Field(..., description="MongoDB document ID (get from /api/v1/upload/ endpoint)", example="69249f2aea9d88b2815084f5")
+    grade_levels: List[int] = Field(default=[1, 2, 3, 4], description="Grade levels for kindergarten (1-4)", example=[1, 2, 3, 4])
+    questions_per_grade: int = Field(default=10, description="Number of questions per grade level", ge=1, le=50)
+    question_types: List[str] = Field(default=["mcq", "short_answer"], description="Types of questions to generate")
 
 
 class QuestionGenerationResponse(BaseModel):

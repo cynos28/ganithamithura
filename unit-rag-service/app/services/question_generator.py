@@ -118,41 +118,37 @@ Make questions engaging, age-appropriate, and educational!
     async def generate_questions_for_document(
         self,
         document_id: str,
+        document_content: str,
         grade_levels: List[int],
-        topic: str,
-        questions_per_grade: int = 10
-    ) -> Dict[int, List[Dict[str, Any]]]:
+        questions_per_grade: int = 10,
+        question_types: List[str] = None
+    ) -> List[Dict[str, Any]]:
         """Generate questions for a document across multiple grades"""
         
-        # Search for relevant content chunks
-        search_query = f"Educational content about {topic}"
-        chunks = await embeddings_service.search_similar_chunks(
-            query=search_query,
-            n_results=5,
-            filter_metadata={"document_id": document_id}
-        )
+        if not document_content or len(document_content) < 50:
+            raise Exception("Document content is too short or empty")
         
-        if not chunks:
-            raise Exception("No content found for document")
-        
-        # Combine chunks for context
-        context = "\n\n".join([chunk['text'] for chunk in chunks])
+        # Use document content directly instead of vector search
+        # Truncate if too long (keep first 3000 chars to stay within token limits)
+        context = document_content[:3000] if len(document_content) > 3000 else document_content
         
         # Generate questions for each grade level
-        all_questions = {}
+        all_questions = []
         
         for grade in grade_levels:
             try:
+                print(f"🎯 Generating {questions_per_grade} questions for grade {grade}...")
                 questions = await self.generate_questions_from_context(
                     context=context,
                     grade_level=grade,
-                    topic=topic,
+                    topic="measurement",  # You can pass this as parameter if needed
                     num_questions=questions_per_grade
                 )
-                all_questions[grade] = questions
+                all_questions.extend(questions)
+                print(f"✅ Generated {len(questions)} questions for grade {grade}")
             except Exception as e:
-                print(f"Error generating questions for grade {grade}: {str(e)}")
-                all_questions[grade] = []
+                print(f"❌ Error generating questions for grade {grade}: {str(e)}")
+                continue
         
         return all_questions
     
