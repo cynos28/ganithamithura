@@ -1,4 +1,4 @@
-from database.database import get_database
+from common.database.database import get_database
 from fastapi import HTTPException
 
 class ShapesController:

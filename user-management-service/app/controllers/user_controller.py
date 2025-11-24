@@ -1,7 +1,8 @@
-from database.database import get_database
-from fastapi import HTTPException, Depends
+
+from common.database.database import get_database
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from app.services.auth_service import create_access_token, verify_password, get_password_hash
+from authentication_service.auth_service import create_access_token, verify_password, get_password_hash
 from datetime import timedelta
 from app.models.model import UserCreate
 
@@ -10,6 +11,9 @@ class UserController:
     def __init__(self):
         self.db = get_database()
         self.users_collection = self.db["users"]
+        self.router = APIRouter()
+        self.router.add_api_route("/users/register", self.register, methods=["POST"])
+        self.router.add_api_route("/users/login", self.login, methods=["POST"])
 
     async def login(self, form_data: OAuth2PasswordRequestForm = Depends()):
         """
@@ -62,3 +66,5 @@ class UserController:
         }
         await self.users_collection.insert_one(new_user)
         return {"message": "User created successfully"}
+
+user_controller = UserController()
