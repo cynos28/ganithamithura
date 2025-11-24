@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ganithamithura/utils/constants.dart';
+import 'package:ganithamithura/services/daily_tip_service.dart';
 
 /// ResourceCard - Card for each learning module (Numbers, Symbols, Measurements, Shapes)
 class ResourceCard extends StatelessWidget {
@@ -300,24 +301,103 @@ class TodayActivityCard extends StatelessWidget {
 }
 
 /// LearningTipCard - Daily tip card
-class LearningTipCard extends StatelessWidget {
-  final String tipText;
+class LearningTipCard extends StatefulWidget {
+  const LearningTipCard({super.key});
 
-  const LearningTipCard({
-    super.key,
-    required this.tipText,
-  });
+  @override
+  State<LearningTipCard> createState() => _LearningTipCardState();
+}
+
+class _LearningTipCardState extends State<LearningTipCard> with WidgetsBindingObserver {
+  String _tipText = '';
+  String _topicIcon = '💡';
+  Color _backgroundColor = const Color(0xFFFF8C52);
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadTip();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Reload tip when app comes back to foreground
+    if (state == AppLifecycleState.resumed) {
+      _loadTip();
+    }
+  }
+
+  Future<void> _loadTip() async {
+    // Get random cached tip for immediate display
+    final cachedData = DailyTipService.getRandomCachedTip();
+    
+    if (mounted) {
+      setState(() {
+        _backgroundColor = Color(cachedData['colorScheme']['background'] as int);
+        _topicIcon = cachedData['colorScheme']['icon'] as String;
+        _tipText = cachedData['tip'] as String;
+        _isLoading = false;
+      });
+    }
+
+    // Fetch from API in background
+    try {
+      final apiData = await DailyTipService.fetchRandomTip();
+      if (mounted) {
+        setState(() {
+          _backgroundColor = Color(apiData['colorScheme']['background'] as int);
+          _topicIcon = apiData['colorScheme']['icon'] as String;
+          _tipText = apiData['tip'] as String;
+        });
+      }
+    } catch (e) {
+      // Keep cached tip if API fails
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: _backgroundColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 54,
+              offset: const Offset(24, 26),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(AppColors.dailyTipBg),
+        gradient: LinearGradient(
+          colors: [_backgroundColor, _backgroundColor.withOpacity(0.85)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: _backgroundColor.withOpacity(0.15),
             blurRadius: 54,
             offset: const Offset(24, 26),
           ),
@@ -327,18 +407,27 @@ class LearningTipCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Daily Tip 💡',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              height: 1.2,
-            ),
+          Row(
+            children: [
+              Text(
+                _topicIcon,
+                style: const TextStyle(fontSize: 24),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Daily Tip',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 9),
           Text(
-            tipText,
+            _tipText,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w400,
