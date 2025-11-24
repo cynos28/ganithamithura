@@ -16,17 +16,33 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentNavIndex = 0;
+  Key _tipCardKey = UniqueKey();
 
   void _onNavTap(int index) {
     if (index == 0) {
-      // Already on home
+      // Already on home, refresh tip card
+      setState(() {
+        _tipCardKey = UniqueKey();
+      });
       return;
     }
+    
+    setState(() {
+      _currentNavIndex = index;
+    });
+    
     if (index == 1) {
       // Navigate to Learn screen
-      Get.to(() => const LearnScreen());
+      Get.to(() => const LearnScreen())?.then((_) {
+        // Reset nav index when coming back
+        setState(() {
+          _currentNavIndex = 0;
+          _tipCardKey = UniqueKey(); // Refresh tip when returning
+        });
+      });
       return;
     }
+    
     // TODO: Navigate to other screens when ready
     Get.snackbar(
       'Coming Soon',
@@ -34,6 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(AppColors.infoColor),
       colorText: Colors.white,
     );
+    
+    // Reset index since navigation didn't happen
+    setState(() {
+      _currentNavIndex = 0;
+    });
   }
 
   @override
@@ -95,10 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 16),
 
                   // Daily Tip Card
-                  const LearningTipCard(
-                    tipText:
-                        "When measuring with a ruler, always start from the 0 mark, not the edge! This helps you get accurate measurements every time.",
-                  ),
+                  LearningTipCard(key: _tipCardKey),
                 ],
               ),
             ),
