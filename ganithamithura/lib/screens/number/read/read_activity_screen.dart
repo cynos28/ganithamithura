@@ -98,26 +98,27 @@ class _ReadActivityScreenState extends State<ReadActivityScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.standardPadding * 2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Instructions
-                  Text(
-                    _isMode1 
-                        ? 'Which word matches this number?'
-                        : 'Which number matches this word?',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.standardPadding * 2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Instructions
+                    Text(
+                      _isMode1 
+                          ? 'Which word matches this number?'
+                          : 'Which number matches this word?',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
+                    
+                    const SizedBox(height: 32),
+                    
                   // Question display
                   _buildQuestionDisplay(),
                   
@@ -143,6 +144,7 @@ class _ReadActivityScreenState extends State<ReadActivityScreen> {
                   ),
                 ],
               ),
+            ),
             ),
             
             // Result overlay

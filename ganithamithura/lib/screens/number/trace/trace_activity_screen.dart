@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Progress;
-import 'dart:ui' as ui;
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
@@ -37,14 +36,11 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
   bool? _result;
   
   // Target area bounds (simplified for demonstration)
-  late Rect _targetBounds;
   Set<Offset> _coveredPoints = {};
   
   @override
   void initState() {
     super.initState();
-    // Initialize target bounds (centered number area)
-    _targetBounds = const Rect.fromLTWH(50, 100, 300, 400);
   }
   
   @override
@@ -276,6 +272,7 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
         additionalData: progress.additionalData,
       ).catchError((e) {
         debugPrint('Error submitting score: $e');
+        return <String, dynamic>{};
       });
     }
     

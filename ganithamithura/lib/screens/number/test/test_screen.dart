@@ -6,11 +6,6 @@ import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/api/api_service.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
-import 'package:ganithamithura/services/bucket_manager.dart';
-import 'package:ganithamithura/screens/number/trace/trace_activity_screen.dart';
-import 'package:ganithamithura/screens/number/read/read_activity_screen.dart';
-import 'package:ganithamithura/screens/number/say/say_activity_screen.dart';
-import 'package:ganithamithura/screens/number/object_detection/object_detection_activity_screen.dart';
 
 /// TestScreen - Beginner progress test
 class TestScreen extends StatefulWidget {
@@ -28,7 +23,6 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   final _apiService = ApiService.instance;
   final _storageService = StorageService.instance;
-  final _bucketManager = BucketManager.instance;
   
   bool _isLoading = true;
   bool _testStarted = false;
