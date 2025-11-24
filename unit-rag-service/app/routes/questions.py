@@ -99,11 +99,12 @@ async def generate_questions_task(
         print(f"📄 Found document: {document.title}")
         print(f"🎯 Generating {questions_per_grade} questions per grade for grades {grade_levels}")
         
-        # Generate questions using the service
+        # Generate questions using the service with topic filter
         questions = await question_generator.generate_questions_for_document(
             document_id=document_id,
             document_content=document.content,
             grade_levels=grade_levels,
+            topic=document.topic or "measurement",  # Use document's topic
             questions_per_grade=questions_per_grade,
             question_types=question_types
         )
@@ -113,8 +114,13 @@ async def generate_questions_task(
         # Save to MongoDB
         question_count = 0
         for q_data in questions:
+            # Generate unit_id based on document topic and grade
+            unit_id = f"unit_{document.topic.lower()}_{q_data['grade_level']}" if document.topic else None
+            
             question = QuestionModel(
                 document_id=document_id,
+                unit_id=unit_id,
+                topic=document.topic,
                 question_text=q_data["question_text"],
                 question_type=q_data["question_type"],
                 correct_answer=q_data["correct_answer"],
@@ -128,7 +134,7 @@ async def generate_questions_task(
             )
             await question.insert()
             question_count += 1
-            print(f"💾 Saved question {question_count} with document_id: {document_id}, question_id: {str(question.id)}")
+            print(f"💾 Saved question {question_count} with document_id: {document_id}, unit_id: {unit_id}, question_id: {str(question.id)}")
         
         # Update document question count
         document.questions_count = question_count
