@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
+import 'package:ganithamithura/utils/ui_helpers.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/screens/number/video_lesson/video_lesson_screen.dart';
 import 'package:ganithamithura/services/api/api_service.dart';
-import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/bucket_manager.dart';
 
 /// LevelSelectionScreen - Display 5 levels with only Level 1 enabled
@@ -17,7 +17,6 @@ class LevelSelectionScreen extends StatefulWidget {
 }
 
 class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
-  final _storageService = StorageService.instance;
   late List<LearningLevel> _levels;
   bool _isLoading = true;
   
@@ -117,9 +116,18 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
   
   void _startLevel(LearningLevel level) async {
-    // Show loading
+    // Show loading with a small delay to ensure overlay is ready
+    await Future.delayed(const Duration(milliseconds: 100));
+    
     Get.dialog(
-      const Center(child: CircularProgressIndicator()),
+      Material(
+        color: Colors.transparent,
+        child: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+      ),
       barrierDismissible: false,
     );
     
@@ -129,11 +137,10 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       
       if (activities.isEmpty) {
         Get.back();
-        Get.snackbar(
-          'Error',
-          'No activities found for this level',
+        await UIHelpers.showSafeSnackbar(
+          title: 'Error',
+          message: 'No activities found for this level',
           backgroundColor: Color(AppColors.errorColor),
-          colorText: Colors.white,
         );
         return;
       }
@@ -150,6 +157,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       
       // Navigate to first activity (video lesson)
       if (numberActivities.isNotEmpty) {
+        await Future.delayed(const Duration(milliseconds: 100));
         Get.to(() => VideoLessonScreen(
           activity: numberActivities.first,
           allActivities: activities,
@@ -159,11 +167,10 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       }
     } catch (e) {
       Get.back();
-      Get.snackbar(
-        'Error',
-        'Failed to load activities: $e',
+      await UIHelpers.showSafeSnackbar(
+        title: 'Error',
+        message: 'Failed to load activities: $e',
         backgroundColor: Color(AppColors.errorColor),
-        colorText: Colors.white,
       );
     }
   }

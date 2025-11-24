@@ -75,8 +75,7 @@ async def root():
     return {
         "service": "Ganitha Mithura - Number Service",
         "version": "1.0.0",
-        "status": "running",
-        "phase": "Phase 1 - 50% MVP"
+        "status": "running"
     }
 
 

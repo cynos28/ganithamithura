@@ -5,7 +5,6 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
-import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/api_service.dart';
@@ -41,15 +40,21 @@ class _SayActivityScreenState extends State<SayActivityScreen>
   String _recognizedText = '';
   bool? _result;
   late AnimationController _micAnimationController;
+  String? _statusMessage;
+  Color? _statusColor;
   
   @override
   void initState() {
     super.initState();
-    _initSpeech();
     _micAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
+    
+    // Delay initialization to ensure widget is fully built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
   
   @override
@@ -57,6 +62,54 @@ class _SayActivityScreenState extends State<SayActivityScreen>
     _micAnimationController.dispose();
     _speech.stop();
     super.dispose();
+  }
+  
+  void _showErrorSnackbar(String title, String message, Color backgroundColor) {
+    if (!mounted) return;
+    
+    // Update state to show error in UI
+    setState(() {
+      _statusMessage = message;
+      _statusColor = backgroundColor;
+    });
+    
+    // Also try to show snackbar
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(message),
+            ],
+          ),
+          backgroundColor: backgroundColor,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error showing snackbar: $e');
+    }
+    
+    // Clear status message after delay
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        setState(() {
+          _statusMessage = null;
+          _statusColor = null;
+        });
+      }
+    });
   }
   
   Future<void> _initSpeech() async {
@@ -67,28 +120,74 @@ class _SayActivityScreenState extends State<SayActivityScreen>
       _speechAvailable = await _speech.initialize(
         onError: (error) {
           debugPrint('Speech recognition error: $error');
+          if (!mounted) return;
+          
           setState(() {
             _isListening = false;
+          });
+          
+          // Store error to show in UI instead of immediate snackbar
+          String title = 'Error';
+          String message = 'Please try again';
+          
+          if (error.errorMsg == 'error_no_match') {
+            title = 'Could not understand';
+            message = 'Please speak clearly and say "${NumberWords.getWord(widget.currentNumber)}"';
+          } else if (error.errorMsg == 'error_network') {
+            title = 'Network Error';
+            message = 'Please check your internet connection';
+          } else {
+            title = 'Recognition Error';
+            message = 'Speech recognition failed. Please try again.';
+          }
+          
+          // Show error after a delay to ensure context is ready
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              _showErrorSnackbar(title, message, Color(AppColors.errorColor));
+            }
           });
         },
         onStatus: (status) {
           debugPrint('Speech status: $status');
+          if (!mounted) return;
+          
           if (status == 'done' || status == 'notListening') {
             setState(() {
               _isListening = false;
             });
+            
+            // If we finished listening but didn't get any text, show hint
+            if (status == 'done' && _recognizedText.isEmpty) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted) {
+                  _showErrorSnackbar(
+                    'Try Again',
+                    'No speech detected. Tap the microphone and speak clearly.',
+                    Color(AppColors.infoColor),
+                  );
+                }
+              });
+            }
           }
         },
       );
       
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } else {
-      Get.snackbar(
-        'Permission Required',
-        'Microphone permission is needed for this activity',
-        backgroundColor: Color(AppColors.errorColor),
-        colorText: Colors.white,
-      );
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _showErrorSnackbar(
+              'Permission Required',
+              'Microphone permission is needed for this activity',
+              Color(AppColors.errorColor),
+            );
+          }
+        });
+      }
     }
   }
   
@@ -104,25 +203,26 @@ class _SayActivityScreenState extends State<SayActivityScreen>
       body: SafeArea(
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.standardPadding * 2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Instructions
-                  const Text(
-                    'Say the number aloud',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.standardPadding * 2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Instructions
+                    const Text(
+                      'Say the number aloud',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Number display
-                  NumberDisplay(
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Number display
+                    NumberDisplay(
                     number: widget.currentNumber,
                     word: NumberWords.getWord(widget.currentNumber),
                   ),
@@ -167,6 +267,38 @@ class _SayActivityScreenState extends State<SayActivityScreen>
                   
                   const SizedBox(height: 32),
                   
+                  // Status/Error message display
+                  if (_statusMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _statusColor ?? Color(AppColors.errorColor),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _statusMessage!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  
+                  if (_statusMessage != null) const SizedBox(height: 16),
+                  
                   // Instructions card
                   if (!_speechAvailable)
                     Card(
@@ -193,24 +325,39 @@ class _SayActivityScreenState extends State<SayActivityScreen>
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(AppConstants.standardPadding),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Color(AppColors.infoColor),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: Color(AppColors.infoColor),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'How to play:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Tap the microphone and say "${NumberWords.getWord(widget.currentNumber)}"',
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '1. Tap the microphone button\n'
+                              '2. Say "${NumberWords.getWord(widget.currentNumber)}" clearly\n'
+                              '3. Speak at a normal volume\n'
+                              '4. Avoid background noise',
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ],
                         ),
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
             
@@ -286,8 +433,11 @@ class _SayActivityScreenState extends State<SayActivityScreen>
       
       await _speech.listen(
         onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 5),
-        pauseFor: const Duration(seconds: 2),
+        listenFor: const Duration(seconds: 10),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
+        listenMode: stt.ListenMode.confirmation,
       );
       
       setState(() {
