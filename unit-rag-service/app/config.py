@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     # OpenAI
     openai_api_key: str
-    openai_model: str = "gpt-4-turbo-preview"
+    openai_model: str = "gpt-4o-mini"
     
     # MongoDB
     mongodb_url: str = "mongodb://localhost:27017"

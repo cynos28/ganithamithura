@@ -24,11 +24,35 @@ async def generate_questions(
     - Generates questions for specified grade levels
     - Runs as background task
     """
+    # Check for common placeholder mistakes
+    if request.document_id.lower() in ['string', 'str', 'example', 'objectid']:
+        raise HTTPException(
+            status_code=400,
+            detail="Please replace the example 'string' with an actual document ID from the uploaded documents list"
+        )
+    
+    # Validate ObjectId format (24 hex characters)
+    if len(request.document_id) != 24 or not all(c in '0123456789abcdef' for c in request.document_id.lower()):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid document_id format. Must be a 24-character hexadecimal MongoDB ObjectId. Got: '{request.document_id}'"
+        )
+    
     # Verify document exists
-    document = await DocumentModel.get(request.document_id)
+    try:
+        from bson import ObjectId
+        document = await DocumentModel.find_one(DocumentModel.id == ObjectId(request.document_id))
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid document_id format: {str(e)}"
+        )
     
     if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Document with ID '{request.document_id}' not found. Please check the document ID from the upload list."
+        )
     
     if document.status != "completed":
         raise HTTPException(
@@ -45,10 +69,14 @@ async def generate_questions(
         question_types=request.question_types
     )
     
+    print(f"🚀 Starting question generation for document {request.document_id}")
+    
     return {
-        "message": "Question generation started",
+        "message": "Question generation started in background",
         "document_id": request.document_id,
-        "estimated_questions": len(request.grade_levels) * request.questions_per_grade
+        "estimated_questions": len(request.grade_levels) * request.questions_per_grade,
+        "status": "processing",
+        "note": "Check GET /api/v1/questions/document/{document_id} to see generated questions"
     }
 
 
@@ -59,12 +87,17 @@ async def generate_questions_task(
     question_types: List[str]
 ):
     """Background task to generate questions"""
+    print(f"📝 Question generation task started for document {document_id}")
     try:
-        document = await DocumentModel.get(document_id)
+        from bson import ObjectId
+        document = await DocumentModel.find_one(DocumentModel.id == ObjectId(document_id))
         
         if not document:
-            print(f"Document {document_id} not found")
+            print(f"❌ Document {document_id} not found in background task")
             return
+        
+        print(f"📄 Found document: {document.title}")
+        print(f"🎯 Generating {questions_per_grade} questions per grade for grades {grade_levels}")
         
         # Generate questions using the service
         questions = await question_generator.generate_questions_for_document(
@@ -74,6 +107,8 @@ async def generate_questions_task(
             questions_per_grade=questions_per_grade,
             question_types=question_types
         )
+        
+        print(f"💡 Received {len(questions)} questions from generator")
         
         # Save to MongoDB
         question_count = 0
@@ -93,6 +128,7 @@ async def generate_questions_task(
             )
             await question.insert()
             question_count += 1
+            print(f"💾 Saved question {question_count} with document_id: {document_id}, question_id: {str(question.id)}")
         
         # Update document question count
         document.questions_count = question_count
@@ -112,6 +148,7 @@ async def get_questions_by_document(
     question_type: Optional[str] = None
 ):
     """Get all questions for a document with optional filters"""
+    print(f"🔍 Looking for questions with document_id: {document_id}")
     query = {"document_id": document_id}
     
     if grade_level:
@@ -121,7 +158,14 @@ async def get_questions_by_document(
     if question_type:
         query["question_type"] = question_type
     
+    print(f"🔍 Query: {query}")
     questions = await QuestionModel.find(query).to_list()
+    print(f"📊 Found {len(questions)} questions")
+    
+    # Return empty list instead of 404 if no questions found
+    if not questions:
+        print(f"⚠️ No questions found for document {document_id}")
+        return []
     
     return [
         QuestionResponse(
@@ -143,7 +187,28 @@ async def get_questions_by_document(
 @router.get("/{question_id}", response_model=QuestionResponse)
 async def get_question(question_id: str):
     """Get a specific question by ID"""
-    question = await QuestionModel.get(question_id)
+    # Check for placeholder values
+    if question_id.lower() in ['string', 'str', 'example', 'objectid']:
+        raise HTTPException(
+            status_code=400,
+            detail="Please replace 'string' with an actual question ID"
+        )
+    
+    # Validate ObjectId format
+    if len(question_id) != 24 or not all(c in '0123456789abcdef' for c in question_id.lower()):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid question_id format. Must be a 24-character hexadecimal MongoDB ObjectId"
+        )
+    
+    try:
+        from bson import ObjectId
+        question = await QuestionModel.find_one(QuestionModel.id == ObjectId(question_id))
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid question_id: {str(e)}"
+        )
     
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -165,7 +230,11 @@ async def get_question(question_id: str):
 @router.put("/{question_id}", response_model=QuestionResponse)
 async def update_question(question_id: str, update: QuestionUpdate):
     """Update a question"""
-    question = await QuestionModel.get(question_id)
+    try:
+        from bson import ObjectId
+        question = await QuestionModel.find_one(QuestionModel.id == ObjectId(question_id))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid question_id: {str(e)}")
     
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -194,7 +263,11 @@ async def update_question(question_id: str, update: QuestionUpdate):
 @router.delete("/{question_id}")
 async def delete_question(question_id: str):
     """Delete a question"""
-    question = await QuestionModel.get(question_id)
+    try:
+        from bson import ObjectId
+        question = await QuestionModel.find_one(QuestionModel.id == ObjectId(question_id))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid question_id: {str(e)}")
     
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")

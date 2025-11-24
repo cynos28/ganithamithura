@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 @router.post("/", response_model=DocumentResponse)
 async def upload_document(
     file: UploadFile = File(..., description="Document file (PDF, DOCX, or TXT)"),
-    grade_levels: str = Form("5", description="Comma-separated grade levels", example="5,6,7"),
+    grade_levels: str = Form("1", description="Comma-separated grade levels (1-4 for kindergarten)", example="1,2,3,4"),
     topic: str = Form("Length", description="Topic name (e.g., Length, Area, Weight)", example="Length"),
     title: str = Form(None, description="Document title (optional, uses filename if not provided)"),
     uploaded_by: str = Form(None, description="Uploader ID (optional)")
@@ -81,13 +81,13 @@ async def upload_document(
             grade_list = [int(g.strip()) for g in grade_levels.split(',') if g.strip()]
             if not grade_list:
                 raise ValueError("No grades provided")
-            # Validate grade ranges (assuming grades 1-12)
-            if any(g < 1 or g > 12 for g in grade_list):
-                raise ValueError("Grade levels must be between 1 and 12")
+            # Validate grade ranges (kindergarten grades 1-4)
+            if any(g < 1 or g > 4 for g in grade_list):
+                raise ValueError("Grade levels must be between 1 and 4 for kindergarten students")
         except ValueError as e:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid grade_levels. Use comma-separated numbers (e.g., '5,6,7'). Error: {str(e)}"
+                detail=f"Invalid grade_levels. Use comma-separated numbers (e.g., '1,2,3,4'). Error: {str(e)}"
             )
         
         # Create document record in MongoDB
@@ -129,6 +129,44 @@ async def upload_document(
         document.vector_db_id = vector_doc_id
         document.status = "completed"
         await document.save()
+        
+        # Auto-generate questions in background after upload
+        from app.services.question_generator import question_generator
+        try:
+            print(f"🚀 Auto-generating questions for document {document.id}")
+            questions = await question_generator.generate_questions_for_document(
+                document_id=str(document.id),
+                document_content=text_content,
+                grade_levels=grade_list,
+                questions_per_grade=5  # Generate 5 questions per grade automatically
+            )
+            
+            # Save generated questions
+            from app.models.database import QuestionModel
+            question_count = 0
+            for q_data in questions:
+                question = QuestionModel(
+                    document_id=str(document.id),
+                    question_text=q_data["question_text"],
+                    question_type=q_data["question_type"],
+                    correct_answer=q_data["correct_answer"],
+                    options=q_data.get("options"),
+                    grade_level=q_data["grade_level"],
+                    difficulty_level=q_data["difficulty_level"],
+                    bloom_level=q_data.get("bloom_level"),
+                    concepts=q_data.get("concepts", []),
+                    explanation=q_data.get("explanation"),
+                    hints=q_data.get("hints", [])
+                )
+                await question.insert()
+                question_count += 1
+            
+            # Update document question count
+            document.questions_count = question_count
+            await document.save()
+            print(f"✅ Auto-generated {question_count} questions for document {document.id}")
+        except Exception as e:
+            print(f"⚠️ Auto-generation failed (document still uploaded): {str(e)}")
         
         return DocumentResponse(
             id=str(document.id),
