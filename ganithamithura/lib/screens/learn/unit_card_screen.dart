@@ -16,13 +16,24 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
   int _selectedIndex = 1; // Learn tab selected
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Handle navigation based on index
     if (index == 0) {
-      Get.back(); // Go back to home
+      // Go back to home
+      Get.back();
+      return;
     }
+    
+    if (index == 1) {
+      // Already on Learn/Units screen
+      return;
+    }
+    
+    // TODO: Navigate to other tabs when ready
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be available soon',
+      backgroundColor: const Color(AppColors.infoColor),
+      colorText: Colors.white,
+    );
   }
 
   @override

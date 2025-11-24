@@ -72,12 +72,24 @@ class _UnitsListScreenState extends State<UnitsListScreen> {
   }
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
     if (index == 0) {
-      Get.back(); // Go back to home or previous
+      // Go back to previous screen
+      Get.back();
+      return;
     }
+    
+    if (index == _selectedIndex) {
+      // Already on current tab
+      return;
+    }
+    
+    // TODO: Handle other navigation items
+    Get.snackbar(
+      'Coming Soon',
+      'This feature will be available soon',
+      backgroundColor: const Color(AppColors.infoColor),
+      colorText: Colors.white,
+    );
   }
 
   Color _getTopicColor() {
