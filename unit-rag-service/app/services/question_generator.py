@@ -50,19 +50,25 @@ class QuestionGenerator:
         grade_config = self.GRADE_PROMPTS[grade_level]
         
         prompt = f"""
-Based on this educational content about {topic}:
+Based on this educational content, generate questions ONLY about {topic.upper()} measurement:
 
 {context}
 
+IMPORTANT RULES:
+- Generate ONLY questions about {topic.upper()} (e.g., {topic} units, {topic} conversions, {topic} measurements)
+- DO NOT include questions about other measurement topics
+- Focus exclusively on {topic}-related concepts
+
 Generate {num_questions} questions for Grade {grade_level} students following these rules:
 
-1. Question Types: Use {', '.join(grade_config['question_types'])}
-2. Difficulty: Range from {grade_config['difficulty_range'][0]} to {grade_config['difficulty_range'][1]} (1=easiest, 5=hardest)
-3. Bloom's Taxonomy: Focus on {', '.join(grade_config['bloom_levels'])}
-4. For MCQ questions: Provide exactly 4 options, with one correct answer
-5. Include helpful hints that guide without giving away the answer
-6. Provide clear explanations for the correct answer
-7. Tag relevant concepts covered
+1. Topic Focus: ONLY {topic.upper()} - ignore all other topics in the content
+2. Question Types: Use {', '.join(grade_config['question_types'])}
+3. Difficulty: Range from {grade_config['difficulty_range'][0]} to {grade_config['difficulty_range'][1]} (1=easiest, 5=hardest)
+4. Bloom's Taxonomy: Focus on {', '.join(grade_config['bloom_levels'])}
+5. For MCQ questions: Provide exactly 4 options, with one correct answer
+6. Include helpful hints that guide without giving away the answer
+7. Provide clear explanations for the correct answer
+8. Tag relevant concepts covered (related to {topic} only)
 
 Return ONLY valid JSON in this exact format:
 {{
@@ -120,6 +126,7 @@ Make questions engaging, age-appropriate, and educational!
         document_id: str,
         document_content: str,
         grade_levels: List[int],
+        topic: str = "measurement",
         questions_per_grade: int = 10,
         question_types: List[str] = None
     ) -> List[Dict[str, Any]]:
@@ -137,11 +144,11 @@ Make questions engaging, age-appropriate, and educational!
         
         for grade in grade_levels:
             try:
-                print(f"🎯 Generating {questions_per_grade} questions for grade {grade}...")
+                print(f"🎯 Generating {questions_per_grade} questions for grade {grade} (Topic: {topic})...")
                 questions = await self.generate_questions_from_context(
                     context=context,
                     grade_level=grade,
-                    topic="measurement",  # You can pass this as parameter if needed
+                    topic=topic,
                     num_questions=questions_per_grade
                 )
                 all_questions.extend(questions)

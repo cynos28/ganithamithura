@@ -123,10 +123,15 @@ class AdaptiveEngine:
             if mastery < 0.5
         ]
         
+        # Build base query with unit_id filter
+        base_query = {"unit_id": unit_id}
+        if answered_ids:
+            base_query["_id"] = {"$nin": answered_ids}
+        
         # Priority 1: Questions on weak concepts at target difficulty
         if weak_concepts:
             question = await QuestionModel.find_one(
-                {"_id": {"$nin": answered_ids}} if answered_ids else {},
+                base_query,
                 QuestionModel.difficulty_level == target_difficulty,
                 {"concepts": {"$in": weak_concepts}}
             )
@@ -134,20 +139,21 @@ class AdaptiveEngine:
             if question:
                 return question
         
-        # Priority 2: Any question at target difficulty
+        # Priority 2: Any question at target difficulty for this unit
         question = await QuestionModel.find_one(
-            {"_id": {"$nin": answered_ids}} if answered_ids else {},
+            base_query,
             QuestionModel.difficulty_level == target_difficulty
         )
         
         if question:
             return question
         
-        # Priority 3: Question at adjacent difficulty
+        # Priority 3: Question at adjacent difficulty for this unit
         for diff_offset in [1, -1, 2, -2]:
             adj_difficulty = target_difficulty + diff_offset
             if self.min_difficulty <= adj_difficulty <= self.max_difficulty:
                 question = await QuestionModel.find_one(
+                    base_query,
                     {"_id": {"$nin": answered_ids}} if answered_ids else {},
                     QuestionModel.difficulty_level == adj_difficulty
                 )

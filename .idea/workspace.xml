@@ -6,14 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="04341d4a-a528-411d-ac81-7cff2db09c71" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/models/unit_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/models/unit_models.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/units/question_practice_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/screens/units/question_practice_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/services/api/unit_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/services/api/unit_api_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit-rag-service/MONGODB_SETUP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit-rag-service/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/unit-rag-service/app/models/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/models/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit-rag-service/app/routes/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/routes/upload.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unit-rag-service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit-rag-service/app/routes/questions.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/routes/questions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit-rag-service/app/services/adaptive_engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/services/adaptive_engine.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

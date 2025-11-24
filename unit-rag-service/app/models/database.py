@@ -35,6 +35,8 @@ class DocumentModel(Document):
 class QuestionModel(Document):
     """Questions generated from documents"""
     document_id: Optional[str] = None  # MongoDB ObjectId as string
+    unit_id: Optional[str] = None  # For linking to Flutter app units (e.g., "unit_length_1")
+    topic: Optional[str] = None  # Length, Area, Capacity, Weight
     question_text: str
     question_type: str  # mcq, short_answer, true_false
     correct_answer: str
@@ -51,10 +53,13 @@ class QuestionModel(Document):
         name = "questions"
         indexes = [
             "document_id",
+            "unit_id",
+            "topic",
             "grade_level",
             "difficulty_level",
             "question_type",
             [("grade_level", 1), ("difficulty_level", 1)],  # Compound index
+            [("unit_id", 1), ("difficulty_level", 1)],  # Compound index for adaptive
         ]
 
 

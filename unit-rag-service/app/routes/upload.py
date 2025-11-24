@@ -138,6 +138,7 @@ async def upload_document(
                 document_id=str(document.id),
                 document_content=text_content,
                 grade_levels=grade_list,
+                topic=topic,  # Pass the topic to focus question generation
                 questions_per_grade=5  # Generate 5 questions per grade automatically
             )
             
@@ -145,8 +146,13 @@ async def upload_document(
             from app.models.database import QuestionModel
             question_count = 0
             for q_data in questions:
+                # Generate unit_id based on document topic and grade
+                unit_id = f"unit_{topic.lower()}_{q_data['grade_level']}" if topic else None
+                
                 question = QuestionModel(
                     document_id=str(document.id),
+                    unit_id=unit_id,
+                    topic=topic,
                     question_text=q_data["question_text"],
                     question_type=q_data["question_type"],
                     correct_answer=q_data["correct_answer"],
@@ -160,6 +166,7 @@ async def upload_document(
                 )
                 await question.insert()
                 question_count += 1
+                print(f"💾 Auto-saved question {question_count}: unit_id={unit_id}, topic={topic}, grade={q_data['grade_level']}")
             
             # Update document question count
             document.questions_count = question_count

@@ -100,7 +100,8 @@ async def get_questions_by_document_alias(
     document_id: str,
     grade_level: Optional[int] = None,
     difficulty_level: Optional[int] = None,
-    question_type: Optional[str] = None
+    question_type: Optional[str] = None,
+    topic: Optional[str] = None
 ):
     """Alias endpoint for Next.js dashboard - Get questions for a document"""
     from app.models.database import QuestionModel
@@ -111,10 +112,14 @@ async def get_questions_by_document_alias(
     
     if grade_level:
         query["grade_level"] = grade_level
+        print(f"🔍 [ALIAS] Filtering by grade_level: {grade_level}")
     if difficulty_level:
         query["difficulty_level"] = difficulty_level
     if question_type:
         query["question_type"] = question_type
+    if topic:
+        query["topic"] = topic
+        print(f"🔍 [ALIAS] Filtering by topic: {topic}")
     
     print(f"🔍 [ALIAS] Query: {query}")
     questions = await QuestionModel.find(query).to_list()
@@ -124,6 +129,16 @@ async def get_questions_by_document_alias(
     if not questions:
         print(f"⚠️ [ALIAS] No questions found for document {document_id}")
         return []
+    
+    # Group questions by topic and grade for better organization
+    questions_by_topic_grade = {}
+    for q in questions:
+        key = f"{q.topic or 'Unknown'}_{q.grade_level}"
+        if key not in questions_by_topic_grade:
+            questions_by_topic_grade[key] = []
+        questions_by_topic_grade[key].append(q)
+    
+    print(f"📋 [ALIAS] Questions grouped: {[(k, len(v)) for k, v in questions_by_topic_grade.items()]}")
     
     return [
         QuestionResponse(
