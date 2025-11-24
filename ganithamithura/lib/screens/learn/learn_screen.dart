@@ -26,10 +26,6 @@ class _LearnScreenState extends State<LearnScreen> {
       return;
     }
     
-    setState(() {
-      _selectedIndex = index;
-    });
-    
     // TODO: Navigate to other tabs when ready
     Get.snackbar(
       'Coming Soon',

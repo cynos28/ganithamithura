@@ -22,9 +22,10 @@ class _MeasurementHomeScreenState extends State<MeasurementHomeScreen> {
       return;
     }
     
-    setState(() {
-      _currentNavIndex = index;
-    });
+    if (index == _currentNavIndex) {
+      // Already on current tab
+      return;
+    }
     
     // TODO: Navigate to other screens when ready
     Get.snackbar(
