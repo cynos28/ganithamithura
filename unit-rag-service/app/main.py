@@ -27,6 +27,9 @@ app.include_router(upload.router)
 app.include_router(questions.router)
 app.include_router(adaptive.router)
 
+# Add legacy/alias routes for backward compatibility
+app.include_router(upload.router, prefix="/upload", tags=["upload-legacy"])
+
 
 @app.on_event("startup")
 async def startup_event():

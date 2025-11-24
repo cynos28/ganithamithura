@@ -106,12 +106,9 @@ async def init_db():
     """Initialize MongoDB connection and Beanie ODM"""
     global db_client
     
-    # Create Motor client with SSL certificate verification disabled for macOS
-    # This fixes the SSL: CERTIFICATE_VERIFY_FAILED error
-    db_client = AsyncIOMotorClient(
-        settings.mongodb_url,
-        tlsAllowInvalidCertificates=True  # For MongoDB Atlas on macOS
-    )
+    # Create Motor client
+    # TLS parameters are now in the connection string
+    db_client = AsyncIOMotorClient(settings.mongodb_url)
     
     # Get database
     database = db_client[settings.mongodb_db_name]

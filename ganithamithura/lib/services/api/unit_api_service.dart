@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:ganithamithura/models/unit_models.dart';
 
@@ -7,6 +8,7 @@ import 'package:ganithamithura/models/unit_models.dart';
 class UnitApiService {
   // TODO: Move to config file
   static const String baseUrl = 'http://localhost:8000/api';
+  static const String ragBaseUrl = 'http://localhost:8000'; // RAG Service - Make sure server is running!
   
   // Singleton pattern
   static final UnitApiService _instance = UnitApiService._internal();
@@ -143,6 +145,241 @@ class UnitApiService {
     } catch (e) {
       // Return mock response for MVP
       return _getMockChatResponse(message);
+    }
+  }
+  
+  // ========== RAG SERVICE ENDPOINTS ==========
+  
+  /// POST /upload/document
+  /// Upload a document for a specific unit and grade
+  Future<UploadDocumentResponse> uploadDocument({
+    required File file,
+    required List<int> gradeLevels,
+    required String topic,
+    String? teacherId,
+  }) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$ragBaseUrl/upload/document'),
+      );
+      
+      // Add file
+      request.files.add(
+        await http.MultipartFile.fromPath('file', file.path),
+      );
+      
+      // Add form fields
+      request.fields['grade_levels'] = gradeLevels.join(',');
+      request.fields['topic'] = topic;
+      if (teacherId != null) {
+        request.fields['uploaded_by'] = teacherId;
+      }
+      
+      final streamedResponse = await request.send()
+          .timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode == 200) {
+        return UploadDocumentResponse.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Upload failed: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Document upload error: $e');
+    }
+  }
+  
+  /// POST /questions/generate/{documentId}
+  /// Generate questions from uploaded document
+  Future<GenerateQuestionsResponse> generateQuestions({
+    required String documentId,
+    required int gradeLevel,
+    int numQuestions = 10,
+    List<int>? difficultyLevels,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$ragBaseUrl/questions/generate/$documentId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'num_questions': numQuestions,
+          'grade_level': gradeLevel,
+          if (difficultyLevels != null) 'difficulty_levels': difficultyLevels,
+        }),
+      ).timeout(const Duration(seconds: 60));
+      
+      if (response.statusCode == 200) {
+        return GenerateQuestionsResponse.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Question generation failed: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Generate questions error: $e');
+    }
+  }
+  
+  /// GET /upload/documents
+  /// Get all uploaded documents (for teacher dashboard)
+  Future<List<DocumentInfo>> getDocuments({
+    String? topic,
+    int? gradeLevel,
+  }) async {
+    try {
+      var uri = '$ragBaseUrl/upload/documents';
+      final queryParams = <String>[];
+      if (topic != null) queryParams.add('topic=$topic');
+      if (gradeLevel != null) queryParams.add('grade_level=$gradeLevel');
+      if (queryParams.isNotEmpty) {
+        uri += '?${queryParams.join('&')}';
+      }
+      
+      final response = await http.get(
+        Uri.parse(uri),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => DocumentInfo.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to fetch documents: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Get documents error: $e');
+    }
+  }
+  
+  /// GET /upload/documents/{documentId}
+  /// Get document details
+  Future<DocumentInfo> getDocumentDetails(String documentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$ragBaseUrl/upload/documents/$documentId'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        return DocumentInfo.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to fetch document: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Get document details error: $e');
+    }
+  }
+  
+  /// GET /questions/
+  /// Get questions by filters
+  Future<List<RAGQuestion>> getRAGQuestions({
+    String? documentId,
+    int? gradeLevel,
+    int? difficultyLevel,
+    int skip = 0,
+    int limit = 50,
+  }) async {
+    try {
+      final queryParams = <String>[
+        'skip=$skip',
+        'limit=$limit',
+      ];
+      if (documentId != null) queryParams.add('document_id=$documentId');
+      if (gradeLevel != null) queryParams.add('grade_level=$gradeLevel');
+      if (difficultyLevel != null) queryParams.add('difficulty_level=$difficultyLevel');
+      
+      final response = await http.get(
+        Uri.parse('$ragBaseUrl/questions/?${queryParams.join('&')}'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => RAGQuestion.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to fetch questions: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Get RAG questions error: $e');
+    }
+  }
+  
+  /// POST /adaptive/submit-answer
+  /// Submit answer with adaptive feedback
+  Future<AdaptiveFeedback> submitAdaptiveAnswer({
+    required String questionId,
+    required String answer,
+    int? timeTaken,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$ragBaseUrl/adaptive/submit-answer'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'student_id': studentId,
+          'question_id': questionId,
+          'answer': answer,
+          if (timeTaken != null) 'time_taken': timeTaken,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        return AdaptiveFeedback.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Submit answer failed: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Submit adaptive answer error: $e');
+    }
+  }
+  
+  /// GET /adaptive/next-question/{studentId}
+  /// Get next adaptive question based on student ability
+  Future<RAGQuestion> getAdaptiveQuestion({
+    required int unitId,
+    int? currentDifficulty,
+  }) async {
+    try {
+      final queryParams = ['unit_id=$unitId'];
+      if (currentDifficulty != null) {
+        queryParams.add('current_difficulty=$currentDifficulty');
+      }
+      
+      final response = await http.get(
+        Uri.parse('$ragBaseUrl/adaptive/next-question/$studentId?${queryParams.join('&')}'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        return RAGQuestion.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Get adaptive question failed: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Get adaptive question error: $e');
+    }
+  }
+  
+  /// GET /adaptive/analytics/{studentId}
+  /// Get student analytics and ability metrics
+  Future<StudentAnalytics> getStudentAnalytics({int? unitId}) async {
+    try {
+      var uri = '$ragBaseUrl/adaptive/analytics/$studentId';
+      if (unitId != null) {
+        uri += '?unit_id=$unitId';
+      }
+      
+      final response = await http.get(
+        Uri.parse(uri),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 10));
+      
+      if (response.statusCode == 200) {
+        return StudentAnalytics.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Get analytics failed: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Get student analytics error: $e');
     }
   }
   

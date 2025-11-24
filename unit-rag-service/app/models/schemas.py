@@ -12,7 +12,7 @@ class DocumentUpload(BaseModel):
 
 
 class DocumentResponse(BaseModel):
-    id: int
+    id: str  # MongoDB ObjectId as string
     title: str
     grade_levels: List[int]
     topic: str
@@ -96,7 +96,7 @@ class AdaptiveQuestionRequest(BaseModel):
 
 
 class AdaptiveQuestionResponse(BaseModel):
-    question_id: int
+    question_id: str  # MongoDB ObjectId as string
     question_text: str
     question_type: str
     options: Optional[List[str]]
@@ -136,9 +136,9 @@ class StudentProgress(BaseModel):
 
 
 class StudentAnswerRecord(BaseModel):
-    id: int
+    id: str  # MongoDB ObjectId as string
     student_id: str
-    question_id: int
+    question_id: str  # MongoDB ObjectId as string
     unit_id: int
     answer_given: str
     is_correct: bool
