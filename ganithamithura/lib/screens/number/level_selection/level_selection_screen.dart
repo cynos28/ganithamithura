@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/utils/ui_helpers.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/screens/number/video_lesson/video_lesson_screen.dart';
-import 'package:ganithamithura/services/api/api_service.dart';
+import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/bucket_manager.dart';
 
 /// LevelSelectionScreen - Display 5 levels with only Level 1 enabled
@@ -82,7 +84,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     return Scaffold(
       backgroundColor: Color(AppColors.backgroundColor),
       appBar: AppBar(
-        title: const Text('Select Level'),
+        title: Text('Select Level : ${AppConstants.numBaseUrl}'),
         backgroundColor: Color(AppColors.numberColor),
         foregroundColor: Colors.white,
       ),
@@ -116,31 +118,54 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
   
   void _startLevel(LearningLevel level) async {
-    // Show loading with a small delay to ensure overlay is ready
-    await Future.delayed(const Duration(milliseconds: 100));
-    
-    Get.dialog(
-      Material(
-        color: Colors.transparent,
-        child: const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+    try {
+      // Show loading with a small delay to ensure overlay is ready
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      if (!mounted) return;
+      
+      Get.dialog(
+        Material(
+          color: Colors.transparent,
+          child: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
           ),
         ),
-      ),
-      barrierDismissible: false,
-    );
-    
-    try {
-      // Fetch activities for this level
-      final activities = await ApiService.instance.getActivitiesForLevel(level.levelNumber);
+        barrierDismissible: false,
+      );
+      
+      // Additional delay to ensure dialog is fully rendered
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      if (!mounted) {
+        Get.back();
+        return;
+      }
+      
+      // Fetch activities for this level with timeout
+      final activities = await NumApiService.instance
+          .getActivitiesForLevel(level.levelNumber)
+          .timeout(
+            Duration(seconds: AppConstants.apiTimeout),
+            onTimeout: () {
+              throw Exception('Request timed out. Please check your internet connection.');
+            },
+          );
+      
+      if (!mounted) {
+        Get.back();
+        return;
+      }
       
       if (activities.isEmpty) {
         Get.back();
+        await Future.delayed(const Duration(milliseconds: 100));
         await UIHelpers.showSafeSnackbar(
-          title: 'Error',
-          message: 'No activities found for this level',
-          backgroundColor: Color(AppColors.errorColor),
+          title: 'No Activities',
+          message: 'No activities found for this level. Please try again later.',
+          backgroundColor: Color(AppColors.warningColor),
         );
         return;
       }
@@ -153,6 +178,11 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         firstNumber,
       );
       
+      if (!mounted) {
+        Get.back();
+        return;
+      }
+      
       Get.back(); // Close loading
       
       // Navigate to first activity (video lesson)
@@ -164,14 +194,64 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           currentNumber: firstNumber,
           level: level,
         ));
+      } else {
+        await Future.delayed(const Duration(milliseconds: 100));
+        await UIHelpers.showSafeSnackbar(
+          title: 'Error',
+          message: 'Could not find activities for number $firstNumber',
+          backgroundColor: Color(AppColors.errorColor),
+        );
       }
     } catch (e) {
-      Get.back();
-      await UIHelpers.showSafeSnackbar(
-        title: 'Error',
-        message: 'Failed to load activities: $e',
-        backgroundColor: Color(AppColors.errorColor),
-      );
+      debugPrint('Error in _startLevel: $e');
+      
+      // Safely close dialog if it's open
+      try {
+        if (mounted && Get.isDialogOpen == true) {
+          Get.back();
+        }
+      } catch (_) {
+        // Dialog might not be open, ignore
+      }
+      
+      // Wait before showing snackbar
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      if (!mounted) return;
+      
+      final errorMessage = UIHelpers.getErrorMessage(e);
+      
+      // Use ScaffoldMessenger as fallback for more reliability
+      try {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Connection Error',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            backgroundColor: Color(AppColors.errorColor),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } catch (snackbarError) {
+        debugPrint('Could not show snackbar: $snackbarError');
+      }
     }
   }
 }

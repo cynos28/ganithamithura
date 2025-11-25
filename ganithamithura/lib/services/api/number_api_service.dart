@@ -3,15 +3,15 @@ import 'package:http/http.dart' as http;
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/utils/constants.dart';
 
-/// ApiService - Handles all backend API calls
-class ApiService {
-  static ApiService? _instance;
-  final String baseUrl;
+/// NumApiService - Handles all backend API calls
+class NumApiService {
+  static NumApiService? _instance;
+  final String numBaseUrl;
   
-  ApiService._({required this.baseUrl});
+  NumApiService._({required this.numBaseUrl});
   
-  static ApiService get instance {
-    _instance ??= ApiService._(baseUrl: AppConstants.baseUrl);
+  static NumApiService get instance {
+    _instance ??= NumApiService._(numBaseUrl: AppConstants.numBaseUrl);
     return _instance!;
   }
   
@@ -28,7 +28,7 @@ class ApiService {
   /// GET /levels/{level}/activities - Fetch activities for a level
   Future<List<Activity>> getActivitiesForLevel(int level) async {
     try {
-      final url = Uri.parse('$baseUrl/levels/$level/activities');
+      final url = Uri.parse('$numBaseUrl/levels/$level/activities');
       final response = await http.get(
         url,
         headers: _getHeaders(),
@@ -58,7 +58,7 @@ class ApiService {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
-      final url = Uri.parse('$baseUrl/activity/score');
+      final url = Uri.parse('$numBaseUrl/activity/score');
       final body = {
         'activity_id': activityId,
         'score': score,
@@ -90,7 +90,7 @@ class ApiService {
   /// GET /test/beginner - Get beginner test activities (5 random)
   Future<List<Activity>> getBeginnerTestActivities() async {
     try {
-      final url = Uri.parse('$baseUrl/test/beginner');
+      final url = Uri.parse('$numBaseUrl/test/beginner');
       final response = await http.get(
         url,
         headers: _getHeaders(),
@@ -127,7 +127,7 @@ class ApiService {
   /// Health check endpoint
   Future<bool> healthCheck() async {
     try {
-      final url = Uri.parse('$baseUrl/health');
+      final url = Uri.parse('$numBaseUrl/health');
       final response = await http.get(url).timeout(
         const Duration(seconds: 5),
       );

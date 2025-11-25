@@ -5,7 +5,7 @@ import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
-import 'package:ganithamithura/services/api/api_service.dart';
+import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/screens/number/read/read_activity_screen.dart';
 
 /// TraceActivityScreen - Trace numbers with drawing canvas
@@ -30,7 +30,7 @@ class TraceActivityScreen extends StatefulWidget {
 class _TraceActivityScreenState extends State<TraceActivityScreen> {
   final List<Offset> _points = [];
   final _storageService = StorageService.instance;
-  final _apiService = ApiService.instance;
+  final _apiService = NumApiService.instance;
   
   bool _isChecking = false;
   bool? _result;
@@ -264,16 +264,27 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
       
       await _storageService.saveCompletedActivity(progress);
       
-      // Submit to backend (non-blocking)
-      _apiService.submitActivityScore(
-        activityId: widget.activity.id,
-        score: progress.score,
-        isCompleted: true,
-        additionalData: progress.additionalData,
-      ).catchError((e) {
-        debugPrint('Error submitting score: $e');
-        return <String, dynamic>{};
-      });
+      // Submit to backend (non-blocking with proper error handling)
+      _apiService
+          .submitActivityScore(
+            activityId: widget.activity.id,
+            score: progress.score,
+            isCompleted: true,
+            additionalData: progress.additionalData,
+          )
+          .timeout(
+            Duration(seconds: AppConstants.apiTimeout),
+            onTimeout: () {
+              debugPrint('Score submission timed out - will retry later');
+              return <String, dynamic>{'status': 'timeout'};
+            },
+          )
+          .catchError((e) {
+            debugPrint('Error submitting score: $e');
+            // Store for later retry if needed
+            // TODO: Phase 2 - Implement offline score queue
+            return <String, dynamic>{'status': 'error', 'error': e.toString()};
+          });
     }
     
     setState(() {

@@ -5,7 +5,7 @@ import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
-import 'package:ganithamithura/services/api/api_service.dart';
+import 'package:ganithamithura/services/api/number_api_service.dart';
 
 /// ObjectDetectionActivityScreen - Placeholder for object detection
 /// TODO: Phase 2 - Integrate real ML model
@@ -31,7 +31,7 @@ class ObjectDetectionActivityScreen extends StatefulWidget {
 class _ObjectDetectionActivityScreenState
     extends State<ObjectDetectionActivityScreen> {
   final _storageService = StorageService.instance;
-  final _apiService = ApiService.instance;
+  final _apiService = NumApiService.instance;
   
   bool _isDetecting = false;
   int? _detectedCount;
