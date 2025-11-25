@@ -7,7 +7,7 @@ import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
-import 'package:ganithamithura/screens/number/say/say_activity_screen.dart';
+import 'package:ganithamithura/services/learning_flow_manager.dart';
 
 /// ReadActivityScreen - Read and recognize numbers
 /// Mode 1: Show digit → select correct word
@@ -296,26 +296,27 @@ class _ReadActivityScreenState extends State<ReadActivityScreen> {
     });
   }
   
-  void _onSuccess() {
-    // Navigate to next activity
-    final numberActivities = widget.allActivities
-        .where((a) => a.number == widget.currentNumber)
-        .toList();
+  void _onSuccess() async {
+    // Use LearningFlowManager to move to next activity
+    final learningFlowManager = LearningFlowManager.instance;
     
-    numberActivities.sort((a, b) => a.order.compareTo(b.order));
-    
-    final currentIndex = numberActivities.indexWhere((a) => a.id == widget.activity.id);
-    
-    if (currentIndex >= 0 && currentIndex < numberActivities.length - 1) {
-      final nextActivity = numberActivities[currentIndex + 1];
-      
-      // Navigate to Say activity
-      Get.off(() => SayActivityScreen(
-        activity: nextActivity,
-        allActivities: widget.allActivities,
+    try {
+      await learningFlowManager.moveToNextActivity(
+        currentActivity: widget.activity,
         currentNumber: widget.currentNumber,
         level: widget.level,
-      ));
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error in moveToNextActivity: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Completed! Error navigating: $e'),
+            backgroundColor: Color(AppColors.errorColor),
+          ),
+        );
+      }
     }
   }
 }

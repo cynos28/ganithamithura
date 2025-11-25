@@ -6,6 +6,7 @@ import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
+import 'package:ganithamithura/services/learning_flow_manager.dart';
 
 /// ObjectDetectionActivityScreen - Placeholder for object detection
 /// TODO: Phase 2 - Integrate real ML model
@@ -198,8 +199,7 @@ class _ObjectDetectionActivityScreenState
     // Simulate detection delay
     await Future.delayed(const Duration(seconds: 2));
     
-    // Mock detection result (randomly correct or slightly off)
-    final mockCount = widget.currentNumber + (DateTime.now().second % 3 - 1);
+    final mockCount = widget.currentNumber;
     final isCorrect = mockCount == widget.currentNumber;
     
     setState(() {
@@ -255,16 +255,28 @@ class _ObjectDetectionActivityScreenState
     });
   }
   
-  void _onSuccess() {
-    // Number completed - show success and return to level selection
-    Get.back();
-    Get.back();
-    Get.snackbar(
-      'Number ${widget.currentNumber} Complete!',
-      'Great job! Moving to next number...',
-      backgroundColor: Color(AppColors.successColor),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+  void _onSuccess() async {
+    // Use LearningFlowManager to move to next activity
+    final learningFlowManager = LearningFlowManager.instance;
+    
+    try {
+      await learningFlowManager.moveToNextActivity(
+        currentActivity: widget.activity,
+        currentNumber: widget.currentNumber,
+        level: widget.level,
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error in moveToNextActivity: $e');
+      // If there's an error, show a message but don't crash
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Completed! Error navigating: $e'),
+            backgroundColor: Color(AppColors.errorColor),
+          ),
+        );
+      }
+    }
   }
 }
