@@ -138,6 +138,46 @@ class StorageService {
     return level <= currentLevel;
   }
   
+  /// Unlock a specific level
+  Future<bool> unlockLevel(int level) async {
+    final currentLevel = getCurrentLevel();
+    if (level > currentLevel) {
+      return await setCurrentLevel(level);
+    }
+    return true;
+  }
+  
+  /// Save level completion
+  Future<bool> saveLevelCompletion(int level) async {
+    final key = 'level_${level}_completed';
+    return await prefs.setBool(key, true);
+  }
+  
+  /// Check if level is completed
+  Future<bool> isLevelCompleted(int level) async {
+    final key = 'level_${level}_completed';
+    return prefs.getBool(key) ?? false;
+  }
+  
+  /// Save number completion for a level
+  Future<bool> saveNumberCompletion(int level, int number) async {
+    final key = 'level_${level}_number_${number}_completed';
+    return await prefs.setBool(key, true);
+  }
+  
+  /// Get completed numbers for a level
+  Future<Map<int, bool>> getCompletedNumbers(int level) async {
+    final Map<int, bool> completedNumbers = {};
+    
+    // Check numbers 1-10 for level 1 (can be extended for other levels)
+    for (int i = 1; i <= 10; i++) {
+      final key = 'level_${level}_number_${i}_completed';
+      completedNumbers[i] = prefs.getBool(key) ?? false;
+    }
+    
+    return completedNumbers;
+  }
+  
   // ==================== Progress Data ====================
   
   /// Save progress data (generic key-value storage)

@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/utils/ui_helpers.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
-import 'package:ganithamithura/screens/number/video_lesson/video_lesson_screen.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
-import 'package:ganithamithura/services/bucket_manager.dart';
+import 'package:ganithamithura/services/learning_flow_manager.dart';
 
 /// LevelSelectionScreen - Display 5 levels with only Level 1 enabled
 class LevelSelectionScreen extends StatefulWidget {
@@ -170,38 +168,18 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         return;
       }
       
-      // Get learning sequence for first number
-      final bucketManager = BucketManager.instance;
-      final firstNumber = level.minNumber;
-      final numberActivities = bucketManager.getLearningSequenceForNumber(
-        activities,
-        firstNumber,
-      );
-      
-      if (!mounted) {
-        Get.back();
-        return;
-      }
-      
       Get.back(); // Close loading
       
-      // Navigate to first activity (video lesson)
-      if (numberActivities.isNotEmpty) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        Get.to(() => VideoLessonScreen(
-          activity: numberActivities.first,
-          allActivities: activities,
-          currentNumber: firstNumber,
-          level: level,
-        ));
-      } else {
-        await Future.delayed(const Duration(milliseconds: 100));
-        await UIHelpers.showSafeSnackbar(
-          title: 'Error',
-          message: 'Could not find activities for number $firstNumber',
-          backgroundColor: Color(AppColors.errorColor),
-        );
-      }
+      // Use LearningFlowManager to start learning from first number
+      final learningFlowManager = LearningFlowManager.instance;
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      await learningFlowManager.startLearningFromNumber(
+        level: level.levelNumber,
+        startNumber: level.minNumber,
+        levelData: level,
+      );
+      
     } catch (e) {
       debugPrint('Error in _startLevel: $e');
       

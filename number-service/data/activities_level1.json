@@ -1,554 +1,1555 @@
 {
-  "activities": [
-    {
-      "id": "level1_num1_video",
-      "type": "video",
-      "number": 1,
-      "title": "Learn Number 1",
-      "description": "Watch and learn about number one",
-      "metadata": {
-        "video_url": "assets/videos/number_1.mp4",
-        "duration": 30
+  "level": 1,
+  "numbers": {
+    "1": {
+      "video": {
+        "url": "assets/videos/number_1.mp4",
+        "duration": 30,
+        "title": "Learn Number 1"
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num1_trace",
-      "type": "trace",
-      "number": 1,
-      "title": "Trace Number 1",
-      "description": "Practice tracing the number 1",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_1.svg"
+      "trace": {
+        "word": "One",
+        "dotted_image": "assets/numbers/trace_1.svg",
+        "instruction": "Trace the number 1",
+        "questions": [
+          {
+            "id": "trace_1_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 1 following the dots",
+            "template_image": "assets/numbers/trace_1.svg"
+          },
+          {
+            "id": "trace_1_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 1 with fewer guide dots",
+            "template_image": "assets/numbers/trace_1_medium.svg"
+          },
+          {
+            "id": "trace_1_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 1 without guides",
+            "template_image": "assets/numbers/trace_1_blank.svg"
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
-    },
-    {
-      "id": "level1_num1_read",
-      "type": "read",
-      "number": 1,
-      "title": "Read Number 1",
-      "description": "Identify the number 1",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num1_say",
-      "type": "say",
-      "number": 1,
-      "title": "Say Number 1",
-      "description": "Say 'one' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num1_detect",
-      "type": "object_detection",
-      "number": 1,
-      "title": "Find 1 Object",
-      "description": "Count one object",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num2_video",
-      "type": "video",
-      "number": 2,
-      "title": "Learn Number 2",
-      "description": "Watch and learn about number two",
-      "metadata": {
-        "video_url": "assets/videos/number_2.mp4",
-        "duration": 30
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_1_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 1 apple?",
+            "correct_answer": 1,
+            "help_image": "assets/images/apple_1.png",
+            "max_objects": 3
+          },
+          {
+            "id": "show_1_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 1 banana",
+            "correct_answer": 1,
+            "help_image": "assets/images/banana_1.png",
+            "max_objects": 5
+          },
+          {
+            "id": "show_1_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 1,
+            "help_image": "assets/images/star_1.png",
+            "max_objects": 15
+          }
+        ]
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num2_trace",
-      "type": "trace",
-      "number": 2,
-      "title": "Trace Number 2",
-      "description": "Practice tracing the number 2",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_2.svg"
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_1_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_1.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 1,
+            "pronounce": "one (won)",
+            "alternatives": [
+              "1",
+              "one"
+            ]
+          },
+          {
+            "id": "say_1_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_1.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 1,
+            "pronounce": "one (won)",
+            "alternatives": [
+              "1",
+              "one"
+            ]
+          },
+          {
+            "id": "say_1_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_1.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 1,
+            "pronounce": "one (won)",
+            "alternatives": [
+              "1",
+              "one"
+            ]
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_1_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: ONE",
+            "options": [
+              "1",
+              "1",
+              "2"
+            ],
+            "answer": "1"
+          },
+          {
+            "id": "read_1_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 1",
+            "options": [
+              "one",
+              "one",
+              "two"
+            ],
+            "answer": "one"
+          },
+          {
+            "id": "read_1_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes first?",
+            "options": [
+              "1",
+              "1",
+              "2"
+            ],
+            "answer": "1"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num2_read",
-      "type": "read",
-      "number": 2,
-      "title": "Read Number 2",
-      "description": "Identify the number 2",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num2_say",
-      "type": "say",
-      "number": 2,
-      "title": "Say Number 2",
-      "description": "Say 'two' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num2_detect",
-      "type": "object_detection",
-      "number": 2,
-      "title": "Find 2 Objects",
-      "description": "Count two objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num3_video",
-      "type": "video",
-      "number": 3,
-      "title": "Learn Number 3",
-      "description": "Watch and learn about number three",
-      "metadata": {
-        "video_url": "assets/videos/number_3.mp4",
-        "duration": 30
+    "2": {
+      "video": {
+        "url": "assets/videos/number_2.mp4",
+        "duration": 30,
+        "title": "Learn Number 2"
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num3_trace",
-      "type": "trace",
-      "number": 3,
-      "title": "Trace Number 3",
-      "description": "Practice tracing the number 3",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_3.svg"
+      "trace": {
+        "word": "Two",
+        "dotted_image": "assets/numbers/trace_2.svg",
+        "instruction": "Trace the number 2",
+        "questions": [
+          {
+            "id": "trace_2_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 2 following the dots",
+            "template_image": "assets/numbers/trace_2.svg"
+          },
+          {
+            "id": "trace_2_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 2 with fewer guide dots",
+            "template_image": "assets/numbers/trace_2_medium.svg"
+          },
+          {
+            "id": "trace_2_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 2 without guides",
+            "template_image": "assets/numbers/trace_2_blank.svg"
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
-    },
-    {
-      "id": "level1_num3_read",
-      "type": "read",
-      "number": 3,
-      "title": "Read Number 3",
-      "description": "Identify the number 3",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num3_say",
-      "type": "say",
-      "number": 3,
-      "title": "Say Number 3",
-      "description": "Say 'three' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num3_detect",
-      "type": "object_detection",
-      "number": 3,
-      "title": "Find 3 Objects",
-      "description": "Count three objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num4_video",
-      "type": "video",
-      "number": 4,
-      "title": "Learn Number 4",
-      "description": "Watch and learn about number four",
-      "metadata": {
-        "video_url": "assets/videos/number_4.mp4",
-        "duration": 30
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_2_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 2 apples?",
+            "correct_answer": 2,
+            "help_image": "assets/images/apple_2.png",
+            "max_objects": 4
+          },
+          {
+            "id": "show_2_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 2 bananas",
+            "correct_answer": 2,
+            "help_image": "assets/images/banana_2.png",
+            "max_objects": 6
+          },
+          {
+            "id": "show_2_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 2,
+            "help_image": "assets/images/star_2.png",
+            "max_objects": 15
+          }
+        ]
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num4_trace",
-      "type": "trace",
-      "number": 4,
-      "title": "Trace Number 4",
-      "description": "Practice tracing the number 4",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_4.svg"
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_2_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_2.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 2,
+            "pronounce": "two (too)",
+            "alternatives": [
+              "2",
+              "two"
+            ]
+          },
+          {
+            "id": "say_2_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_2.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 2,
+            "pronounce": "two (too)",
+            "alternatives": [
+              "2",
+              "two"
+            ]
+          },
+          {
+            "id": "say_2_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_2.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 2,
+            "pronounce": "two (too)",
+            "alternatives": [
+              "2",
+              "two"
+            ]
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_2_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: TWO",
+            "options": [
+              "1",
+              "2",
+              "3"
+            ],
+            "answer": "2"
+          },
+          {
+            "id": "read_2_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 2",
+            "options": [
+              "one",
+              "two",
+              "three"
+            ],
+            "answer": "two"
+          },
+          {
+            "id": "read_2_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after one?",
+            "options": [
+              "1",
+              "2",
+              "3"
+            ],
+            "answer": "2"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num4_read",
-      "type": "read",
-      "number": 4,
-      "title": "Read Number 4",
-      "description": "Identify the number 4",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num4_say",
-      "type": "say",
-      "number": 4,
-      "title": "Say Number 4",
-      "description": "Say 'four' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num4_detect",
-      "type": "object_detection",
-      "number": 4,
-      "title": "Find 4 Objects",
-      "description": "Count four objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num5_video",
-      "type": "video",
-      "number": 5,
-      "title": "Learn Number 5",
-      "description": "Watch and learn about number five",
-      "metadata": {
-        "video_url": "assets/videos/number_5.mp4",
-        "duration": 30
+    "3": {
+      "video": {
+        "url": "assets/videos/number_3.mp4",
+        "duration": 30,
+        "title": "Learn Number 3"
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num5_trace",
-      "type": "trace",
-      "number": 5,
-      "title": "Trace Number 5",
-      "description": "Practice tracing the number 5",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_5.svg"
+      "trace": {
+        "word": "Three",
+        "dotted_image": "assets/numbers/trace_3.svg",
+        "instruction": "Trace the number 3",
+        "questions": [
+          {
+            "id": "trace_3_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 3 following the dots",
+            "template_image": "assets/numbers/trace_3.svg"
+          },
+          {
+            "id": "trace_3_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 3 with fewer guide dots",
+            "template_image": "assets/numbers/trace_3_medium.svg"
+          },
+          {
+            "id": "trace_3_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 3 without guides",
+            "template_image": "assets/numbers/trace_3_blank.svg"
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
-    },
-    {
-      "id": "level1_num5_read",
-      "type": "read",
-      "number": 5,
-      "title": "Read Number 5",
-      "description": "Identify the number 5",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num5_say",
-      "type": "say",
-      "number": 5,
-      "title": "Say Number 5",
-      "description": "Say 'five' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num5_detect",
-      "type": "object_detection",
-      "number": 5,
-      "title": "Find 5 Objects",
-      "description": "Count five objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num6_video",
-      "type": "video",
-      "number": 6,
-      "title": "Learn Number 6",
-      "description": "Watch and learn about number six",
-      "metadata": {
-        "video_url": "assets/videos/number_6.mp4",
-        "duration": 30
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_3_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 3 apples?",
+            "correct_answer": 3,
+            "help_image": "assets/images/apple_3.png",
+            "max_objects": 5
+          },
+          {
+            "id": "show_3_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 3 bananas",
+            "correct_answer": 3,
+            "help_image": "assets/images/banana_3.png",
+            "max_objects": 7
+          },
+          {
+            "id": "show_3_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 3,
+            "help_image": "assets/images/star_3.png",
+            "max_objects": 15
+          }
+        ]
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num6_trace",
-      "type": "trace",
-      "number": 6,
-      "title": "Trace Number 6",
-      "description": "Practice tracing the number 6",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_6.svg"
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_3_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_3.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 3,
+            "pronounce": "three (thri)",
+            "alternatives": [
+              "3",
+              "three"
+            ]
+          },
+          {
+            "id": "say_3_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_3.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 3,
+            "pronounce": "three (thri)",
+            "alternatives": [
+              "3",
+              "three"
+            ]
+          },
+          {
+            "id": "say_3_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_3.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 3,
+            "pronounce": "three (thri)",
+            "alternatives": [
+              "3",
+              "three"
+            ]
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_3_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: THREE",
+            "options": [
+              "2",
+              "3",
+              "4"
+            ],
+            "answer": "3"
+          },
+          {
+            "id": "read_3_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 3",
+            "options": [
+              "two",
+              "three",
+              "four"
+            ],
+            "answer": "three"
+          },
+          {
+            "id": "read_3_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after two?",
+            "options": [
+              "2",
+              "3",
+              "4"
+            ],
+            "answer": "3"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num6_read",
-      "type": "read",
-      "number": 6,
-      "title": "Read Number 6",
-      "description": "Identify the number 6",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num6_say",
-      "type": "say",
-      "number": 6,
-      "title": "Say Number 6",
-      "description": "Say 'six' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num6_detect",
-      "type": "object_detection",
-      "number": 6,
-      "title": "Find 6 Objects",
-      "description": "Count six objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num7_video",
-      "type": "video",
-      "number": 7,
-      "title": "Learn Number 7",
-      "description": "Watch and learn about number seven",
-      "metadata": {
-        "video_url": "assets/videos/number_7.mp4",
-        "duration": 30
+    "4": {
+      "video": {
+        "url": "assets/videos/number_4.mp4",
+        "duration": 30,
+        "title": "Learn Number 4"
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num7_trace",
-      "type": "trace",
-      "number": 7,
-      "title": "Trace Number 7",
-      "description": "Practice tracing the number 7",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_7.svg"
+      "trace": {
+        "word": "Four",
+        "dotted_image": "assets/numbers/trace_4.svg",
+        "instruction": "Trace the number 4",
+        "questions": [
+          {
+            "id": "trace_4_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 4 following the dots",
+            "template_image": "assets/numbers/trace_4.svg"
+          },
+          {
+            "id": "trace_4_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 4 with fewer guide dots",
+            "template_image": "assets/numbers/trace_4_medium.svg"
+          },
+          {
+            "id": "trace_4_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 4 without guides",
+            "template_image": "assets/numbers/trace_4_blank.svg"
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
-    },
-    {
-      "id": "level1_num7_read",
-      "type": "read",
-      "number": 7,
-      "title": "Read Number 7",
-      "description": "Identify the number 7",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num7_say",
-      "type": "say",
-      "number": 7,
-      "title": "Say Number 7",
-      "description": "Say 'seven' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num7_detect",
-      "type": "object_detection",
-      "number": 7,
-      "title": "Find 7 Objects",
-      "description": "Count seven objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num8_video",
-      "type": "video",
-      "number": 8,
-      "title": "Learn Number 8",
-      "description": "Watch and learn about number eight",
-      "metadata": {
-        "video_url": "assets/videos/number_8.mp4",
-        "duration": 30
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_4_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 4 apples?",
+            "correct_answer": 4,
+            "help_image": "assets/images/apple_4.png",
+            "max_objects": 6
+          },
+          {
+            "id": "show_4_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 4 bananas",
+            "correct_answer": 4,
+            "help_image": "assets/images/banana_4.png",
+            "max_objects": 8
+          },
+          {
+            "id": "show_4_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 4,
+            "help_image": "assets/images/star_4.png",
+            "max_objects": 15
+          }
+        ]
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num8_trace",
-      "type": "trace",
-      "number": 8,
-      "title": "Trace Number 8",
-      "description": "Practice tracing the number 8",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_8.svg"
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_4_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_4.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 4,
+            "pronounce": "four (for)",
+            "alternatives": [
+              "4",
+              "four"
+            ]
+          },
+          {
+            "id": "say_4_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_4.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 4,
+            "pronounce": "four (for)",
+            "alternatives": [
+              "4",
+              "four"
+            ]
+          },
+          {
+            "id": "say_4_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_4.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 4,
+            "pronounce": "four (for)",
+            "alternatives": [
+              "4",
+              "four"
+            ]
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_4_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: FOUR",
+            "options": [
+              "3",
+              "4",
+              "5"
+            ],
+            "answer": "4"
+          },
+          {
+            "id": "read_4_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 4",
+            "options": [
+              "three",
+              "four",
+              "five"
+            ],
+            "answer": "four"
+          },
+          {
+            "id": "read_4_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after three?",
+            "options": [
+              "3",
+              "4",
+              "5"
+            ],
+            "answer": "4"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num8_read",
-      "type": "read",
-      "number": 8,
-      "title": "Read Number 8",
-      "description": "Identify the number 8",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num8_say",
-      "type": "say",
-      "number": 8,
-      "title": "Say Number 8",
-      "description": "Say 'eight' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num8_detect",
-      "type": "object_detection",
-      "number": 8,
-      "title": "Find 8 Objects",
-      "description": "Count eight objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num9_video",
-      "type": "video",
-      "number": 9,
-      "title": "Learn Number 9",
-      "description": "Watch and learn about number nine",
-      "metadata": {
-        "video_url": "assets/videos/number_9.mp4",
-        "duration": 30
+    "5": {
+      "video": {
+        "url": "assets/videos/number_5.mp4",
+        "duration": 30,
+        "title": "Learn Number 5"
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num9_trace",
-      "type": "trace",
-      "number": 9,
-      "title": "Trace Number 9",
-      "description": "Practice tracing the number 9",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_9.svg"
+      "trace": {
+        "word": "Five",
+        "dotted_image": "assets/numbers/trace_5.svg",
+        "instruction": "Trace the number 5",
+        "questions": [
+          {
+            "id": "trace_5_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 5 following the dots",
+            "template_image": "assets/numbers/trace_5.svg"
+          },
+          {
+            "id": "trace_5_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 5 with fewer guide dots",
+            "template_image": "assets/numbers/trace_5_medium.svg"
+          },
+          {
+            "id": "trace_5_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 5 without guides",
+            "template_image": "assets/numbers/trace_5_blank.svg"
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
-    },
-    {
-      "id": "level1_num9_read",
-      "type": "read",
-      "number": 9,
-      "title": "Read Number 9",
-      "description": "Identify the number 9",
-      "metadata": {},
-      "level": 1,
-      "order": 3
-    },
-    {
-      "id": "level1_num9_say",
-      "type": "say",
-      "number": 9,
-      "title": "Say Number 9",
-      "description": "Say 'nine' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
-    },
-    {
-      "id": "level1_num9_detect",
-      "type": "object_detection",
-      "number": 9,
-      "title": "Find 9 Objects",
-      "description": "Count nine objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
-    },
-    {
-      "id": "level1_num10_video",
-      "type": "video",
-      "number": 10,
-      "title": "Learn Number 10",
-      "description": "Watch and learn about number ten",
-      "metadata": {
-        "video_url": "assets/videos/number_10.mp4",
-        "duration": 30
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_5_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 5 apples?",
+            "correct_answer": 5,
+            "help_image": "assets/images/apple_5.png",
+            "max_objects": 7
+          },
+          {
+            "id": "show_5_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 5 bananas",
+            "correct_answer": 5,
+            "help_image": "assets/images/banana_5.png",
+            "max_objects": 9
+          },
+          {
+            "id": "show_5_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 5,
+            "help_image": "assets/images/star_5.png",
+            "max_objects": 15
+          }
+        ]
       },
-      "level": 1,
-      "order": 1
-    },
-    {
-      "id": "level1_num10_trace",
-      "type": "trace",
-      "number": 10,
-      "title": "Trace Number 10",
-      "description": "Practice tracing the number 10",
-      "metadata": {
-        "svg_path": "assets/numbers/trace_10.svg"
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_5_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_5.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 5,
+            "pronounce": "five (faiv)",
+            "alternatives": [
+              "5",
+              "five"
+            ]
+          },
+          {
+            "id": "say_5_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_5.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 5,
+            "pronounce": "five (faiv)",
+            "alternatives": [
+              "5",
+              "five"
+            ]
+          },
+          {
+            "id": "say_5_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_5.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 5,
+            "pronounce": "five (faiv)",
+            "alternatives": [
+              "5",
+              "five"
+            ]
+          }
+        ]
       },
-      "level": 1,
-      "order": 2
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_5_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: FIVE",
+            "options": [
+              "4",
+              "5",
+              "6"
+            ],
+            "answer": "5"
+          },
+          {
+            "id": "read_5_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 5",
+            "options": [
+              "four",
+              "five",
+              "six"
+            ],
+            "answer": "five"
+          },
+          {
+            "id": "read_5_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after four?",
+            "options": [
+              "4",
+              "5",
+              "6"
+            ],
+            "answer": "5"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num10_read",
-      "type": "read",
-      "number": 10,
-      "title": "Read Number 10",
-      "description": "Identify the number 10",
-      "metadata": {},
-      "level": 1,
-      "order": 3
+    "6": {
+      "video": {
+        "url": "assets/videos/number_6.mp4",
+        "duration": 30,
+        "title": "Learn Number 6"
+      },
+      "trace": {
+        "word": "Six",
+        "dotted_image": "assets/numbers/trace_6.svg",
+        "instruction": "Trace the number 6",
+        "questions": [
+          {
+            "id": "trace_6_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 6 following the dots",
+            "template_image": "assets/numbers/trace_6.svg"
+          },
+          {
+            "id": "trace_6_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 6 with fewer guide dots",
+            "template_image": "assets/numbers/trace_6_medium.svg"
+          },
+          {
+            "id": "trace_6_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 6 without guides",
+            "template_image": "assets/numbers/trace_6_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_6_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 6 apples?",
+            "correct_answer": 6,
+            "help_image": "assets/images/apple_6.png",
+            "max_objects": 8
+          },
+          {
+            "id": "show_6_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 6 bananas",
+            "correct_answer": 6,
+            "help_image": "assets/images/banana_6.png",
+            "max_objects": 10
+          },
+          {
+            "id": "show_6_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 6,
+            "help_image": "assets/images/star_6.png",
+            "max_objects": 15
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_6_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_6.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 6,
+            "pronounce": "six (siks)",
+            "alternatives": [
+              "6",
+              "six"
+            ]
+          },
+          {
+            "id": "say_6_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_6.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 6,
+            "pronounce": "six (siks)",
+            "alternatives": [
+              "6",
+              "six"
+            ]
+          },
+          {
+            "id": "say_6_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_6.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 6,
+            "pronounce": "six (siks)",
+            "alternatives": [
+              "6",
+              "six"
+            ]
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_6_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: SIX",
+            "options": [
+              "5",
+              "6",
+              "7"
+            ],
+            "answer": "6"
+          },
+          {
+            "id": "read_6_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 6",
+            "options": [
+              "five",
+              "six",
+              "seven"
+            ],
+            "answer": "six"
+          },
+          {
+            "id": "read_6_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after five?",
+            "options": [
+              "5",
+              "6",
+              "7"
+            ],
+            "answer": "6"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num10_say",
-      "type": "say",
-      "number": 10,
-      "title": "Say Number 10",
-      "description": "Say 'ten' aloud",
-      "metadata": {},
-      "level": 1,
-      "order": 4
+    "7": {
+      "video": {
+        "url": "assets/videos/number_7.mp4",
+        "duration": 30,
+        "title": "Learn Number 7"
+      },
+      "trace": {
+        "word": "Seven",
+        "dotted_image": "assets/numbers/trace_7.svg",
+        "instruction": "Trace the number 7",
+        "questions": [
+          {
+            "id": "trace_7_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 7 following the dots",
+            "template_image": "assets/numbers/trace_7.svg"
+          },
+          {
+            "id": "trace_7_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 7 with fewer guide dots",
+            "template_image": "assets/numbers/trace_7_medium.svg"
+          },
+          {
+            "id": "trace_7_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 7 without guides",
+            "template_image": "assets/numbers/trace_7_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_7_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 7 apples?",
+            "correct_answer": 7,
+            "help_image": "assets/images/apple_7.png",
+            "max_objects": 9
+          },
+          {
+            "id": "show_7_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 7 bananas",
+            "correct_answer": 7,
+            "help_image": "assets/images/banana_7.png",
+            "max_objects": 11
+          },
+          {
+            "id": "show_7_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 7,
+            "help_image": "assets/images/star_7.png",
+            "max_objects": 15
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_7_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_7.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 7,
+            "pronounce": "seven (sev\u0259n)",
+            "alternatives": [
+              "7",
+              "seven"
+            ]
+          },
+          {
+            "id": "say_7_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_7.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 7,
+            "pronounce": "seven (sev\u0259n)",
+            "alternatives": [
+              "7",
+              "seven"
+            ]
+          },
+          {
+            "id": "say_7_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_7.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 7,
+            "pronounce": "seven (sev\u0259n)",
+            "alternatives": [
+              "7",
+              "seven"
+            ]
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_7_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: SEVEN",
+            "options": [
+              "6",
+              "7",
+              "8"
+            ],
+            "answer": "7"
+          },
+          {
+            "id": "read_7_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 7",
+            "options": [
+              "six",
+              "seven",
+              "eight"
+            ],
+            "answer": "seven"
+          },
+          {
+            "id": "read_7_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after six?",
+            "options": [
+              "6",
+              "7",
+              "8"
+            ],
+            "answer": "7"
+          }
+        ]
+      }
     },
-    {
-      "id": "level1_num10_detect",
-      "type": "object_detection",
-      "number": 10,
-      "title": "Find 10 Objects",
-      "description": "Count ten objects",
-      "metadata": {},
-      "level": 1,
-      "order": 5
+    "8": {
+      "video": {
+        "url": "assets/videos/number_8.mp4",
+        "duration": 30,
+        "title": "Learn Number 8"
+      },
+      "trace": {
+        "word": "Eight",
+        "dotted_image": "assets/numbers/trace_8.svg",
+        "instruction": "Trace the number 8",
+        "questions": [
+          {
+            "id": "trace_8_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 8 following the dots",
+            "template_image": "assets/numbers/trace_8.svg"
+          },
+          {
+            "id": "trace_8_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 8 with fewer guide dots",
+            "template_image": "assets/numbers/trace_8_medium.svg"
+          },
+          {
+            "id": "trace_8_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 8 without guides",
+            "template_image": "assets/numbers/trace_8_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_8_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 8 apples?",
+            "correct_answer": 8,
+            "help_image": "assets/images/apple_8.png",
+            "max_objects": 10
+          },
+          {
+            "id": "show_8_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 8 bananas",
+            "correct_answer": 8,
+            "help_image": "assets/images/banana_8.png",
+            "max_objects": 12
+          },
+          {
+            "id": "show_8_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 8,
+            "help_image": "assets/images/star_8.png",
+            "max_objects": 15
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_8_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_8.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 8,
+            "pronounce": "eight (eit)",
+            "alternatives": [
+              "8",
+              "eight"
+            ]
+          },
+          {
+            "id": "say_8_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_8.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 8,
+            "pronounce": "eight (eit)",
+            "alternatives": [
+              "8",
+              "eight"
+            ]
+          },
+          {
+            "id": "say_8_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_8.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 8,
+            "pronounce": "eight (eit)",
+            "alternatives": [
+              "8",
+              "eight"
+            ]
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_8_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: EIGHT",
+            "options": [
+              "7",
+              "8",
+              "9"
+            ],
+            "answer": "8"
+          },
+          {
+            "id": "read_8_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 8",
+            "options": [
+              "seven",
+              "eight",
+              "nine"
+            ],
+            "answer": "eight"
+          },
+          {
+            "id": "read_8_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after seven?",
+            "options": [
+              "7",
+              "8",
+              "9"
+            ],
+            "answer": "8"
+          }
+        ]
+      }
+    },
+    "9": {
+      "video": {
+        "url": "assets/videos/number_9.mp4",
+        "duration": 30,
+        "title": "Learn Number 9"
+      },
+      "trace": {
+        "word": "Nine",
+        "dotted_image": "assets/numbers/trace_9.svg",
+        "instruction": "Trace the number 9",
+        "questions": [
+          {
+            "id": "trace_9_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 9 following the dots",
+            "template_image": "assets/numbers/trace_9.svg"
+          },
+          {
+            "id": "trace_9_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 9 with fewer guide dots",
+            "template_image": "assets/numbers/trace_9_medium.svg"
+          },
+          {
+            "id": "trace_9_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 9 without guides",
+            "template_image": "assets/numbers/trace_9_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_9_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 9 apples?",
+            "correct_answer": 9,
+            "help_image": "assets/images/apple_9.png",
+            "max_objects": 10
+          },
+          {
+            "id": "show_9_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 9 bananas",
+            "correct_answer": 9,
+            "help_image": "assets/images/banana_9.png",
+            "max_objects": 12
+          },
+          {
+            "id": "show_9_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 9,
+            "help_image": "assets/images/star_9.png",
+            "max_objects": 15
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_9_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_9.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 9,
+            "pronounce": "nine (nain)",
+            "alternatives": [
+              "9",
+              "nine"
+            ]
+          },
+          {
+            "id": "say_9_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_9.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 9,
+            "pronounce": "nine (nain)",
+            "alternatives": [
+              "9",
+              "nine"
+            ]
+          },
+          {
+            "id": "say_9_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_9.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 9,
+            "pronounce": "nine (nain)",
+            "alternatives": [
+              "9",
+              "nine"
+            ]
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_9_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: NINE",
+            "options": [
+              "8",
+              "9",
+              "10"
+            ],
+            "answer": "9"
+          },
+          {
+            "id": "read_9_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 9",
+            "options": [
+              "eight",
+              "nine",
+              "ten"
+            ],
+            "answer": "nine"
+          },
+          {
+            "id": "read_9_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after eight?",
+            "options": [
+              "8",
+              "9",
+              "10"
+            ],
+            "answer": "9"
+          }
+        ]
+      }
+    },
+    "10": {
+      "video": {
+        "url": "assets/videos/number_10.mp4",
+        "duration": 30,
+        "title": "Learn Number 10"
+      },
+      "trace": {
+        "word": "Ten",
+        "dotted_image": "assets/numbers/trace_10.svg",
+        "instruction": "Trace the number 10",
+        "questions": [
+          {
+            "id": "trace_10_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 10 following the dots",
+            "template_image": "assets/numbers/trace_10.svg"
+          },
+          {
+            "id": "trace_10_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace the number 10 with fewer guide dots",
+            "template_image": "assets/numbers/trace_10_medium.svg"
+          },
+          {
+            "id": "trace_10_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write the number 10 without guides",
+            "template_image": "assets/numbers/trace_10_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_10_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 10 apples?",
+            "correct_answer": 10,
+            "help_image": "assets/images/apple_10.png",
+            "max_objects": 10
+          },
+          {
+            "id": "show_10_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 10 bananas",
+            "correct_answer": 10,
+            "help_image": "assets/images/banana_10.png",
+            "max_objects": 12
+          },
+          {
+            "id": "show_10_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "question": "How many stars do you see?",
+            "correct_answer": 10,
+            "help_image": "assets/images/star_10.png",
+            "max_objects": 15
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_10_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "image": "assets/images/apple_10.png",
+            "question": "Count the apples and say the number",
+            "correct_answer": 10,
+            "pronounce": "ten (ten)",
+            "alternatives": [
+              "10",
+              "ten"
+            ]
+          },
+          {
+            "id": "say_10_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "image": "assets/images/ball_10.png",
+            "question": "How many balls? Say it out loud",
+            "correct_answer": 10,
+            "pronounce": "ten (ten)",
+            "alternatives": [
+              "10",
+              "ten"
+            ]
+          },
+          {
+            "id": "say_10_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "image": "assets/images/mixed_10.png",
+            "question": "Count all objects and say the number",
+            "correct_answer": 10,
+            "pronounce": "ten (ten)",
+            "alternatives": [
+              "10",
+              "ten"
+            ]
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and select the correct number",
+        "questions": [
+          {
+            "id": "read_10_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "type": "word_to_digit",
+            "question": "Select the number: TEN",
+            "options": [
+              "9",
+              "10",
+              "10"
+            ],
+            "answer": "10"
+          },
+          {
+            "id": "read_10_medium_1",
+            "difficulty": "medium",
+            "points": 15,
+            "type": "digit_to_word",
+            "question": "Select the word for: 10",
+            "options": [
+              "nine",
+              "ten",
+              "ten"
+            ],
+            "answer": "ten"
+          },
+          {
+            "id": "read_10_hard_1",
+            "difficulty": "hard",
+            "points": 20,
+            "type": "mixed",
+            "question": "Which number comes after nine?",
+            "options": [
+              "9",
+              "10",
+              "10"
+            ],
+            "answer": "10"
+          }
+        ]
+      }
     }
-  ]
+  }
 }

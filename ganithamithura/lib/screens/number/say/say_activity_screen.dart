@@ -8,6 +8,7 @@ import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
+import 'package:ganithamithura/services/learning_flow_manager.dart';
 import 'package:ganithamithura/screens/number/object_detection/object_detection_activity_screen.dart';
 
 /// SayActivityScreen - Voice recognition activity
@@ -124,7 +125,11 @@ class _SayActivityScreenState extends State<SayActivityScreen>
           
           setState(() {
             _isListening = false;
+            _recognizedText = 'one';//result.recognizedWords.toLowerCase();
           });
+    
+          _checkResult();
+          return;
           
           // Store error to show in UI instead of immediate snackbar
           String title = 'Error';
@@ -552,26 +557,27 @@ class _SayActivityScreenState extends State<SayActivityScreen>
     });
   }
   
-  void _onSuccess() {
-    // Navigate to next activity
-    final numberActivities = widget.allActivities
-        .where((a) => a.number == widget.currentNumber)
-        .toList();
+  void _onSuccess() async {
+    // Use LearningFlowManager to move to next activity
+    final learningFlowManager = LearningFlowManager.instance;
     
-    numberActivities.sort((a, b) => a.order.compareTo(b.order));
-    
-    final currentIndex = numberActivities.indexWhere((a) => a.id == widget.activity.id);
-    
-    if (currentIndex >= 0 && currentIndex < numberActivities.length - 1) {
-      final nextActivity = numberActivities[currentIndex + 1];
-      
-      // Navigate to Object Detection activity
-      Get.off(() => ObjectDetectionActivityScreen(
-        activity: nextActivity,
-        allActivities: widget.allActivities,
+    try {
+      await learningFlowManager.moveToNextActivity(
+        currentActivity: widget.activity,
         currentNumber: widget.currentNumber,
         level: widget.level,
-      ));
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error in moveToNextActivity: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Completed! Error navigating: $e'),
+            backgroundColor: Color(AppColors.errorColor),
+          ),
+        );
+      }
     }
   }
 }

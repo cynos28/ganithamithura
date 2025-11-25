@@ -3,8 +3,7 @@ import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
-import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
-import 'package:ganithamithura/screens/number/trace/trace_activity_screen.dart';
+import 'package:ganithamithura/services/learning_flow_manager.dart';
 
 /// VideoLessonScreen - Display video lesson with Continue button
 class VideoLessonScreen extends StatefulWidget {
@@ -67,10 +66,10 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
               child: Column(
                 children: [
                   // Number display
-                  NumberDisplay(
-                    number: widget.currentNumber,
-                    word: NumberWords.getWord(widget.currentNumber),
-                  ),
+                  // NumberDisplay(
+                  //   number: widget.currentNumber,
+                  //   word: NumberWords.getWord(widget.currentNumber),
+                  // ),
                   const SizedBox(height: 24),
                   
                   // Continue button
@@ -138,99 +137,31 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
     );
   }
   
-  void _onContinue() {
-    // Find next activity (should be trace)
-    final numberActivities = widget.allActivities
-        .where((a) => a.number == widget.currentNumber)
-        .toList();
+  void _onContinue() async {
+    debugPrint('🎬 Video continue button pressed');
+    debugPrint('  Current activity: ${widget.activity.id} (${widget.activity.type})');
+    debugPrint('  Current number: ${widget.currentNumber}');
+    debugPrint('  Level: ${widget.level.levelNumber}');
     
-    // Sort to get proper order
-    numberActivities.sort((a, b) => a.order.compareTo(b.order));
+    // Use LearningFlowManager to handle progression
+    final learningFlowManager = LearningFlowManager.instance;
     
-    // Find next activity after video
-    final currentIndex = numberActivities.indexWhere((a) => a.id == widget.activity.id);
-    
-    if (currentIndex >= 0 && currentIndex < numberActivities.length - 1) {
-      final nextActivity = numberActivities[currentIndex + 1];
-      
-      // Navigate based on activity type
-      _navigateToActivity(nextActivity);
-    } else {
-      // All activities for this number completed, move to next number or finish
-      _handleNumberCompletion();
-    }
-  }
-  
-  void _navigateToActivity(Activity activity) {
-    Widget screen;
-    
-    switch (activity.type) {
-      case AppConstants.activityTypeTrace:
-        screen = TraceActivityScreen(
-          activity: activity,
-          allActivities: widget.allActivities,
-          currentNumber: widget.currentNumber,
-          level: widget.level,
-        );
-        break;
-      // TODO: Add other activity type navigations
-      default:
-        Get.snackbar(
-          'Coming Soon',
-          'This activity type will be implemented shortly',
-          backgroundColor: Color(AppColors.infoColor),
-          colorText: Colors.white,
-        );
-        return;
-    }
-    
-    Get.to(() => screen);
-  }
-  
-  void _handleNumberCompletion() {
-    // Show success
-    Get.dialog(
-      SuccessAnimation(
-        message: 'Number ${widget.currentNumber} Completed!',
-        onComplete: () {
-          Get.back();
-          
-          // Check if there are more numbers
-          if (widget.currentNumber < widget.level.maxNumber) {
-            // Move to next number
-            _startNextNumber();
-          } else {
-            // Level completed
-            Get.back(); // Return to level selection
-            Get.snackbar(
-              'Level Complete!',
-              'You\'ve mastered all numbers in this level!',
-              backgroundColor: Color(AppColors.successColor),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 3),
-            );
-          }
-        },
-      ),
-      barrierDismissible: false,
-    );
-  }
-  
-  void _startNextNumber() {
-    final nextNumber = widget.currentNumber + 1;
-    final nextActivities = widget.allActivities
-        .where((a) => a.number == nextNumber)
-        .toList();
-    
-    if (nextActivities.isNotEmpty) {
-      nextActivities.sort((a, b) => a.order.compareTo(b.order));
-      
-      Get.off(() => VideoLessonScreen(
-        activity: nextActivities.first,
-        allActivities: widget.allActivities,
-        currentNumber: nextNumber,
+    try {
+      await learningFlowManager.moveToNextActivity(
+        currentActivity: widget.activity,
+        currentNumber: widget.currentNumber,
         level: widget.level,
-      ));
+        isTutorial: true, // Tutorial mode uses easy questions
+      );
+      debugPrint('  ✅ moveToNextActivity completed');
+    } catch (e) {
+      debugPrint('  ❌ Error in moveToNextActivity: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load next activity: $e',
+        backgroundColor: Color(AppColors.errorColor),
+        colorText: Colors.white,
+      );
     }
   }
 }

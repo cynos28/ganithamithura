@@ -25,7 +25,40 @@ class NumApiService {
   
   // ==================== Activity Endpoints ====================
   
-  /// GET /levels/{level}/activities - Fetch activities for a level
+  /// GET /activities/level/{level}/number/{number} - Fetch activities for a specific number
+  /// Returns activities in proper sequence: video -> trace -> show -> say -> read
+  /// Optional: difficulty filter to get only easy questions for tutorial
+  Future<List<Activity>> getActivitiesForNumber(int level, int number, {String? difficulty}) async {
+    try {
+      var uri = Uri.parse('$numBaseUrl/activities/level/$level/number/$number');
+      
+      // Add difficulty filter if provided
+      if (difficulty != null) {
+        uri = uri.replace(queryParameters: {'difficulty': difficulty});
+      }
+      
+      final response = await http.get(
+        uri,
+        headers: _getHeaders(),
+      ).timeout(
+        Duration(seconds: AppConstants.apiTimeout),
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final activitiesList = jsonData['activities'] as List;
+        return activitiesList
+            .map((json) => Activity.fromJson(json))
+            .toList();
+      } else {
+        throw Exception('Failed to load activities: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching activities for number: $e');
+    }
+  }
+  
+  /// GET /levels/{level}/activities - Fetch all activities for a level
   Future<List<Activity>> getActivitiesForLevel(int level) async {
     try {
       final url = Uri.parse('$numBaseUrl/levels/$level/activities');
@@ -135,16 +168,6 @@ class NumApiService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
-    }
-  }
-  
-  /// Get activities by number
-  Future<List<Activity>> getActivitiesForNumber(int level, int number) async {
-    try {
-      final allActivities = await getActivitiesForLevel(level);
-      return allActivities.where((a) => a.number == number).toList();
-    } catch (e) {
-      throw Exception('Error fetching activities for number: $e');
     }
   }
 }

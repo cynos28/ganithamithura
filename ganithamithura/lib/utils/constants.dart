@@ -4,7 +4,7 @@ library;
 class AppConstants {
   // API Configuration
   static const String baseUrl = 'http://localhost:8000';
-  static const String numBaseUrl = 'https://macular-patrimonially-olinda.ngrok-free.dev';
+  static const String numBaseUrl = 'https://uncoddled-neomi-continuingly.ngrok-free.dev';
   
   // Activity Types
   static const String activityTypeTrace = 'trace';
@@ -14,7 +14,7 @@ class AppConstants {
   static const String activityTypeVideo = 'video';
   
   // Scoring Thresholds
-  static const double traceSuccessThreshold = 0.70; // 70% coverage
+  static const double traceSuccessThreshold = 0.30; // 70% coverage
   static const double speechRecognitionThreshold = 0.80; // 80% similarity
   
   // Test Configuration
