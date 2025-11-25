@@ -7,7 +7,7 @@ import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
-import 'package:ganithamithura/services/api/api_service.dart';
+import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/screens/number/object_detection/object_detection_activity_screen.dart';
 
 /// SayActivityScreen - Voice recognition activity
@@ -32,7 +32,7 @@ class SayActivityScreen extends StatefulWidget {
 class _SayActivityScreenState extends State<SayActivityScreen>
     with SingleTickerProviderStateMixin {
   final _storageService = StorageService.instance;
-  final _apiService = ApiService.instance;
+  final _apiService = NumApiService.instance;
   final _speech = stt.SpeechToText();
   
   bool _isListening = false;
@@ -480,16 +480,25 @@ class _SayActivityScreenState extends State<SayActivityScreen>
       
       _storageService.saveCompletedActivity(progress);
       
-      // Submit to backend
-      _apiService.submitActivityScore(
-        activityId: widget.activity.id,
-        score: progress.score,
-        isCompleted: true,
-        additionalData: progress.additionalData,
-      ).catchError((e) {
-        debugPrint('Error submitting score: $e');
-        return <String, dynamic>{};
-      });
+      // Submit to backend (non-blocking with proper error handling)
+      _apiService
+          .submitActivityScore(
+            activityId: widget.activity.id,
+            score: progress.score,
+            isCompleted: true,
+            additionalData: progress.additionalData,
+          )
+          .timeout(
+            Duration(seconds: AppConstants.apiTimeout),
+            onTimeout: () {
+              debugPrint('Score submission timed out - will retry later');
+              return <String, dynamic>{'status': 'timeout'};
+            },
+          )
+          .catchError((e) {
+            debugPrint('Error submitting score: $e');
+            return <String, dynamic>{'status': 'error', 'error': e.toString()};
+          });
     }
     
     setState(() {

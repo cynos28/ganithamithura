@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Progress;
 import 'package:ganithamithura/utils/constants.dart';
+import 'package:ganithamithura/utils/ui_helpers.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
-import 'package:ganithamithura/services/api/api_service.dart';
+import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 
 /// TestScreen - Beginner progress test
@@ -21,7 +22,7 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  final _apiService = ApiService.instance;
+  final _apiService = NumApiService.instance;
   final _storageService = StorageService.instance;
   
   bool _isLoading = true;
@@ -41,11 +42,34 @@ class _TestScreenState extends State<TestScreen> {
       List<Activity> activities;
       
       if (widget.testType == 'beginner') {
-        // Fetch from backend
-        activities = await _apiService.getBeginnerTestActivities();
+        // Fetch from backend with timeout
+        activities = await _apiService
+            .getBeginnerTestActivities()
+            .timeout(
+              Duration(seconds: AppConstants.apiTimeout),
+              onTimeout: () {
+                throw Exception('Request timed out. Please check your internet connection.');
+              },
+            );
       } else {
         // TODO: Phase 2 - Implement other test types
         throw Exception('Test type not yet implemented');
+      }
+      
+      if (!mounted) return;
+      
+      if (activities.isEmpty) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No test activities available. Please try again later.'),
+            backgroundColor: Color(AppColors.warningColor),
+          ),
+        );
+        return;
       }
       
       setState(() {
@@ -53,13 +77,40 @@ class _TestScreenState extends State<TestScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      Get.back();
-      Get.snackbar(
-        'Error',
-        'Failed to load test: $e',
-        backgroundColor: Color(AppColors.errorColor),
-        colorText: Colors.white,
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      final errorMessage = UIHelpers.getErrorMessage(e);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Error Loading Test',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              Text(errorMessage),
+            ],
+          ),
+          backgroundColor: Color(AppColors.errorColor),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
+      
+      // Navigate back after error
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          Get.back();
+        }
+      });
     }
   }
   
