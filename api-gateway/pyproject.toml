@@ -1,0 +1,31 @@
+[project]
+name = "api-gateway"
+version = "0.1.0"
+description = "The API Gateway for the Ganithamithura project."
+readme = "README.md"
+authors = [
+    { name = "Dilshan Kumara", email = "140689829+Dilshankumara0122@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.120.4",
+    "uvicorn[standard]>=0.38.0",
+    "python-dotenv>=1.0.0",
+    "user_management_service",
+    "shape_service",
+]
+
+[project.scripts]
+api-gateway = "app.main:app"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.uv.sources]
+user_management_service = { path = "../user_management_service", editable = true }
+shape_service = { path = "../shape_service", editable = true }

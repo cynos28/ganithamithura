@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from authentication_service.auth_service import create_access_token, verify_password, get_password_hash
 from datetime import timedelta
-from app.models.model import UserCreate
+from models.model import UserCreate
 
 
 class UserController:

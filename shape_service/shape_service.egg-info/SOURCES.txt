@@ -1,10 +1,12 @@
 README.md
 pyproject.toml
 app/_init_.py
+app/database.py
 app/main.py
 app/constants/constants.py
+app/controllers/game_controller.py
+app/controllers/shapes_controller.py
 app/controllers/shapes_detection.py
-app/controllers/user_controller.py
 app/endpoints/endpoints.py
 app/models/model.py
 app/services/__init__.py
