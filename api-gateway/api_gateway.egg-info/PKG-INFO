@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: api-gateway
+Version: 0.1.0
+Summary: The API Gateway for the Ganithamithura project.
+Author-email: Dilshan Kumara <140689829+Dilshankumara0122@users.noreply.github.com>
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.120.4
+Requires-Dist: uvicorn[standard]>=0.38.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: user_management_service
+Requires-Dist: shape_service
+
+# API Gateway
+
+This service acts as the main entry point for the Ganithamithura project. It routes requests to the appropriate microservices.
