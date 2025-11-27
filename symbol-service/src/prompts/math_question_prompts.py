@@ -659,8 +659,8 @@ Provide 1-2 specific, actionable recommendations to help the student improve. Be
 
 def get_image_generation_prompt(question_text: str, grade: int) -> str:
     """
-    Generate DALL-E 3 prompt for clean illustrations using visual-only descriptions.
-    Focuses on the SCENE and OBJECTS only, completely avoiding any mention of quantities.
+    Generate DALL-E 3 prompt for children's book illustrations of math concepts.
+    Shows objects based on question context without text, numbers, or math symbols.
 
     Args:
         question_text: The math question text
@@ -669,33 +669,68 @@ def get_image_generation_prompt(question_text: str, grade: int) -> str:
     Returns:
         DALL-E prompt for image generation
     """
-    import re
+    question_lower = question_text.lower()
 
-    # Extract only the scenario/subject from the question
-    # Remove numbers, math operations, and question marks
-    visual_description = question_text
-    visual_description = re.sub(r'\b\d+\b', '', visual_description)  # Remove numbers
-    visual_description = re.sub(r'[?!.]$', '', visual_description)  # Remove punctuation
-    visual_description = re.sub(r'\b(what is|how many|calculate|find|solve|answer)\b', '', visual_description, flags=re.IGNORECASE)
-    visual_description = re.sub(r'\s+', ' ', visual_description).strip()
+    # Check if the question mentions a person/child
+    person_names = ['sarah', 'john', 'maria', 'tom', 'ali', 'ravi', 'emma', 'david', 'anna', 'michael', 'sophia', 'james', 'olivia', 'benjamin', 'lucy', 'lily', 'alex', 'sam', 'child', 'boy', 'girl', 'student']
+    person_name = None
 
-    # Clean up common math keywords
-    visual_description = re.sub(r'\b(plus|minus|times|divided|multiply|divide|add|subtract|sum|total|left|removed|added|groups)\b', '', visual_description, flags=re.IGNORECASE)
-    visual_description = re.sub(r'\s+', ' ', visual_description).strip()
+    for name in person_names:
+        if name in question_lower:
+            person_name = name.capitalize()
+            break
 
-    return f"""Illustration in the style of children's picture books like Pete the Cat or The Very Hungry Caterpillar.
+    # Extract the main object from the question
+    objects = ['teddy bears', 'teddy bear', 'apples', 'apple', 'candies', 'candy', 'toys', 'toy', 'books', 'book', 'pencils', 'pencil',
+               'crayons', 'crayon', 'flowers', 'flower', 'birds', 'bird', 'cars', 'car', 'balls', 'ball',
+               'marbles', 'marble', 'cookies', 'cookie', 'pizzas', 'pizza', 'coins', 'coin', 'stars', 'star',
+               'blocks', 'block', 'dolls', 'doll', 'stickers', 'sticker', 'balloons', 'balloon',
+               'fish', 'dogs', 'dog', 'cats', 'cat', 'bears', 'bear', 'animals', 'animal', 'cards', 'card',
+               'stamps', 'stamp', 'trees', 'tree', 'shells', 'shell']
 
-Scene: {visual_description}
+    found_object = None
+    # Search longest objects first to avoid partial matches
+    objects_sorted = sorted(objects, key=len, reverse=True)
+    for obj in objects_sorted:
+        if obj in question_lower:
+            found_object = obj
+            break
 
-Art style guidelines:
-- Colorful, playful children's book illustration style
-- Soft, rounded cartoon shapes
-- Bright, cheerful colors - suitable for Grade {grade} children
-- Focus on objects and characters, not complexity
-- Warm and inviting aesthetic
+    # Build the scene description based on whether there's a person
+    if person_name and found_object:
+        # Create an action/story scene
+        scene = f"A happy {person_name} actively playing with colorful {found_object}, holding them, enjoying them, showing excitement and joy"
+    elif found_object:
+        scene = f"A happy child actively playing with colorful {found_object}, holding them, smiling and having fun"
+    elif person_name:
+        scene = f"A happy {person_name} playing and having fun with toys"
+    else:
+        scene = "Happy children actively playing with colorful toys and objects, showing joy and excitement"
 
-CRITICAL CONTENT RESTRICTIONS:
-Do not include any: numbers, digits, math symbols, letters, words, text, labels, or written content anywhere. Create only a visual picture without any writing or symbols."""
+    return f"""Create a bright, colorful storybook illustration showing {scene}.
+
+Style:
+- Bright, vivid colors (reds, blues, yellows, greens, oranges, purples)
+- Warm, friendly, cheerful design like a children's storybook
+- Show action and movement - characters actively doing something
+- Clear and easy to understand
+- Light or soft background
+- Cartoon or illustration style suitable for children's books
+
+Requirements:
+- Show characters actively interacting with the objects (playing, holding, enjoying)
+- Show emotion and joy - smiling, happy expressions
+- Make it look like a scene from a storybook with action/story
+- Show the objects clearly and colorfully
+- Keep it simple, warm, and engaging
+- ONE single scene only showing the action moment
+
+MUST NOT INCLUDE:
+- Any text, numbers, or math symbols
+- Multiple separate scenes or variations
+- Complex or cluttered backgrounds
+- Design elements or color palettes
+- Static or boring poses - show movement and action"""
 
 
 def get_correct_answer_feedback_prompt(answer: float, question_text: str, grade: int) -> str:
