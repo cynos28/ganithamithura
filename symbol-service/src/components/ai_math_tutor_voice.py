@@ -657,6 +657,7 @@ Choose fresh, creative contexts that haven't been used recently.
         """
         Generate an AI image that visually represents the math problem using DALL-E.
         Uses smart caching based on theme and operation type.
+        Implements strict no-text policy by using direct object prompts.
 
         Args:
             question_data: Question information
@@ -675,19 +676,20 @@ Choose fresh, creative contexts that haven't been used recently.
                 cached_url = self.image_cache[cache_key]
                 return cached_url
 
-            # Get enhanced image generation prompt
+            # Get enhanced image generation prompt (now with NO CONTEXT, just visual objects)
             image_prompt = get_image_generation_prompt(
                 question_text=question_data['question_text'],
                 grade=self.student_profile.grade
             )
 
-            # Generate image using DALL-E
+            # Generate image using DALL-E with explicit revision request for text-free output
             response = self.openai_client.images.generate(
                 model="dall-e-3",
                 prompt=image_prompt,
                 size="1024x1024",
                 quality="standard",
-                n=1
+                n=1,
+                style="natural"  # Natural style often produces cleaner, less text-heavy images
             )
 
             image_url = response.data[0].url
