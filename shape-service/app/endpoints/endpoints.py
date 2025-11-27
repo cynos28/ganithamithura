@@ -4,8 +4,9 @@ from app.controllers.shapes_detection import ShapesDetectionController
 from app.controllers.user_controller import UserController
 from app.models.model import UserCreate
 from app.controllers.shapes_controller import ShapesController
-
-
+from app.services.auth_service import get_current_user
+from app.controllers.game_controller import GameController
+from app.models.model import UserCreate, GameAnswer
 
 
 router = APIRouter()
@@ -13,6 +14,7 @@ router = APIRouter()
 shapes_detection_controller = ShapesDetectionController()
 user_controller = UserController()
 shapes_controller = ShapesController()
+game_controller = GameController()
 
 @router.post("/detect-shape/")
 async def detect_shape(request: Request, image_file: UploadFile = File(None)):
@@ -34,4 +36,12 @@ async def get_shapes():
 @router.get("/images/{image_id}")
 async def get_image_by_id(image_id: str):
     return await shapes_controller.get_image_by_id(image_id)
+
+@router.get("/game/start")
+async def start_game(user: dict = Depends(get_current_user)):
+    return await game_controller.start_game(user)
+
+@router.post("/game/check-answers")
+async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_current_user)):
+    return await game_controller.check_answers(game_answer, user)
 
