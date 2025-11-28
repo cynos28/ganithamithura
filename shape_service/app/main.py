@@ -9,8 +9,9 @@ app.add_middleware(
     allow_origins=["*"]
 )
 
-app.include_router(endpoints.router)
-
 @app.get("/")
 async def root():
     return {"message": "Welcome to Shape Patterns Backend 🚀"}
+
+
+app.include_router(endpoints.router)
