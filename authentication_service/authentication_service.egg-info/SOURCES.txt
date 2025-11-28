@@ -1,0 +1,10 @@
+pyproject.toml
+authentication_service/__init__.py
+authentication_service/auth_service.py
+authentication_service.egg-info/PKG-INFO
+authentication_service.egg-info/SOURCES.txt
+authentication_service.egg-info/dependency_links.txt
+authentication_service.egg-info/requires.txt
+authentication_service.egg-info/top_level.txt
+authentication_service/database/__init__.py
+authentication_service/database/database.py

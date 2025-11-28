@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: user-management-service
+Version: 0.1.0
+Summary: A service for user management in the Ganithamithura project.
+Author-email: Dilshan Kumara <140689829+Dilshankumara0122@users.noreply.github.com>
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.120.4
+Requires-Dist: motor>=3.7.1
+Requires-Dist: uvicorn[standard]>=0.38.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: python-jose[cryptography]>=3.3.0
+Requires-Dist: passlib[argon2]>=1.7.4

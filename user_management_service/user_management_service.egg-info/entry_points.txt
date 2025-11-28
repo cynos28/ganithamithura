@@ -1,0 +1,2 @@
+[console_scripts]
+user-management-service = app.main:app
