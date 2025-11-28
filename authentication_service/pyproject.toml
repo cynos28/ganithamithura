@@ -1,0 +1,15 @@
+[project]
+name = "authentication-service"
+version = "0.1.0"
+description = "A common authentication service for the ganithamithura project."
+dependencies = [
+    "fastapi",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "motor",
+    "python-dotenv",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

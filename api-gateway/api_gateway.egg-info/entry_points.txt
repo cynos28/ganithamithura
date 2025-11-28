@@ -1,0 +1,2 @@
+[console_scripts]
+api-gateway = app.main:app

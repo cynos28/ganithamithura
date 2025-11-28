@@ -1,0 +1,34 @@
+from fastapi import APIRouter, UploadFile, File, Request, Depends
+from app.controllers.shapes_detection import ShapesDetectionController
+from app.controllers.shapes_controller import ShapesController
+from authentication_service.auth_service import get_current_user
+from app.controllers.game_controller import GameController
+from app.models.model import GameAnswer
+
+
+router = APIRouter()
+
+shapes_detection_controller = ShapesDetectionController()
+shapes_controller = ShapesController()
+game_controller = GameController()
+
+@router.post("/detect-shape/")
+async def detect_shape(request: Request, image_file: UploadFile = File(None)):
+    return await shapes_detection_controller.detect_shape(request, image_file)
+
+@router.get("/shapes/")
+async def get_shapes():
+    return await shapes_controller.get_shapes()
+
+@router.get("/images/{image_id}")
+async def get_image_by_id(image_id: str):
+    return await shapes_controller.get_image_by_id(image_id)
+
+@router.get("/game/start")
+async def start_game(user: dict = Depends(get_current_user)):
+    return await game_controller.start_game(user)
+
+@router.post("/game/check-answers")
+async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_current_user)):
+    return await game_controller.check_answers(game_answer, user)
+
