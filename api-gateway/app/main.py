@@ -2,7 +2,7 @@
 import os
 import sys
 import importlib.util
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -61,9 +61,27 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
+@app.middleware("http")
+async def cookie_to_header_middleware(request: Request, call_next):
+    """
+    Checks for an 'access_token' cookie and moves it to the Authorization header.
+    """
+    token_cookie = request.cookies.get("access_token")
+
+    # Only set the header if it's not already present (e.g., from Postman)
+    if token_cookie and "authorization" not in request.headers:
+        mutable_headers = request.headers.mutablecopy()
+        mutable_headers["authorization"] = token_cookie
+        # Starlette requires the header scope to be updated
+        request.scope.update(headers=mutable_headers.raw)
+
+    response = await call_next(request)
+    return response
+
+
 # Mount the sub-applications
 app.mount("/auth", user_management_app)
-app.mount("/shapes", shape_service_app)
+app.mount("/shapes-patterns", shape_service_app)
 
 @app.get("/")
 async def root():
