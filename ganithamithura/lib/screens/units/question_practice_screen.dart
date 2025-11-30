@@ -30,6 +30,12 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
   
   final List<Question> _questionHistory = [];
   int _currentQuestionIndex = -1;
+  
+  // Initial assessment tracking
+  static const int INITIAL_QUESTIONS_PER_TOPIC = 3;
+  static const int TOTAL_INITIAL_QUESTIONS = 12; // 3 questions × 4 topics
+  int _answeredQuestionsCount = 0;
+  bool _isInitialAssessment = true; // Start with baseline questions
 
   @override
   void initState() {
@@ -48,13 +54,39 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
     });
 
     try {
-      // Try to get adaptive question from RAG service
-      final ragQuestion = await _apiService.getAdaptiveQuestion(
-        unitId: widget.unit.id, // Use full unit_id like "unit_length_1"
-      );
+      Question question;
       
-      // Convert RAG question to Question model
-      final question = ragQuestion.toQuestion();
+      // Check if still in initial assessment phase
+      if (_isInitialAssessment && _answeredQuestionsCount < TOTAL_INITIAL_QUESTIONS) {
+        debugPrint('📊 Initial Assessment: Question ${_answeredQuestionsCount + 1}/$TOTAL_INITIAL_QUESTIONS');
+        
+        // Use mock/seeded questions for initial assessment
+        question = await _apiService.getNextQuestion(widget.unit.id);
+        
+      } else {
+        // Switch to adaptive RAG questions after initial assessment
+        if (_isInitialAssessment) {
+          debugPrint('✅ Initial assessment complete! Switching to adaptive questions...');
+          _isInitialAssessment = false;
+        }
+        
+        debugPrint('🎯 Loading adaptive question from RAG service...');
+        
+        try {
+          // Get adaptive question from RAG service
+          final ragQuestion = await _apiService.getAdaptiveQuestion(
+            unitId: widget.unit.id, // Use full unit_id like "unit_length_1"
+          );
+          
+          // Convert RAG question to Question model
+          question = ragQuestion.toQuestion();
+          
+        } catch (e) {
+          // Fallback to mock questions if RAG service is unavailable
+          debugPrint('⚠️ RAG service unavailable, using mock data: $e');
+          question = await _apiService.getNextQuestion(widget.unit.id);
+        }
+      }
       
       setState(() {
         _currentQuestion = question;
@@ -62,23 +94,13 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
         _currentQuestionIndex = _questionHistory.length - 1;
         _isLoading = false;
       });
+      
     } catch (e) {
-      // Fallback to mock questions if RAG service is unavailable
-      debugPrint('RAG service unavailable, using mock data: $e');
-      try {
-        final question = await _apiService.getNextQuestion(widget.unit.id);
-        setState(() {
-          _currentQuestion = question;
-          _questionHistory.add(question);
-          _currentQuestionIndex = _questionHistory.length - 1;
-          _isLoading = false;
-        });
-      } catch (e2) {
-        setState(() {
-          _error = 'Failed to load question. Please try again.';
-          _isLoading = false;
-        });
-      }
+      debugPrint('❌ Error loading question: $e');
+      setState(() {
+        _error = 'Failed to load question. Please try again.';
+        _isLoading = false;
+      });
     }
   }
 
@@ -90,45 +112,58 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
     final timeTaken = DateTime.now().difference(_questionStartTime!).inSeconds;
 
     try {
-      // Try adaptive answer submission first
-      try {
-        final adaptiveFeedback = await _apiService.submitAdaptiveAnswer(
+      AnswerResponse response;
+      
+      // Only try adaptive submission if not in initial assessment
+      if (!_isInitialAssessment) {
+        try {
+          final adaptiveFeedback = await _apiService.submitAdaptiveAnswer(
+            questionId: _currentQuestion!.questionId,
+            answer: _currentQuestion!.options[_selectedAnswer!],
+            timeTaken: timeTaken,
+          );
+          
+          // Convert to AnswerResponse
+          response = AnswerResponse(
+            isCorrect: adaptiveFeedback.isCorrect,
+            correctIndex: _currentQuestion!.options.indexOf(adaptiveFeedback.correctAnswer),
+            explanation: adaptiveFeedback.explanation,
+          );
+        } catch (e) {
+          debugPrint('Adaptive submission failed, trying regular: $e');
+          // Fallback to regular submission
+          response = await _apiService.submitAnswer(
+            questionId: _currentQuestion!.questionId,
+            selectedIndex: _selectedAnswer!,
+            unitId: widget.unit.id,
+            timeTaken: timeTaken,
+          );
+        }
+      } else {
+        // Regular submission for initial assessment
+        response = await _apiService.submitAnswer(
           questionId: _currentQuestion!.questionId,
-          answer: _currentQuestion!.options[_selectedAnswer!],
+          selectedIndex: _selectedAnswer!,
+          unitId: widget.unit.id,
           timeTaken: timeTaken,
         );
-        
-        // Convert to AnswerResponse
-        final response = AnswerResponse(
-          isCorrect: adaptiveFeedback.isCorrect,
-          correctIndex: _currentQuestion!.options.indexOf(adaptiveFeedback.correctAnswer),
-          explanation: adaptiveFeedback.explanation,
-        );
-        
-        setState(() {
-          _answerFeedback = response;
-          _showingFeedback = true;
-          _isSubmitting = false;
-        });
-        return;
-      } catch (e) {
-        debugPrint('Adaptive submission failed, trying regular: $e');
       }
       
-      // Fallback to regular submission
-      final response = await _apiService.submitAnswer(
-        questionId: _currentQuestion!.questionId,
-        selectedIndex: _selectedAnswer!,
-        unitId: widget.unit.id,
-        timeTaken: timeTaken,
-      );
-
+      // Increment answered questions count
       setState(() {
+        _answeredQuestionsCount++;
         _answerFeedback = response;
         _showingFeedback = true;
         _isSubmitting = false;
       });
+      
+      // Log progress
+      if (_isInitialAssessment) {
+        debugPrint('📊 Progress: ${_answeredQuestionsCount}/$TOTAL_INITIAL_QUESTIONS initial questions answered');
+      }
+      
     } catch (e) {
+      debugPrint('❌ Error submitting answer: $e');
       setState(() {
         _error = 'Failed to submit answer. Please try again.';
         _isSubmitting = false;
@@ -235,7 +270,9 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Question ${_currentQuestionIndex + 1}',
+                  _isInitialAssessment 
+                      ? 'Initial Assessment ${_answeredQuestionsCount}/$TOTAL_INITIAL_QUESTIONS'
+                      : 'Adaptive Practice',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
