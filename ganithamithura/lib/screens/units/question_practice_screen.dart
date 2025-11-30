@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/unit_models.dart';
 import 'package:ganithamithura/services/api/unit_api_service.dart';
+import 'package:ganithamithura/services/unit_progress_service.dart';
 
 class QuestionPracticeScreen extends StatefulWidget {
   final Unit unit;
@@ -18,6 +19,7 @@ class QuestionPracticeScreen extends StatefulWidget {
 
 class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
   final UnitApiService _apiService = UnitApiService();
+  final UnitProgressService _progressService = UnitProgressService.instance;
   
   Question? _currentQuestion;
   int? _selectedAnswer;
@@ -149,6 +151,12 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
         );
       }
       
+      // Record progress
+      await _progressService.recordAnswer(
+        unitId: widget.unit.id,
+        isCorrect: response.isCorrect,
+      );
+      
       // Increment answered questions count
       setState(() {
         _answeredQuestionsCount++;
@@ -161,6 +169,7 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
       if (_isInitialAssessment) {
         debugPrint('📊 Progress: ${_answeredQuestionsCount}/$TOTAL_INITIAL_QUESTIONS initial questions answered');
       }
+      debugPrint('✅ Progress recorded: ${response.isCorrect ? "Correct" : "Incorrect"}');
       
     } catch (e) {
       debugPrint('❌ Error submitting answer: $e');

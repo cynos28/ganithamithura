@@ -4,6 +4,7 @@ import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
 import 'package:ganithamithura/screens/units/units_list_screen.dart';
 import 'package:ganithamithura/screens/learn/learn_units_screen.dart';
+import 'package:ganithamithura/services/unit_progress_service.dart';
 
 class UnitCardScreen extends StatefulWidget {
   const UnitCardScreen({super.key});
@@ -14,6 +15,44 @@ class UnitCardScreen extends StatefulWidget {
 
 class _UnitCardScreenState extends State<UnitCardScreen> {
   int _selectedIndex = 1; // Learn tab selected
+  final UnitProgressService _progressService = UnitProgressService.instance;
+  
+  Map<String, dynamic> _lengthProgress = {};
+  Map<String, dynamic> _areaProgress = {};
+  Map<String, dynamic> _capacityProgress = {};
+  Map<String, dynamic> _weightProgress = {};
+  bool _isLoadingProgress = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllProgress();
+  }
+
+  Future<void> _loadAllProgress() async {
+    setState(() => _isLoadingProgress = true);
+    
+    try {
+      // Load from backend (syncs with local cache)
+      await _progressService.loadFromBackend();
+      
+      final lengthProgress = await _progressService.getTopicProgress('Length');
+      final areaProgress = await _progressService.getTopicProgress('Area');
+      final capacityProgress = await _progressService.getTopicProgress('Capacity');
+      final weightProgress = await _progressService.getTopicProgress('Weight');
+      
+      setState(() {
+        _lengthProgress = lengthProgress;
+        _areaProgress = areaProgress;
+        _capacityProgress = capacityProgress;
+        _weightProgress = weightProgress;
+        _isLoadingProgress = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading progress: $e');
+      setState(() => _isLoadingProgress = false);
+    }
+  }
 
   void _onNavItemTapped(int index) {
     if (index == 0) {
@@ -68,6 +107,11 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
               ),
               const SizedBox(height: 24),
               
+              // Overall Progress Summary
+              _buildProgressSummary(),
+              
+              const SizedBox(height: 20),
+              
               // Learn Units Card - Special Featured Card
               _buildLearnUnitsCard(),
               
@@ -98,11 +142,12 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       color: const Color(AppColors.measurementColor),
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
+                      progress: _lengthProgress,
                       onTap: () {
                         Get.to(() => const UnitsListScreen(
                           grade: 3,
                           topic: 'Length',
-                        ));
+                        ))?.then((_) => _loadAllProgress());
                       },
                     ),
                     _buildUnitCard(
@@ -112,11 +157,12 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       color: const Color(AppColors.measurementColor),
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
+                      progress: _areaProgress,
                       onTap: () {
                         Get.to(() => const UnitsListScreen(
                           grade: 3,
                           topic: 'Area',
-                        ));
+                        ))?.then((_) => _loadAllProgress());
                       },
                     ),
                     _buildUnitCard(
@@ -126,11 +172,12 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       color: const Color(AppColors.measurementColor),
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
+                      progress: _capacityProgress,
                       onTap: () {
                         Get.to(() => const UnitsListScreen(
                           grade: 3,
                           topic: 'Capacity',
-                        ));
+                        ))?.then((_) => _loadAllProgress());
                       },
                     ),
                     _buildUnitCard(
@@ -140,11 +187,12 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
                       color: const Color(AppColors.measurementColor),
                       borderColor: const Color(AppColors.measurementBorder),
                       iconColor: const Color(AppColors.measurementIcon),
+                      progress: _weightProgress,
                       onTap: () {
                         Get.to(() => const UnitsListScreen(
                           grade: 3,
                           topic: 'Weight',
-                        ));
+                        ))?.then((_) => _loadAllProgress());
                       },
                     ),
                   ],
@@ -157,6 +205,129 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
+      ),
+    );
+  }
+
+  Widget _buildProgressSummary() {
+    if (_isLoadingProgress) {
+      return const SizedBox.shrink();
+    }
+
+    final totalQuestions = (_lengthProgress['questionsAnswered'] ?? 0) +
+        (_areaProgress['questionsAnswered'] ?? 0) +
+        (_capacityProgress['questionsAnswered'] ?? 0) +
+        (_weightProgress['questionsAnswered'] ?? 0);
+
+    final totalCorrect = (_lengthProgress['correctAnswers'] ?? 0) +
+        (_areaProgress['correctAnswers'] ?? 0) +
+        (_capacityProgress['correctAnswers'] ?? 0) +
+        (_weightProgress['correctAnswers'] ?? 0);
+
+    if (totalQuestions == 0) {
+      return const SizedBox.shrink();
+    }
+
+    final overallAccuracy = (totalCorrect / totalQuestions * 100);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF4CAF50).withOpacity(0.1),
+            const Color(0xFF2E7D32).withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF4CAF50),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.trending_up,
+              color: Color(0xFF2E7D32),
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Progress',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(AppColors.textBlack),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    _buildStatChip(
+                      icon: Icons.quiz,
+                      label: '$totalQuestions',
+                      color: const Color(0xFF2196F3),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStatChip(
+                      icon: Icons.check_circle,
+                      label: '$totalCorrect',
+                      color: const Color(0xFF4CAF50),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildStatChip(
+                      icon: Icons.percent,
+                      label: '${overallAccuracy.toStringAsFixed(0)}%',
+                      color: const Color(0xFFFF9800),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -266,8 +437,12 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
     required Color color,
     required Color borderColor,
     required Color iconColor,
+    required Map<String, dynamic> progress,
     required VoidCallback onTap,
   }) {
+    final questionsAnswered = progress['questionsAnswered'] ?? 0;
+    final accuracy = progress['accuracy'] ?? 0.0;
+    final hasProgress = questionsAnswered > 0;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -326,6 +501,45 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+            if (hasProgress) ..[
+              const SizedBox(height: 8),
+              // Progress stats
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: borderColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 12,
+                      color: iconColor,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$questionsAnswered Q',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: iconColor,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${accuracy.toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: iconColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

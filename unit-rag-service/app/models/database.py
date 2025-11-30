@@ -103,6 +103,30 @@ class StudentAbilityModel(Document):
         ]
 
 
+class StudentProgressModel(Document):
+    """Student progress per unit (for persistent tracking across devices)"""
+    student_id: Indexed(str)  # Student identifier (email, user_id, etc.)
+    unit_id: str  # e.g., "unit_length_1"
+    topic: str  # Length, Area, Capacity, Weight
+    grade: int
+    questions_answered: int = Field(default=0)
+    correct_answers: int = Field(default=0)
+    accuracy: float = Field(default=0.0)  # Percentage 0-100
+    stars: int = Field(default=0, ge=0, le=3)  # 0-3 stars
+    last_practiced: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Settings:
+        name = "student_progress"
+        indexes = [
+            "student_id",
+            "unit_id",
+            "topic",
+            [("student_id", 1), ("unit_id", 1)],  # Compound index (unique combination)
+            [("student_id", 1), ("topic", 1)],  # For topic-level aggregation
+        ]
+
+
 # Database connection
 db_client: Optional[AsyncIOMotorClient] = None
 
@@ -126,6 +150,7 @@ async def init_db():
             QuestionModel,
             StudentAnswerModel,
             StudentAbilityModel,
+            StudentProgressModel,
         ]
     )
     
