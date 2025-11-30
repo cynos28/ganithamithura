@@ -312,7 +312,7 @@ class UnitApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$ragBaseUrl/adaptive/submit-answer'),
+        Uri.parse('$ragBaseUrl/api/v1/adaptive/submit-answer'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'student_id': studentId,
@@ -332,20 +332,23 @@ class UnitApiService {
     }
   }
   
-  /// GET /adaptive/next-question/{studentId}
+  /// GET /api/v1/adaptive/next-question
   /// Get next adaptive question based on student ability
   Future<RAGQuestion> getAdaptiveQuestion({
-    required int unitId,
+    required String unitId,
     int? currentDifficulty,
   }) async {
     try {
-      final queryParams = ['unit_id=$unitId'];
+      final queryParams = [
+        'student_id=$studentId',
+        'unit_id=$unitId',
+      ];
       if (currentDifficulty != null) {
         queryParams.add('current_difficulty=$currentDifficulty');
       }
       
       final response = await http.get(
-        Uri.parse('$ragBaseUrl/adaptive/next-question/$studentId?${queryParams.join('&')}'),
+        Uri.parse('$ragBaseUrl/api/v1/adaptive/next-question?${queryParams.join('&')}'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(const Duration(seconds: 10));
       
@@ -359,11 +362,11 @@ class UnitApiService {
     }
   }
   
-  /// GET /adaptive/analytics/{studentId}
+  /// GET /api/v1/adaptive/analytics/{studentId}
   /// Get student analytics and ability metrics
-  Future<StudentAnalytics> getStudentAnalytics({int? unitId}) async {
+  Future<StudentAnalytics> getStudentAnalytics({String? unitId}) async {
     try {
-      var uri = '$ragBaseUrl/adaptive/analytics/$studentId';
+      var uri = '$ragBaseUrl/api/v1/adaptive/analytics/$studentId';
       if (unitId != null) {
         uri += '?unit_id=$unitId';
       }
