@@ -3,7 +3,8 @@ library;
 
 class AppConstants {
   // API Configuration
-  static const String baseUrl = 'http://localhost:8000';
+   static const String baseUrl = 'http://localhost:8000';
+  
   
   // Activity Types
   static const String activityTypeTrace = 'trace';

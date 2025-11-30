@@ -133,13 +133,14 @@ async def upload_document(
         # Auto-generate questions in background after upload
         from app.services.question_generator import question_generator
         try:
-            print(f"🚀 Auto-generating questions for document {document.id}")
+            print(f"🚀 Auto-generating questions for document {document.id} using RAG")
             questions = await question_generator.generate_questions_for_document(
                 document_id=str(document.id),
                 document_content=text_content,
                 grade_levels=grade_list,
                 topic=topic,  # Pass the topic to focus question generation
-                questions_per_grade=5  # Generate 5 questions per grade automatically
+                questions_per_grade=5,  # Generate 5 questions per grade automatically
+                use_rag=True  # Enable RAG for auto-generation
             )
             
             # Save generated questions
