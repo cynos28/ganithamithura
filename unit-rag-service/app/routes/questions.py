@@ -66,16 +66,18 @@ async def generate_questions(
         document_id=request.document_id,
         grade_levels=request.grade_levels,
         questions_per_grade=request.questions_per_grade,
-        question_types=request.question_types
+        question_types=request.question_types,
+        use_rag=request.use_rag
     )
     
-    print(f"🚀 Starting question generation for document {request.document_id}")
+    print(f"🚀 Starting question generation for document {request.document_id} (RAG: {request.use_rag})")
     
     return {
         "message": "Question generation started in background",
         "document_id": request.document_id,
         "estimated_questions": len(request.grade_levels) * request.questions_per_grade,
         "status": "processing",
+        "use_rag": request.use_rag,
         "note": "Check GET /api/v1/questions/document/{document_id} to see generated questions"
     }
 
@@ -84,10 +86,12 @@ async def generate_questions_task(
     document_id: str,
     grade_levels: List[int],
     questions_per_grade: int,
-    question_types: List[str]
+    question_types: List[str],
+    use_rag: bool = True
 ):
-    """Background task to generate questions"""
-    print(f"📝 Question generation task started for document {document_id}")
+    """Background task to generate questions using RAG or full document"""
+    mode = "RAG" if use_rag else "Full Document"
+    print(f"📝 Question generation task started for document {document_id} (Mode: {mode})")
     try:
         from bson import ObjectId
         document = await DocumentModel.find_one(DocumentModel.id == ObjectId(document_id))
@@ -99,14 +103,15 @@ async def generate_questions_task(
         print(f"📄 Found document: {document.title}")
         print(f"🎯 Generating {questions_per_grade} questions per grade for grades {grade_levels}")
         
-        # Generate questions using the service with topic filter
+        # Generate questions using the service with topic filter and RAG
         questions = await question_generator.generate_questions_for_document(
             document_id=document_id,
             document_content=document.content,
             grade_levels=grade_levels,
             topic=document.topic or "measurement",  # Use document's topic
             questions_per_grade=questions_per_grade,
-            question_types=question_types
+            question_types=question_types,
+            use_rag=use_rag  # Enable/disable RAG retrieval
         )
         
         print(f"💡 Received {len(questions)} questions from generator")

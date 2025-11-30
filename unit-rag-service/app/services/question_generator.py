@@ -5,7 +5,39 @@ from app.services.embeddings_service import embeddings_service
 
 
 class QuestionGenerator:
-    """Generate questions from document content using LLM"""
+    """Generate questions from document content using LLM with RAG"""
+    
+    async def retrieve_relevant_chunks(
+        self,
+        document_id: str,
+        topic: str,
+        grade_level: int,
+        num_chunks: int = 5
+    ) -> str:
+        """
+        Retrieve relevant chunks from vector database based on topic and grade.
+        Returns concatenated text from most relevant chunks.
+        """
+        # Create focused query for retrieval
+        query = f"{topic} measurement concepts for grade {grade_level} students"
+        
+        # Search for relevant chunks
+        chunks = await embeddings_service.search_similar_chunks(
+            query=query,
+            n_results=num_chunks,
+            filter_metadata={"document_id": document_id}
+        )
+        
+        if not chunks:
+            # Fallback: try without filter if no chunks found
+            chunks = await embeddings_service.search_similar_chunks(
+                query=query,
+                n_results=num_chunks
+            )
+        
+        # Concatenate chunk texts
+        context = "\n\n".join([chunk['text'] for chunk in chunks])
+        return context if context else ""
     
     # Grade-specific prompts
     GRADE_PROMPTS = {
@@ -128,16 +160,13 @@ Make questions engaging, age-appropriate, and educational!
         grade_levels: List[int],
         topic: str = "measurement",
         questions_per_grade: int = 10,
-        question_types: List[str] = None
+        question_types: List[str] = None,
+        use_rag: bool = True
     ) -> List[Dict[str, Any]]:
-        """Generate questions for a document across multiple grades"""
+        """Generate questions for a document across multiple grades using RAG"""
         
         if not document_content or len(document_content) < 50:
             raise Exception("Document content is too short or empty")
-        
-        # Use document content directly instead of vector search
-        # Truncate if too long (keep first 3000 chars to stay within token limits)
-        context = document_content[:3000] if len(document_content) > 3000 else document_content
         
         # Generate questions for each grade level
         all_questions = []
@@ -145,6 +174,27 @@ Make questions engaging, age-appropriate, and educational!
         for grade in grade_levels:
             try:
                 print(f"🎯 Generating {questions_per_grade} questions for grade {grade} (Topic: {topic})...")
+                
+                # Retrieve relevant chunks using RAG if enabled
+                if use_rag:
+                    print(f"📚 Retrieving relevant chunks for {topic} and grade {grade}...")
+                    context = await self.retrieve_relevant_chunks(
+                        document_id=document_id,
+                        topic=topic,
+                        grade_level=grade,
+                        num_chunks=5
+                    )
+                    
+                    # Fallback to document content if no chunks found
+                    if not context or len(context) < 100:
+                        print(f"⚠️  No chunks found, using full document (first 3000 chars)")
+                        context = document_content[:3000] if len(document_content) > 3000 else document_content
+                    else:
+                        print(f"✅ Retrieved {len(context)} characters of relevant context")
+                else:
+                    # Use document content directly (legacy mode)
+                    context = document_content[:3000] if len(document_content) > 3000 else document_content
+                
                 questions = await self.generate_questions_from_context(
                     context=context,
                     grade_level=grade,

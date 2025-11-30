@@ -8,6 +8,7 @@ except ImportError:
 
 from typing import List, Dict, Any
 from app.config import settings
+from app.utils.llm_client import llm_client
 
 
 class EmbeddingsService:
@@ -37,31 +38,36 @@ class EmbeddingsService:
         chunks: List[str],
         metadata: Dict[str, Any]
     ) -> str:
-        """Add document chunks to vector database"""
+        """Add document chunks to vector database with OpenAI embeddings"""
         if not CHROMADB_AVAILABLE:
             print(f"⚠️  ChromaDB not available - skipping embedding for document {document_id}")
             return document_id
             
         try:
-            # For now, use simple chunking without embeddings
-            # You can add OpenAI embeddings later
+            # Generate embeddings using OpenAI
+            print(f"🔄 Generating embeddings for {len(chunks)} chunks using OpenAI...")
+            embeddings = await llm_client.generate_embeddings(chunks)
+            
+            # Create IDs and metadata for each chunk
             ids = [f"{document_id}_chunk_{i}" for i in range(len(chunks))]
             metadatas = [
                 {
                     **metadata,
                     "chunk_index": i,
-                    "chunk_text": chunks[i][:200]
+                    "chunk_text": chunks[i][:200]  # Preview
                 }
                 for i in range(len(chunks))
             ]
             
-            # Add to collection
+            # Add to collection with embeddings
             self.collection.add(
                 documents=chunks,
+                embeddings=embeddings,
                 metadatas=metadatas,
                 ids=ids
             )
             
+            print(f"✅ Stored {len(chunks)} chunks with embeddings for document {document_id}")
             return document_id
         except Exception as e:
             raise Exception(f"Error adding document chunks: {str(e)}")
@@ -72,14 +78,17 @@ class EmbeddingsService:
         n_results: int = 5,
         filter_metadata: Dict[str, Any] = None
     ) -> List[Dict[str, Any]]:
-        """Search for similar document chunks"""
+        """Search for similar document chunks using semantic similarity"""
         if not CHROMADB_AVAILABLE:
             return []
             
         try:
-            # Simple search without embeddings
+            # Generate embedding for query
+            query_embeddings = await llm_client.generate_embeddings([query])
+            
+            # Search with query embedding
             results = self.collection.query(
-                query_texts=[query],
+                query_embeddings=query_embeddings,
                 n_results=n_results,
                 where=filter_metadata
             )
