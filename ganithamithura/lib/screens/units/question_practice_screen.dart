@@ -50,7 +50,7 @@ class _QuestionPracticeScreenState extends State<QuestionPracticeScreen> {
     try {
       // Try to get adaptive question from RAG service
       final ragQuestion = await _apiService.getAdaptiveQuestion(
-        unitId: int.tryParse(widget.unit.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1,
+        unitId: widget.unit.id, // Use full unit_id like "unit_length_1"
       );
       
       // Convert RAG question to Question model
