@@ -38,36 +38,51 @@ class EmbeddingsService:
         chunks: List[str],
         metadata: Dict[str, Any]
     ) -> str:
-        """Add document chunks to vector database with OpenAI embeddings"""
+        """Add document chunks to vector database with embeddings"""
         if not CHROMADB_AVAILABLE:
             print(f"⚠️  ChromaDB not available - skipping embedding for document {document_id}")
             return document_id
             
         try:
-            # Generate embeddings using OpenAI
-            print(f"🔄 Generating embeddings for {len(chunks)} chunks using OpenAI...")
-            embeddings = await llm_client.generate_embeddings(chunks)
+            # Use ChromaDB default embeddings (no OpenAI API needed)
+            # This uses sentence-transformers locally - free but less accurate
+            print(f"🔄 Storing {len(chunks)} chunks using default embeddings...")
+            
+            # Sanitize metadata for ChromaDB (only str, int, float, bool allowed)
+            clean_metadata = {}
+            for key, value in metadata.items():
+                if isinstance(value, (list, tuple)):
+                    # Convert lists to comma-separated strings
+                    clean_metadata[key] = ",".join(str(v) for v in value)
+                elif isinstance(value, dict):
+                    # Convert dicts to JSON strings
+                    import json
+                    clean_metadata[key] = json.dumps(value)
+                elif isinstance(value, (str, int, float, bool)):
+                    clean_metadata[key] = value
+                else:
+                    # Convert other types to string
+                    clean_metadata[key] = str(value)
             
             # Create IDs and metadata for each chunk
             ids = [f"{document_id}_chunk_{i}" for i in range(len(chunks))]
             metadatas = [
                 {
-                    **metadata,
+                    **clean_metadata,
                     "chunk_index": i,
                     "chunk_text": chunks[i][:200]  # Preview
                 }
                 for i in range(len(chunks))
             ]
             
-            # Add to collection with embeddings
+            # Add to collection (ChromaDB will auto-generate embeddings)
             self.collection.add(
                 documents=chunks,
-                embeddings=embeddings,
                 metadatas=metadatas,
                 ids=ids
             )
             
-            print(f"✅ Stored {len(chunks)} chunks with embeddings for document {document_id}")
+            print(f"✅ Stored {len(chunks)} chunks with default embeddings for document {document_id}")
             return document_id
         except Exception as e:
             raise Exception(f"Error adding document chunks: {str(e)}")
@@ -83,12 +98,9 @@ class EmbeddingsService:
             return []
             
         try:
-            # Generate embedding for query
-            query_embeddings = await llm_client.generate_embeddings([query])
-            
-            # Search with query embedding
+            # Use ChromaDB default search (no OpenAI API needed)
             results = self.collection.query(
-                query_embeddings=query_embeddings,
+                query_texts=[query],
                 n_results=n_results,
                 where=filter_metadata
             )

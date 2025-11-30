@@ -7,8 +7,8 @@ import 'package:ganithamithura/models/unit_models.dart';
 /// Base URL should be configured in production
 class UnitApiService {
   // TODO: Move to config file
-  static const String baseUrl = 'http://localhost:8000/api';
-  static const String ragBaseUrl = 'http://localhost:8000'; // RAG Service - Make sure server is running!
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String ragBaseUrl = 'http://127.0.0.1:8000'; // RAG Service - Changed from localhost for iOS
   
   // Singleton pattern
   static final UnitApiService _instance = UnitApiService._internal();
@@ -219,14 +219,14 @@ class UnitApiService {
     }
   }
   
-  /// GET /upload/documents
+  /// GET /documents
   /// Get all uploaded documents (for teacher dashboard)
   Future<List<DocumentInfo>> getDocuments({
     String? topic,
     int? gradeLevel,
   }) async {
     try {
-      var uri = '$ragBaseUrl/upload/documents';
+      var uri = '$ragBaseUrl/documents';
       final queryParams = <String>[];
       if (topic != null) queryParams.add('topic=$topic');
       if (gradeLevel != null) queryParams.add('grade_level=$gradeLevel');
@@ -250,12 +250,12 @@ class UnitApiService {
     }
   }
   
-  /// GET /upload/documents/{documentId}
+  /// GET /documents/{documentId}
   /// Get document details
   Future<DocumentInfo> getDocumentDetails(String documentId) async {
     try {
       final response = await http.get(
-        Uri.parse('$ragBaseUrl/upload/documents/$documentId'),
+        Uri.parse('$ragBaseUrl/documents/$documentId'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(const Duration(seconds: 10));
       
