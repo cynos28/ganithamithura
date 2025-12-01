@@ -39,3 +39,13 @@ async def health_check():
         "service": "measurement-service",
         "version": "1.0.0"
     }
+
+
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint for debugging connectivity"""
+    return {
+        "status": "ok",
+        "message": "Measurement service is reachable!",
+        "timestamp": "2025-12-01T00:00:00Z"
+    }
