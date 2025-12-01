@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/screens/splash/splash_screen.dart';
+import 'package:ganithamithura/screens/measurements/ar_measurement_screen.dart';
+import 'package:ganithamithura/screens/measurements/ar_questions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,16 @@ class GanithamithuraApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const SplashScreen(),
+      getPages: [
+        GetPage(
+          name: '/ar-measurement',
+          page: () => const ARMeasurementScreen(),
+        ),
+        GetPage(
+          name: '/ar-questions',
+          page: () => const ARQuestionsScreen(),
+        ),
+      ],
     );
   }
 }

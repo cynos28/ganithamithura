@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/measurements/measurement_widgets.dart';
+import 'package:ganithamithura/widgets/measurements/ar_challenge_card.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
+
 
 /// MeasurementHomeScreen - Main screen for Measurement module
 class MeasurementHomeScreen extends StatefulWidget {
@@ -102,15 +104,15 @@ class _MeasurementHomeScreenState extends State<MeasurementHomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Learning Concepts Section
+                        // AR Challenges Section (NEW!)
                         const SectionHeader(
-                          title: 'Learning Concepts',
-                          badgeText: 'Core Skills',
+                          title: 'AR Challenges',
+                          badgeText: '🎯 Scan & Learn',
                         ),
                         const SizedBox(height: 16),
                         
-                        // Concepts Grid
-                        _buildConceptsGrid(),
+                        // AR Challenges Grid
+                        _buildARChallengesGrid(),
                         const SizedBox(height: 24),
                         
                         // Learning Games Section
@@ -145,48 +147,41 @@ class _MeasurementHomeScreenState extends State<MeasurementHomeScreen> {
     );
   }
 
-  Widget _buildConceptsGrid() {
+  Widget _buildARChallengesGrid() {
     return Column(
       children: [
         // First row: Length and Capacity
         Row(
           children: [
             Expanded(
-              child: MeasurementConceptCard(
+              child: ARChallengeCard(
                 title: 'Length',
-                subtitle: 'Lines & distances',
+                subtitle: 'Measure objects',
                 units: 'mm · cm · m',
-                icon: Icons.straighten,
+                icon: '📏',
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.numberBorder),
-                progress: 0.64,
                 onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Length activities are under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
+                  // Navigate to AR measurement screen
+                  Get.toNamed('/ar-measurement', arguments: {
+                    'type': 'length',
+                  });
                 },
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: MeasurementConceptCard(
+              child: ARChallengeCard(
                 title: 'Capacity',
-                subtitle: 'How much it holds',
+                subtitle: 'Measure liquids',
                 units: 'ml · L',
-                icon: Icons.local_drink,
+                icon: '🥤',
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.symbolBorder),
-                progress: 0.64,
                 onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Capacity activities are under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
+                  Get.toNamed('/ar-measurement', arguments: {
+                    'type': 'capacity',
+                  });
                 },
               ),
             ),
@@ -197,41 +192,33 @@ class _MeasurementHomeScreenState extends State<MeasurementHomeScreen> {
         Row(
           children: [
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Area',
-                subtitle: 'Space & surfaces',
-                units: 'cm² · m²',
-                icon: Icons.grid_on,
-                backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
-                borderColor: const Color(AppColors.measurementBorder),
-                progress: 0.64,
+              child: ARChallengeCard(
+                title: 'Weight',
+                subtitle: 'Measure mass',
+                units: 'g · kg',
+                icon: '⚖️',
+                backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.shapeBorder),
                 onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Area activities are under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
+                  Get.toNamed('/ar-measurement', arguments: {
+                    'type': 'weight',
+                  });
                 },
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Weight',
-                subtitle: 'How heavy it is',
-                units: 'g · kg',
-                icon: Icons.scale,
-                backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
-                borderColor: const Color(AppColors.shapeBorder),
-                progress: 0.64,
+              child: ARChallengeCard(
+                title: 'Area',
+                subtitle: 'Measure surfaces',
+                units: 'cm² · m²',
+                icon: '📐',
+                backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
+                borderColor: const Color(AppColors.measurementBorder),
                 onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Weight activities are under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
+                  Get.toNamed('/ar-measurement', arguments: {
+                    'type': 'area',
+                  });
                 },
               ),
             ),

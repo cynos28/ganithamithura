@@ -501,7 +501,7 @@ class _UnitCardScreenState extends State<UnitCardScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            if (hasProgress) ..[
+            if (hasProgress) ...[
               const SizedBox(height: 8),
               // Progress stats
               Container(

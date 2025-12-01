@@ -19,19 +19,40 @@
         "hive_flutter",
         "http",
         "intl",
+        "json_annotation",
         "lottie",
         "path_provider",
         "permission_handler",
         "shared_preferences",
         "shimmer",
         "speech_to_text",
+        "uuid",
         "video_player"
       ],
       "devDependencies": [
         "build_runner",
         "flutter_lints",
         "flutter_test",
-        "hive_generator"
+        "hive_generator",
+        "json_serializable"
+      ]
+    },
+    {
+      "name": "hive_generator",
+      "version": "2.0.1",
+      "dependencies": [
+        "analyzer",
+        "build",
+        "hive",
+        "source_gen",
+        "source_helper"
+      ]
+    },
+    {
+      "name": "flutter_lints",
+      "version": "6.0.0",
+      "dependencies": [
+        "lints"
       ]
     },
     {
@@ -75,21 +96,21 @@
       ]
     },
     {
-      "name": "hive_generator",
-      "version": "2.0.1",
+      "name": "json_serializable",
+      "version": "6.8.0",
       "dependencies": [
         "analyzer",
+        "async",
         "build",
-        "hive",
+        "build_config",
+        "collection",
+        "json_annotation",
+        "meta",
+        "path",
+        "pub_semver",
+        "pubspec_parse",
         "source_gen",
         "source_helper"
-      ]
-    },
-    {
-      "name": "flutter_lints",
-      "version": "6.0.0",
-      "dependencies": [
-        "lints"
       ]
     },
     {
@@ -108,6 +129,22 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "uuid",
+      "version": "4.5.2",
+      "dependencies": [
+        "crypto",
+        "fixnum",
+        "meta"
+      ]
+    },
+    {
+      "name": "json_annotation",
+      "version": "4.9.0",
+      "dependencies": [
+        "meta"
       ]
     },
     {
@@ -314,6 +351,67 @@
         "sky_engine",
         "vector_math"
       ]
+    },
+    {
+      "name": "source_helper",
+      "version": "1.3.5",
+      "dependencies": [
+        "analyzer",
+        "collection",
+        "source_gen"
+      ]
+    },
+    {
+      "name": "analyzer",
+      "version": "6.4.1",
+      "dependencies": [
+        "_fe_analyzer_shared",
+        "collection",
+        "convert",
+        "crypto",
+        "glob",
+        "meta",
+        "package_config",
+        "path",
+        "pub_semver",
+        "source_span",
+        "watcher",
+        "yaml"
+      ]
+    },
+    {
+      "name": "source_gen",
+      "version": "1.5.0",
+      "dependencies": [
+        "analyzer",
+        "async",
+        "build",
+        "dart_style",
+        "glob",
+        "path",
+        "source_span",
+        "yaml"
+      ]
+    },
+    {
+      "name": "build",
+      "version": "2.4.1",
+      "dependencies": [
+        "analyzer",
+        "async",
+        "convert",
+        "crypto",
+        "glob",
+        "logging",
+        "meta",
+        "package_config",
+        "path"
+      ]
+    },
+    {
+      "name": "lints",
+      "version": "6.0.0",
+      "dependencies": []
     },
     {
       "name": "yaml",
@@ -594,21 +692,6 @@
       ]
     },
     {
-      "name": "build",
-      "version": "2.4.1",
-      "dependencies": [
-        "analyzer",
-        "async",
-        "convert",
-        "crypto",
-        "glob",
-        "logging",
-        "meta",
-        "package_config",
-        "path"
-      ]
-    },
-    {
       "name": "async",
       "version": "2.13.0",
       "dependencies": [
@@ -619,52 +702,6 @@
     {
       "name": "args",
       "version": "2.7.0",
-      "dependencies": []
-    },
-    {
-      "name": "analyzer",
-      "version": "6.4.1",
-      "dependencies": [
-        "_fe_analyzer_shared",
-        "collection",
-        "convert",
-        "crypto",
-        "glob",
-        "meta",
-        "package_config",
-        "path",
-        "pub_semver",
-        "source_span",
-        "watcher",
-        "yaml"
-      ]
-    },
-    {
-      "name": "source_helper",
-      "version": "1.3.5",
-      "dependencies": [
-        "analyzer",
-        "collection",
-        "source_gen"
-      ]
-    },
-    {
-      "name": "source_gen",
-      "version": "1.5.0",
-      "dependencies": [
-        "analyzer",
-        "async",
-        "build",
-        "dart_style",
-        "glob",
-        "path",
-        "source_span",
-        "yaml"
-      ]
-    },
-    {
-      "name": "lints",
-      "version": "6.0.0",
       "dependencies": []
     },
     {
@@ -728,6 +765,11 @@
         "string_scanner",
         "term_glyph"
       ]
+    },
+    {
+      "name": "fixnum",
+      "version": "1.1.1",
+      "dependencies": []
     },
     {
       "name": "path_provider_windows",
@@ -889,13 +931,6 @@
       "name": "pedantic",
       "version": "1.11.1",
       "dependencies": []
-    },
-    {
-      "name": "json_annotation",
-      "version": "4.9.0",
-      "dependencies": [
-        "meta"
-      ]
     },
     {
       "name": "speech_to_text_platform_interface",
@@ -1107,19 +1142,33 @@
       "dependencies": []
     },
     {
-      "name": "string_scanner",
-      "version": "1.4.1",
-      "dependencies": [
-        "source_span"
-      ]
-    },
-    {
       "name": "source_span",
       "version": "1.10.1",
       "dependencies": [
         "collection",
         "path",
         "term_glyph"
+      ]
+    },
+    {
+      "name": "convert",
+      "version": "3.1.2",
+      "dependencies": [
+        "typed_data"
+      ]
+    },
+    {
+      "name": "_fe_analyzer_shared",
+      "version": "67.0.0",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "string_scanner",
+      "version": "1.4.1",
+      "dependencies": [
+        "source_span"
       ]
     },
     {
@@ -1167,20 +1216,6 @@
       "name": "built_collection",
       "version": "5.1.1",
       "dependencies": []
-    },
-    {
-      "name": "convert",
-      "version": "3.1.2",
-      "dependencies": [
-        "typed_data"
-      ]
-    },
-    {
-      "name": "_fe_analyzer_shared",
-      "version": "67.0.0",
-      "dependencies": [
-        "meta"
-      ]
     },
     {
       "name": "leak_tracker_testing",
@@ -1329,11 +1364,6 @@
         "meta",
         "path"
       ]
-    },
-    {
-      "name": "fixnum",
-      "version": "1.1.1",
-      "dependencies": []
     },
     {
       "name": "vm_service",

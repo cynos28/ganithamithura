@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.models.database import init_db
-from app.routes import upload, questions, adaptive, progress
+from app.routes import upload, questions, adaptive, progress, contextual
 
 from typing import Optional
 
@@ -29,6 +29,7 @@ app.include_router(upload.router)
 app.include_router(questions.router)
 app.include_router(adaptive.router)
 app.include_router(progress.router)
+app.include_router(contextual.router)
 
 
 @app.get("/documents")

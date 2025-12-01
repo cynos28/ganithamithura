@@ -368,6 +368,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "json_serializable",
+      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/json_serializable-6.8.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "leak_tracker",
       "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/leak_tracker-11.0.2",
       "packageUri": "lib/",
@@ -738,6 +744,12 @@
       "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "uuid",
+      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/uuid-4.5.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "vector_graphics",

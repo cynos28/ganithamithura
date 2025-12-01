@@ -1,0 +1,11 @@
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientCreateCollectionEvent: capture() takes 1 positional argument but 3 were given
+INFO:     Started server process [50442]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+✅ MongoDB connected: ganithamithura_rag
+✅ Server running on 0.0.0.0:8000
+✅ Environment: development
+✅ Docs available at: http://0.0.0.0:8000/docs
+INFO:     127.0.0.1:62225 - "GET /health HTTP/1.1" 200 OK
