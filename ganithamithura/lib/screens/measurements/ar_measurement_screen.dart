@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/ar_measurement.dart';
 import '../../services/ar_learning_service.dart';
+import '../../services/ar_camera_service.dart';
+import '../../widgets/measurements/ar_camera_widget.dart';
 import '../../utils/constants.dart';
 import 'ar_questions_screen.dart';
 
@@ -21,6 +23,7 @@ class ARMeasurementScreen extends StatefulWidget {
 
 class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   final ARLearningService _arService = ARLearningService();
+  final ARCameraService _cameraService = ARCameraService();
   final TextEditingController _objectController = TextEditingController();
   final TextEditingController _valueController = TextEditingController();
   
@@ -28,6 +31,11 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   MeasurementUnit? _selectedUnit;
   bool _isProcessing = false;
   String? _sessionId;
+  
+  // Camera mode
+  bool _useCameraMode = false;
+  bool _isCameraInitialized = false;
+  String? _capturedPhotoPath;
   
   // Unit options per measurement type
   Map<MeasurementType, List<MeasurementUnit>> unitOptions = {
@@ -75,10 +83,63 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   void dispose() {
     _objectController.dispose();
     _valueController.dispose();
+    _cameraService.dispose();
     if (_sessionId != null) {
       _arService.endSession(_sessionId!);
     }
     super.dispose();
+  }
+  
+  Future<void> _toggleCameraMode() async {
+    if (!_useCameraMode) {
+      // Initialize camera
+      setState(() {
+        _isProcessing = true;
+      });
+      
+      try {
+        await _cameraService.initialize();
+        setState(() {
+          _useCameraMode = true;
+          _isCameraInitialized = true;
+        });
+      } catch (e) {
+        Get.snackbar(
+          'Camera Error',
+          'Failed to initialize camera: $e',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      } finally {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    } else {
+      // Switch back to manual mode
+      await _cameraService.dispose();
+      setState(() {
+        _useCameraMode = false;
+        _isCameraInitialized = false;
+      });
+    }
+  }
+  
+  void _onCameraMeasurementComplete(double value, String? photoPath) {
+    setState(() {
+      _valueController.text = value.toStringAsFixed(1);
+      _capturedPhotoPath = photoPath;
+      _useCameraMode = false;
+    });
+    
+    _cameraService.dispose();
+    
+    Get.snackbar(
+      'Measurement Captured',
+      'Value: ${value.toStringAsFixed(1)} cm',
+      backgroundColor: _primaryColor.withOpacity(0.9),
+      colorText: Colors.white,
+    );
   }
   
   MeasurementType _parseMeasurementType(String type) {
@@ -224,38 +285,104 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
             ),
           ],
         ),
+        actions: [
+          // Camera mode toggle
+          IconButton(
+            icon: Icon(
+              _useCameraMode ? Icons.keyboard : Icons.camera_alt,
+              color: _borderColor,
+            ),
+            onPressed: _toggleCameraMode,
+            tooltip: _useCameraMode ? 'Manual Input' : 'Camera Mode',
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: _useCameraMode && _isCameraInitialized
+            ? _buildCameraMode()
+            : _buildManualMode(),
+      ),
+    );
+  }
+  
+  Widget _buildCameraMode() {
+    return Column(
+      children: [
+        // Camera widget
+        Expanded(
+          child: ARCameraWidget(
+            cameraService: _cameraService,
+            onMeasurementComplete: _onCameraMeasurementComplete,
+            primaryColor: _primaryColor,
+            measurementType: _measurementType.displayName,
+          ),
+        ),
+        
+        // Object name input below camera
+        Container(
           padding: const EdgeInsets.all(20),
+          color: Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Instructions Card
-              _buildInstructionsCard(),
-              const SizedBox(height: 24),
-              
-              // Object Name Input
-              _buildObjectNameInput(),
-              const SizedBox(height: 20),
-              
-              // Measurement Value Input
-              _buildMeasurementInput(),
-              const SizedBox(height: 20),
-              
-              // Unit Selection
-              _buildUnitSelector(),
-              const SizedBox(height: 32),
-              
-              // Generate Questions Button
-              _buildGenerateButton(),
-              const SizedBox(height: 16),
-              
-              // Example Card
-              _buildExampleCard(),
+              const Text(
+                'What are you measuring?',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(AppColors.textBlack),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _objectController,
+                decoration: InputDecoration(
+                  hintText: 'e.g., pencil, water bottle, table',
+                  prefixIcon: Icon(Icons.label_outline, color: _borderColor),
+                  filled: true,
+                  fillColor: const Color(0xFFF7FAFA),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: _borderColor, width: 1.5),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+      ],
+    );
+  }
+  
+  Widget _buildManualMode() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Instructions Card
+          _buildInstructionsCard(),
+          const SizedBox(height: 24),
+          
+          // Object Name Input
+          _buildObjectNameInput(),
+          const SizedBox(height: 20),
+          
+          // Measurement Value Input
+          _buildMeasurementInput(),
+          const SizedBox(height: 20),
+          
+          // Unit Selection
+          _buildUnitSelector(),
+          const SizedBox(height: 32),
+          
+          // Generate Questions Button
+          _buildGenerateButton(),
+          const SizedBox(height: 16),
+          
+          // Example Card
+          _buildExampleCard(),
+        ],
       ),
     );
   }
@@ -298,7 +425,9 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Measure an object, enter the details, and get personalized questions!',
+                  _useCameraMode 
+                      ? 'Use camera to measure objects with AR!'
+                      : 'Measure an object, enter the details, and get personalized questions!',
                   style: TextStyle(
                     fontSize: 14,
                     color: const Color(AppColors.textBlack).withOpacity(0.7),
@@ -307,6 +436,12 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
               ],
             ),
           ),
+          if (!_useCameraMode)
+            IconButton(
+              icon: Icon(Icons.camera_alt, color: _borderColor),
+              onPressed: _toggleCameraMode,
+              tooltip: 'Use Camera',
+            ),
         ],
       ),
     );

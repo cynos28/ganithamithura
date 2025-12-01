@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to measure objects with AR</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to select images for measurements</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is not needed for measurements</string>
 </dict>
 </plist>
