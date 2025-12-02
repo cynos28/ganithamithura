@@ -141,6 +141,24 @@ class GameController:
                     upsert=True
                 )
 
+                # Fetch the user again to get the updated highest_passed_level
+                user_data = await users_collection.find_one({"user_name": user["user_name"]})
+                highest_passed_level = user_data.get("highest_passed_level", 0)
+
+                badge = None
+                if highest_passed_level >= 6:
+                    badge = "advance"
+                elif highest_passed_level >= 4:
+                    badge = "intermediate"
+                elif highest_passed_level >= 1:
+                    badge = "beginner"
+
+                if badge:
+                    await users_collection.update_one(
+                        {"user_name": user["user_name"]},
+                        {"$set": {"badge": badge}}
+                    )
+
                 return {"score": score, "total_questions": total_questions, "status": game_status, "results": results}
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
