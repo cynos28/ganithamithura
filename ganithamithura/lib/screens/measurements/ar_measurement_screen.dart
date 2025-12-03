@@ -12,7 +12,6 @@ import '../../services/ar_learning_service.dart';
 import '../../services/ar_camera_service.dart';
 import '../../widgets/measurements/ar_camera_widget.dart';
 import '../../utils/constants.dart';
-import '../../utils/api_config.dart';
 import 'ar_questions_screen.dart';
 
 class ARMeasurementScreen extends StatefulWidget {
@@ -63,10 +62,6 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Print API configuration for debugging
-    ApiConfig.printConfig();
-    
     // Get measurement type from route arguments
     final args = Get.arguments as Map<String, dynamic>?;
     final typeString = args?['type'] as String? ?? 'length';
@@ -109,14 +104,12 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
           _isCameraInitialized = true;
         });
       } catch (e) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Get.snackbar(
-            'Camera Error',
-            'Failed to initialize camera: $e',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        });
+        Get.snackbar(
+          'Camera Error',
+          'Failed to initialize camera: $e',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       } finally {
         setState(() {
           _isProcessing = false;
@@ -141,14 +134,12 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
     
     _cameraService.dispose();
     
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.snackbar(
-        'Measurement Captured',
-        'Value: ${value.toStringAsFixed(1)} cm',
-        backgroundColor: _primaryColor.withOpacity(0.9),
-        colorText: Colors.white,
-      );
-    });
+    Get.snackbar(
+      'Measurement Captured',
+      'Value: ${value.toStringAsFixed(1)} cm',
+      backgroundColor: _primaryColor.withOpacity(0.9),
+      colorText: Colors.white,
+    );
   }
   
   MeasurementType _parseMeasurementType(String type) {
@@ -195,39 +186,33 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   Future<void> _generateQuestions() async {
     // Validate inputs
     if (_objectController.text.trim().isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar(
-          'Object Name Required',
-          'Please enter what you are measuring',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-      });
+      Get.snackbar(
+        'Object Name Required',
+        'Please enter what you are measuring',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
       return;
     }
     
     final value = double.tryParse(_valueController.text);
     if (value == null || value <= 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar(
-          'Invalid Measurement',
-          'Please enter a valid measurement value',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-      });
+      Get.snackbar(
+        'Invalid Measurement',
+        'Please enter a valid measurement value',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
       return;
     }
     
     if (_selectedUnit == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar(
-          'Unit Required',
-          'Please select a measurement unit',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-      });
+      Get.snackbar(
+        'Unit Required',
+        'Please select a measurement unit',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
       return;
     }
     
@@ -258,35 +243,17 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
       
     } catch (e) {
       print('❌ Error: $e');
-      
-      // Determine user-friendly error message
-      String errorMessage = 'Failed to generate questions';
-      if (e.toString().contains('Connection timed out') || 
-          e.toString().contains('SocketException')) {
-        errorMessage = 'Cannot connect to measurement service. Please check if the service is running.';
-      } else if (e.toString().contains('Connection refused')) {
-        errorMessage = 'Measurement service is not available. Please start the service.';
-      }
-      
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            Get.snackbar(
-              'Error',
-              errorMessage,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 5),
-            );
-          }
-        });
-      }
+      Get.snackbar(
+        'Error',
+        'Failed to generate questions: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-      }
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
   

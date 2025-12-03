@@ -202,15 +202,12 @@ Generate ONLY valid JSON in this format:
     
     try:
         # Generate using existing LLM client
-        print(f"🤖 Calling LLM for question generation...")
         response = await llm_client.generate_completion(
             prompt=prompt,
             system_message=f"You are an expert math teacher creating personalized questions about a student's REAL measurement. Grade {grade}.",
             temperature=0.8,
             max_tokens=2000
         )
-        
-        print(f"📝 LLM Response received: {response[:200]}...")
         
         # Parse JSON response
         response_text = response.strip()
@@ -223,7 +220,6 @@ Generate ONLY valid JSON in this format:
         
         questions_data = json.loads(response_text.strip())
         
-        print(f"✅ Successfully parsed {len(questions_data.get('questions', []))} questions from LLM")
         return questions_data.get('questions', [])
         
     except json.JSONDecodeError as e:
@@ -241,193 +237,31 @@ def _generate_fallback_questions(
     grade: int,
     num_questions: int
 ) -> List[dict]:
-    """Generate varied adaptive fallback questions if LLM fails"""
-    
-    import random
+    """Generate simple fallback questions if LLM fails"""
     
     questions = []
-    value = context.value
-    unit = context.unit
-    obj = context.object_name
-    measurement_type = context.measurement_type
     
-    # Create a pool of question templates with variations
-    question_pool = []
-    
-    # 1. Unit Conversion Questions (varied approaches)
-    if measurement_type == "length" and unit == "cm":
-        question_pool.extend([
-            {
-                "question_text": f"Your {obj} is {value}cm long. How many millimeters is that?",
-                "question_type": "mcq",
-                "correct_answer": f"{value * 10}mm",
-                "options": [f"{value * 10}mm", f"{value * 100}mm", f"{value}mm", f"{value / 10}mm"],
-                "difficulty_level": 2,
-                "explanation": f"1 cm = 10 mm, so {value}cm = {value * 10}mm",
-                "hints": ["Remember: 1 centimeter = 10 millimeters"]
-            },
-            {
-                "question_text": f"If your {obj} is {value}cm, what is its length in meters?",
-                "question_type": "mcq",
-                "correct_answer": f"{value / 100}m",
-                "options": [f"{value / 100}m", f"{value / 10}m", f"{value * 100}m", f"{value}m"],
-                "difficulty_level": 3,
-                "explanation": f"1 meter = 100 cm, so {value}cm = {value / 100}m",
-                "hints": ["Divide by 100 to convert cm to meters"]
-            },
-        ])
-    
-    # 2. Multiplication Questions (varied multipliers)
-    multipliers = [2, 3, 4, 5]
-    random.shuffle(multipliers)
-    for mult in multipliers[:2]:  # Pick 2 random multipliers
-        question_pool.append({
-            "question_text": f"If you have {mult} {obj}s like yours ({value}{unit} each), what is the total {measurement_type}?",
+    # Basic conversion question
+    if context.measurement_type == "length" and context.unit == "cm":
+        questions.append({
+            "question_text": f"Your {context.object_name} is {context.value}cm long. How many millimeters is that?",
             "question_type": "mcq",
-            "correct_answer": f"{value * mult}{unit}",
-            "options": _generate_mcq_options(value * mult, unit, spread=value),
-            "difficulty_level": 1 + (mult // 3),
-            "explanation": f"{value} × {mult} = {value * mult}{unit}",
-            "hints": [f"Multiply {value} by {mult}"]
-        })
-    
-    # 3. Division/Fraction Questions
-    if value >= 2:
-        divisors = [2, 4] if value >= 4 else [2]
-        for div in divisors:
-            if value % div == 0 or grade >= 3:  # Whole numbers for lower grades
-                question_pool.append({
-                    "question_text": f"If you divide your {obj} ({value}{unit}) into {div} equal parts, how long is each part?",
-                    "question_type": "mcq",
-                    "correct_answer": f"{value / div}{unit}",
-                    "options": _generate_mcq_options(value / div, unit, spread=value / 4),
-                    "difficulty_level": 2 + div // 2,
-                    "explanation": f"{value} ÷ {div} = {value / div}{unit}",
-                    "hints": [f"Divide the total by {div}"]
-                })
-    
-    # 4. Comparison Questions (dynamic comparisons)
-    comparison_values = [
-        value + random.randint(5, 15),
-        value - random.randint(5, min(15, int(value - 1))) if value > 15 else value + 10,
-        value * 2,
-    ]
-    for comp_val in comparison_values[:2]:
-        longer_obj = f"your {obj}" if value > comp_val else "the other object"
-        question_pool.append({
-            "question_text": f"Your {obj} is {value}{unit}. Compare it with an object that is {comp_val}{unit}. Which is longer?",
-            "question_type": "mcq",
-            "correct_answer": f"Your {obj} ({value}{unit})" if value > comp_val else f"The other object ({comp_val}{unit})",
-            "options": [
-                f"Your {obj} ({value}{unit})",
-                f"The other object ({comp_val}{unit})",
-                "They are equal",
-                "Cannot determine"
-            ],
-            "difficulty_level": 1,
-            "explanation": f"{max(value, comp_val)}{unit} is longer than {min(value, comp_val)}{unit}",
-            "hints": ["Compare the two numbers to see which is bigger"]
-        })
-    
-    # 5. Addition Questions (varied additions)
-    add_values = [5, 10, 15, 20] if value > 20 else [5, 10]
-    random.shuffle(add_values)
-    for add_val in add_values[:2]:
-        question_pool.append({
-            "question_text": f"Your {obj} is {value}{unit}. If you add {add_val}{unit} more, what is the new {measurement_type}?",
-            "question_type": "mcq",
-            "correct_answer": f"{value + add_val}{unit}",
-            "options": _generate_mcq_options(value + add_val, unit, spread=10),
+            "correct_answer": f"{context.value * 10}mm",
+            "options": [f"{context.value * 10}mm", f"{context.value * 100}mm", f"{context.value}mm", f"{context.value / 10}mm"],
             "difficulty_level": 2,
-            "explanation": f"{value} + {add_val} = {value + add_val}{unit}",
-            "hints": ["Add the two lengths together"]
+            "explanation": f"1 cm = 10 mm, so {context.value}cm = {context.value * 10}mm",
+            "hints": ["Remember: 1 centimeter = 10 millimeters"]
         })
     
-    # 6. Subtraction Questions
-    if value > 10:
-        sub_values = [5, 10] if value > 20 else [5]
-        for sub_val in sub_values:
-            if value > sub_val:
-                question_pool.append({
-                    "question_text": f"Your {obj} is {value}{unit}. If you remove {sub_val}{unit}, what remains?",
-                    "question_type": "mcq",
-                    "correct_answer": f"{value - sub_val}{unit}",
-                    "options": _generate_mcq_options(value - sub_val, unit, spread=10),
-                    "difficulty_level": 2,
-                    "explanation": f"{value} - {sub_val} = {value - sub_val}{unit}",
-                    "hints": ["Subtract to find what's left"]
-                })
+    # Multiplication question
+    questions.append({
+        "question_text": f"If you have 2 {context.object_name}s like yours, what is the total {context.measurement_type}?",
+        "question_type": "mcq",
+        "correct_answer": f"{context.value * 2}{context.unit}",
+        "options": [f"{context.value * 2}{context.unit}", f"{context.value * 3}{context.unit}", f"{context.value}{context.unit}", f"{context.value / 2}{context.unit}"],
+        "difficulty_level": 1,
+        "explanation": f"{context.value} + {context.value} = {context.value * 2}",
+        "hints": ["Add the two measurements together"]
+    })
     
-    # 7. Real-world application questions
-    real_world = [
-        {
-            "question_text": f"Your {obj} is {value}{unit}. How many {obj}s would you need to make {value * 5}{unit}?",
-            "question_type": "mcq",
-            "correct_answer": "5",
-            "options": ["5", "4", "6", "3"],
-            "difficulty_level": 3,
-            "explanation": f"{value * 5} ÷ {value} = 5",
-            "hints": ["Divide the target length by the length of one object"]
-        },
-        {
-            "question_text": f"Which of these is closest to your {obj}'s {measurement_type} of {value}{unit}?",
-            "question_type": "mcq",
-            "correct_answer": f"{value + 2}{unit}",
-            "options": [f"{value + 2}{unit}", f"{value + 20}{unit}", f"{value - 20}{unit}" if value > 20 else f"{value // 2}{unit}", f"{value * 2}{unit}"],
-            "difficulty_level": 1,
-            "explanation": f"{value + 2}{unit} is closest to {value}{unit}",
-            "hints": ["Look for the number closest to your measurement"]
-        },
-    ]
-    question_pool.extend(real_world)
-    
-    # 8. Estimation questions
-    if value >= 10:
-        estimation_range = (int(value * 0.8), int(value * 1.2))
-        question_pool.append({
-            "question_text": f"Your {obj} is exactly {value}{unit}. Estimate: Is it closer to {estimation_range[0]}{unit} or {estimation_range[1]}{unit}?",
-            "question_type": "mcq",
-            "correct_answer": f"{estimation_range[1]}{unit}" if abs(value - estimation_range[1]) < abs(value - estimation_range[0]) else f"{estimation_range[0]}{unit}",
-            "options": [f"{estimation_range[0]}{unit}", f"{estimation_range[1]}{unit}", f"{value * 2}{unit}", f"{value // 2}{unit}"],
-            "difficulty_level": 2,
-            "explanation": f"Compare distances: {value} is closer to the selected answer",
-            "hints": ["Find which number is closer to your measurement"]
-        })
-    
-    # Shuffle and select requested number of questions
-    random.shuffle(question_pool)
-    questions = question_pool[:num_questions]
-    
-    # Ensure variety by difficulty
-    questions.sort(key=lambda q: q['difficulty_level'])
-    
-    print(f"📝 Generated {len(questions)} adaptive fallback questions")
-    return questions
-
-def _generate_mcq_options(correct: float, unit: str, spread: float = 10) -> List[str]:
-    """Generate realistic MCQ options around the correct answer"""
-    import random
-    
-    options = [f"{correct}{unit}"]
-    
-    # Add plausible wrong answers
-    wrong_answers = [
-        correct + spread,
-        correct - spread if correct > spread else correct + spread * 2,
-        correct * 2,
-    ]
-    
-    # Shuffle and pick 3 unique wrong answers
-    random.shuffle(wrong_answers)
-    for ans in wrong_answers[:3]:
-        if ans > 0 and f"{ans}{unit}" not in options:
-            options.append(f"{ans}{unit}")
-    
-    # Fill remaining if needed
-    while len(options) < 4:
-        rand_val = correct + random.randint(-int(spread), int(spread))
-        if rand_val > 0 and f"{rand_val}{unit}" not in options:
-            options.append(f"{rand_val}{unit}")
-    
-    random.shuffle(options)
-    return options[:4]
+    return questions[:num_questions]

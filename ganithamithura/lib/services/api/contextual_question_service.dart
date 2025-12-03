@@ -4,11 +4,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/ar_measurement.dart';
-import '../../utils/api_config.dart';
 
 class ContextualQuestionService {
-  static String get baseUrl => ApiConfig.ragServiceUrl;
-  static const Duration timeout = Duration(seconds: 30);
+  static const String baseUrl = 'http://10.0.2.2:8000/api/v1/contextual';
   
   /// Generate contextual questions based on AR measurement
   /// 
@@ -40,14 +38,6 @@ class ContextualQuestionService {
         Uri.parse('$baseUrl/generate-questions'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(request.toJson()),
-      ).timeout(
-        timeout,
-        onTimeout: () {
-          throw Exception(
-            'Connection timeout: RAG service did not respond within ${timeout.inSeconds}s. '
-            'Please check if the service is running and accessible.'
-          );
-        },
       );
       
       if (response.statusCode == 200) {
@@ -132,7 +122,7 @@ class ContextualQuestionService {
   Future<bool> checkHealth() async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.ragHealthUrl),
+        Uri.parse('http://10.0.2.2:8000/health'),
       ).timeout(const Duration(seconds: 3));
       
       return response.statusCode == 200;
