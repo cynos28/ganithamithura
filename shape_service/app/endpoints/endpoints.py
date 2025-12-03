@@ -33,5 +33,5 @@ async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_curren
     return await game_controller.check_answers(game_answer, user)
 
 @router.get("/game/badges", response_model=UserBadgeList)
-async def get_all_users_badges():
+async def get_all_users_badges(user: dict = Depends(get_current_user)):
     return await game_controller.get_all_users_badges()
