@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
-import 'package:ganithamithura/screens/units/units_list_screen.dart';
-import 'package:ganithamithura/screens/learn/learn_units_screen.dart';
+import 'package:ganithamithura/screens/measurements/units/units_list_screen.dart';
+import 'package:ganithamithura/screens/measurements/learn/learn_units_screen.dart';
 import 'package:ganithamithura/services/unit_progress_service.dart';
 
 class UnitCardScreen extends StatefulWidget {

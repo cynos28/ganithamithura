@@ -1,12 +1,35 @@
 /// API client for measurement-service (port 8001)
 /// Processes AR measurements and builds educational context
+/// Automatically tries multiple URLs for compatibility
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/ar_measurement.dart';
 
 class MeasurementApiService {
-  static const String baseUrl = 'http://10.0.2.2:8001/api/v1/measurements';
+  // Try URLs in order: localhost (adb reverse), then network IP
+  static const List<String> _baseUrls = [
+    'http://localhost:8001/api/v1/measurements',      // USB debugging (adb reverse)
+    'http://192.168.8.145:8001/api/v1/measurements',  // WiFi network
+  ];
+  
+  static Future<String> _getWorkingBaseUrl() async {
+    for (final url in _baseUrls) {
+      try {
+        final healthUrl = url.replaceAll('/api/v1/measurements', '/health');
+        final response = await http.get(Uri.parse(healthUrl))
+            .timeout(const Duration(seconds: 2));
+        if (response.statusCode == 200) {
+          print('✅ Connected to measurement service: $url');
+          return url;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+    print('⚠️ Using fallback URL: ${_baseUrls.first}');
+    return _baseUrls.first;
+  }
   
   /// Process an AR measurement and get educational context
   /// 
@@ -32,11 +55,12 @@ class MeasurementApiService {
       
       print('🔄 Processing AR measurement: ${request.toJson()}');
       
+      final baseUrl = await _getWorkingBaseUrl();
       final response = await http.post(
         Uri.parse('$baseUrl/process'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(request.toJson()),
-      );
+      ).timeout(const Duration(seconds: 30));
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;

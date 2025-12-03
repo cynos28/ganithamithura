@@ -1,12 +1,35 @@
 /// API client for contextual question generation
 /// Uses RAG + GPT to generate personalized questions based on AR measurements
+/// Automatically tries multiple URLs for compatibility
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../models/ar_measurement.dart';
 
 class ContextualQuestionService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api/v1/contextual';
+  // Try URLs in order: localhost (adb reverse), then network IP
+  static const List<String> _baseUrls = [
+    'http://localhost:8000/api/v1/contextual',      // USB debugging (adb reverse)
+    'http://192.168.8.145:8000/api/v1/contextual',  // WiFi network
+  ];
+  
+  static Future<String> _getWorkingBaseUrl() async {
+    for (final url in _baseUrls) {
+      try {
+        final healthUrl = url.replaceAll('/api/v1/contextual', '/health');
+        final response = await http.get(Uri.parse(healthUrl))
+            .timeout(const Duration(seconds: 2));
+        if (response.statusCode == 200) {
+          print('✅ Connected to RAG service: $url');
+          return url;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+    print('⚠️ Using fallback URL: ${_baseUrls.first}');
+    return _baseUrls.first;
+  }
   
   /// Generate contextual questions based on AR measurement
   /// 
@@ -34,11 +57,12 @@ class ContextualQuestionService {
       print('   Measurement: ${measurementContext.measurementString}');
       print('   Topic: ${measurementContext.topicDisplay}');
       
+      final baseUrl = await _getWorkingBaseUrl();
       final response = await http.post(
         Uri.parse('$baseUrl/generate-questions'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(request.toJson()),
-      );
+      ).timeout(const Duration(seconds: 30));
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -93,6 +117,7 @@ class ContextualQuestionService {
         if (topic != null) 'topic': topic,
       };
       
+      final baseUrl = await _getWorkingBaseUrl();
       final uri = Uri.parse('$baseUrl/questions').replace(
         queryParameters: queryParams,
       );

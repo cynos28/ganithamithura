@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
-import 'package:ganithamithura/screens/learn/unit_card_screen.dart';
+import 'package:ganithamithura/screens/measurements/learn/unit_card_screen.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});

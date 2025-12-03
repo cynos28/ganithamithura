@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
-import 'package:ganithamithura/screens/learn/units_lessons/length_lesson_screen.dart';
-import 'package:ganithamithura/screens/learn/units_lessons/capacity_lesson_screen.dart';
-import 'package:ganithamithura/screens/learn/units_lessons/mass_lesson_screen.dart';
+import 'package:ganithamithura/screens/measurements/learn/units_lessons/length_lesson_screen.dart';
+import 'package:ganithamithura/screens/measurements/learn/units_lessons/capacity_lesson_screen.dart';
+import 'package:ganithamithura/screens/measurements/learn/units_lessons/mass_lesson_screen.dart';
 
 class LearnUnitsScreen extends StatelessWidget {
   const LearnUnitsScreen({super.key});

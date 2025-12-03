@@ -89,6 +89,17 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
     }
     super.dispose();
   }
+
+  void _showSnackBar(String message, {Color? backgroundColor}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor ?? _primaryColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
   
   Future<void> _toggleCameraMode() async {
     if (!_useCameraMode) {
@@ -104,11 +115,9 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
           _isCameraInitialized = true;
         });
       } catch (e) {
-        Get.snackbar(
-          'Camera Error',
+        _showSnackBar(
           'Failed to initialize camera: $e',
           backgroundColor: Colors.red,
-          colorText: Colors.white,
         );
       } finally {
         setState(() {
@@ -134,12 +143,7 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
     
     _cameraService.dispose();
     
-    Get.snackbar(
-      'Measurement Captured',
-      'Value: ${value.toStringAsFixed(1)} cm',
-      backgroundColor: _primaryColor.withOpacity(0.9),
-      colorText: Colors.white,
-    );
+    _showSnackBar('Measurement Captured: ${value.toStringAsFixed(1)} cm');
   }
   
   MeasurementType _parseMeasurementType(String type) {
@@ -186,32 +190,26 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
   Future<void> _generateQuestions() async {
     // Validate inputs
     if (_objectController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Object Name Required',
+      _showSnackBar(
         'Please enter what you are measuring',
         backgroundColor: Colors.orange,
-        colorText: Colors.white,
       );
       return;
     }
     
     final value = double.tryParse(_valueController.text);
     if (value == null || value <= 0) {
-      Get.snackbar(
-        'Invalid Measurement',
+      _showSnackBar(
         'Please enter a valid measurement value',
         backgroundColor: Colors.orange,
-        colorText: Colors.white,
       );
       return;
     }
     
     if (_selectedUnit == null) {
-      Get.snackbar(
-        'Unit Required',
+      _showSnackBar(
         'Please select a measurement unit',
         backgroundColor: Colors.orange,
-        colorText: Colors.white,
       );
       return;
     }
@@ -243,12 +241,9 @@ class _ARMeasurementScreenState extends State<ARMeasurementScreen> {
       
     } catch (e) {
       print('❌ Error: $e');
-      Get.snackbar(
-        'Error',
+      _showSnackBar(
         'Failed to generate questions: ${e.toString()}',
         backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
       );
     } finally {
       setState(() {
