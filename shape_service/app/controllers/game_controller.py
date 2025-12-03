@@ -1,7 +1,7 @@
 from common.database.database import get_database
 from fastapi import HTTPException
 from datetime import datetime, timedelta
-from app.models.model import GameAnswer
+from app.models.model import GameAnswer, UserBadgeList
 
 
 
@@ -163,5 +163,21 @@ class GameController:
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
  
+    async def get_all_users_badges(self) -> UserBadgeList:
+        """
+        Retrieves the username and badge for all users.
 
-    
+        Returns:
+            UserBadgeList: A list of users with their username and badge.
+        """
+        try:
+            db = get_database()
+            users_collection = db["users"]
+            users = []
+            async for user in users_collection.find({}, {"_id": 0, "user_name": 1, "badge": 1}):
+                users.append({"username": user.get("user_name"), "badge": user.get("badge", "N/A")})
+            return UserBadgeList(users=users)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+        
