@@ -8,3 +8,10 @@ class Answer(BaseModel):
 class GameAnswer(BaseModel):
     level: int
     answers: List[Answer]
+
+class UserBadgeInfo(BaseModel):
+    username: str
+    badge: str
+
+class UserBadgeList(BaseModel):
+    users: List[UserBadgeInfo]

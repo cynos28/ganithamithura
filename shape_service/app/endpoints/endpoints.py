@@ -3,7 +3,7 @@ from app.controllers.shapes_detection import ShapesDetectionController
 from app.controllers.shapes_controller import ShapesController
 from authentication_service.auth_service import get_current_user
 from app.controllers.game_controller import GameController
-from app.models.model import GameAnswer
+from app.models.model import GameAnswer, UserBadgeList
 
 
 router = APIRouter()
@@ -32,3 +32,6 @@ async def start_game(user: dict = Depends(get_current_user)):
 async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_current_user)):
     return await game_controller.check_answers(game_answer, user)
 
+@router.get("/game/badges", response_model=UserBadgeList)
+async def get_all_users_badges():
+    return await game_controller.get_all_users_badges()
