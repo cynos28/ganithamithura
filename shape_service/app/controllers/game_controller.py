@@ -1,11 +1,12 @@
 from common.database.database import get_database
 from fastapi import HTTPException
 from datetime import datetime, timedelta
-from app.models.model import GameAnswer
-
+from app.models.model import GameAnswer, UserBadgeList
+from app.constants.constants import BADGE_THRESHOLDS
 
 
 class GameController:
+
     async def start_game(self, user: dict):
         """
         Initializes and starts a game session for a given user.
@@ -141,9 +142,41 @@ class GameController:
                     upsert=True
                 )
 
+                # Fetch the user again to get the updated highest_passed_level
+                user_data = await users_collection.find_one({"user_name": user["user_name"]})
+                highest_passed_level = user_data.get("highest_passed_level", 0)
+
+                badge = None
+                if highest_passed_level >= BADGE_THRESHOLDS['advanced']:
+                    badge = "advanced"
+                elif highest_passed_level >= BADGE_THRESHOLDS['intermediate']:
+                    badge = "intermediate"
+                elif highest_passed_level >= BADGE_THRESHOLDS['beginner']:
+                    badge = "beginner"
+
+                if badge:
+                    await users_collection.update_one(
+                        {"user_name": user["user_name"]},
+                        {"$set": {"badge": badge}}
+                    )
+
                 return {"score": score, "total_questions": total_questions, "status": game_status, "results": results}
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
  
+    async def get_all_users_badges(self) -> UserBadgeList:
+        """
+        Retrieves the username and badge for all users.
 
-    
+        Returns:
+            UserBadgeList: A list of users with their username and badge.
+        """
+        try:
+            db = get_database()
+            users_collection = db["users"]
+            users = []
+            async for user in users_collection.find({}, {"_id": 0, "user_name": 1, "badge": 1}):
+                users.append({"username": user.get("user_name"), "badge": user.get("badge", "N/A")})
+            return UserBadgeList(users=users)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
