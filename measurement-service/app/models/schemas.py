@@ -37,13 +37,22 @@ class Unit(str, Enum):
 
 
 class ARMeasurementRequest(BaseModel):
-    """Request from Flutter AR measurement"""
+    """Request from Flutter AR measurement with object detection"""
     measurement_type: MeasurementType = Field(..., description="Type of measurement")
     value: float = Field(..., description="Measured value", gt=0)
     unit: Unit = Field(..., description="Unit of measurement")
-    object_name: Optional[str] = Field(None, description="Optional object name from user")
+    object_name: str = Field(..., description="Detected or manually selected object name")
     student_id: str = Field(..., description="Student identifier")
     grade: int = Field(default=1, ge=1, le=5, description="Student grade level")
+    
+    # Object detection metadata
+    detection_confidence: Optional[float] = Field(None, description="ML detection confidence (0-1)")
+    manually_corrected: bool = Field(False, description="Whether student corrected the detection")
+    session_id: Optional[str] = Field(None, description="AR session identifier for tracking")
+    
+    # AR measurement metadata
+    measurement_method: Optional[str] = Field("tap", description="How measured: tap, drag, area")
+    photo_path: Optional[str] = Field(None, description="Path to captured AR photo")
 
 
 class MeasurementContext(BaseModel):
