@@ -2,10 +2,11 @@ from common.database.database import get_database
 from fastapi import HTTPException
 from datetime import datetime, timedelta
 from app.models.model import GameAnswer, UserBadgeList
-
+from app.constants.constants import BADGE_THRESHOLDS
 
 
 class GameController:
+
     async def start_game(self, user: dict):
         """
         Initializes and starts a game session for a given user.
@@ -146,11 +147,11 @@ class GameController:
                 highest_passed_level = user_data.get("highest_passed_level", 0)
 
                 badge = None
-                if highest_passed_level >= 6:
-                    badge = "advance"
-                elif highest_passed_level >= 4:
+                if highest_passed_level >= BADGE_THRESHOLDS['advanced']:
+                    badge = "advanced"
+                elif highest_passed_level >= BADGE_THRESHOLDS['intermediate']:
                     badge = "intermediate"
-                elif highest_passed_level >= 1:
+                elif highest_passed_level >= BADGE_THRESHOLDS['beginner']:
                     badge = "beginner"
 
                 if badge:
@@ -179,5 +180,3 @@ class GameController:
             return UserBadgeList(users=users)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-
-        
