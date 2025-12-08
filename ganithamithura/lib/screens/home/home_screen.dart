@@ -6,6 +6,8 @@ import 'package:ganithamithura/screens/number/number_home_screen.dart';
 import 'package:ganithamithura/screens/measurements/measurement_home_screen.dart';
 import 'package:ganithamithura/screens/learn/learn_screen.dart';
 
+import '../shapes/shapes_home_screen.dart';
+
 /// HomeScreen - Main entry point with personalized dashboard
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -237,15 +239,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.shapeBorder),
                 iconColor: const Color(AppColors.shapeIcon),
-                onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Shapes module will be available soon',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
-                },
-                isEnabled: false,
+                onTap: () => Get.to(() => const ShapesHomeScreen()),
+                isEnabled: true,
               ),
             ),
           ],
