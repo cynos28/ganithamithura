@@ -4,6 +4,8 @@ import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/measurements/measurement_widgets.dart';
 import 'package:ganithamithura/widgets/home/home_widgets.dart';
 
+import '../../widgets/shapes/shape_widgets.dart';
+
 /// ShapesHomeScreen - Main screen for Measurement module
 class ShapesHomeScreen extends StatefulWidget {
   const ShapesHomeScreen({super.key});
@@ -152,10 +154,9 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
         Row(
           children: [
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Length',
-                subtitle: 'Lines & distances',
-                units: 'mm · cm · m',
+              child: ShapeConceptCard(
+                title: '2D Shape',
+                subtitle: 'Learn about 2D shapes',
                 icon: Icons.straighten,
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.numberBorder),
@@ -163,7 +164,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
-                    'Length activities are under development',
+                    'This section activities are under development',
                     backgroundColor: const Color(AppColors.infoColor),
                     colorText: Colors.white,
                   );
@@ -172,10 +173,9 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Capacity',
-                subtitle: 'How much it holds',
-                units: 'ml · L',
+              child: ShapeConceptCard(
+                title: '3D Shapes',
+                subtitle: 'Learn about 3D shapes',
                 icon: Icons.local_drink,
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.symbolBorder),
@@ -197,10 +197,9 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
         Row(
           children: [
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Area',
-                subtitle: 'Space & surfaces',
-                units: 'cm² · m²',
+              child: ShapeConceptCard(
+                title: 'Build & match',
+                subtitle: 'Build & match',
                 icon: Icons.grid_on,
                 backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.measurementBorder),
@@ -217,18 +216,16 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: MeasurementConceptCard(
-                title: 'Weight',
-                subtitle: 'How heavy it is',
-                units: 'g · kg',
+              child: ShapeConceptCard(
+                title: 'Find real Shapes',
+                subtitle: 'Learn about real shapes',
                 icon: Icons.scale,
                 backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.shapeBorder),
-                progress: 0.64,
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
-                    'Weight activities are under development',
+                    'This section activities are under development',
                     backgroundColor: const Color(AppColors.infoColor),
                     colorText: Colors.white,
                   );
@@ -249,8 +246,8 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
           children: [
             Expanded(
               child: MeasurementGameCard(
-                title: 'Length',
-                subtitle: 'Find & measure objects',
+                title: 'Shapes',
+                subtitle: 'Match shapes & Short questions',
                 icon: Icons.straighten,
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.numberBorder),
@@ -258,7 +255,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
-                    'Length game is under development',
+                    'Shapes game is under development',
                     backgroundColor: const Color(AppColors.infoColor),
                     colorText: Colors.white,
                   );
@@ -268,8 +265,8 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: MeasurementGameCard(
-                title: 'Capacity',
-                subtitle: 'Change between units',
+                title: 'Patterns',
+                subtitle: 'Create patterns',
                 icon: Icons.local_drink,
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.symbolBorder),
@@ -277,50 +274,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
-                    'Capacity game is under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Second row: Area and Weight games
-        Row(
-          children: [
-            Expanded(
-              child: MeasurementGameCard(
-                title: 'Area',
-                subtitle: 'Estimate measurements',
-                icon: Icons.grid_on,
-                backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
-                borderColor: const Color(AppColors.measurementBorder),
-                buttonColor: const Color(AppColors.measurementBorder),
-                onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Area game is under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: MeasurementGameCard(
-                title: 'Weight',
-                subtitle: 'Beat the scaler',
-                icon: Icons.scale,
-                backgroundColor: const Color(AppColors.shapeColor).withOpacity(0.24),
-                borderColor: const Color(AppColors.shapeBorder),
-                buttonColor: const Color(AppColors.shapeBorder),
-                onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Weight game is under development',
+                    'Patterns game is under development',
                     backgroundColor: const Color(AppColors.infoColor),
                     colorText: Colors.white,
                   );
