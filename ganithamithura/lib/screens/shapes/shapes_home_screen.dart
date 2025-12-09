@@ -246,7 +246,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
           children: [
             Expanded(
               child: MeasurementGameCard(
-                title: 'Shapes',
+                title: 'Match shapes',
                 subtitle: 'Match shapes & Short questions',
                 icon: Icons.straighten,
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
@@ -265,7 +265,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: MeasurementGameCard(
-                title: 'Patterns',
+                title: 'Create patterns',
                 subtitle: 'Create patterns',
                 icon: Icons.local_drink,
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
