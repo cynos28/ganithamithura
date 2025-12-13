@@ -138,15 +138,13 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
                 # 3. Execute Action
                 if action == "TEACH_LESSON":
                     self.teach_concept(action_input)
-                
-                elif action == "ASK_CONFIRMATION":
+                    
+                    # Auto-chain confirmation for natural flow
                     confirmed = self.ask_confirmation()
-                    # Feed observation back implicitly via session history
                     if confirmed:
                         self.record_interaction("check_understanding", "User confirmed Yes", True)
                     else:
-                         self.record_interaction("check_understanding", "User said No", False)
-
+                        self.record_interaction("check_understanding", "User said No", False)
                 elif action == "FINISH_SESSION":
                     self.speak(action_input or "Great job! We are done.")
                     break
@@ -162,15 +160,19 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         self.summarize_session()
 
     def ask_confirmation(self):
-        self.speak("Do you understand? Say yes to continue.")
-        print("\n🎤 Waiting for confirmation...")
+        self.speak("Do you understand? Enter 1 for Yes, 2 for No.")
+        print("\n⌨️ Waiting for input (1=Yes, 2=No)...")
         while True:
-            response = self.listen_for_answer(timeout=5)
-            if response and any(w in response.lower() for w in ['yes', 'yeah', 'sure', 'ok']):
-                return True
-            elif response and 'no' in response.lower():
+            try:
+                user_input = input("Enter choice (1/2): ").strip()
+                if user_input == '1':
+                    return True
+                elif user_input == '2':
+                    return False
+                else:
+                    print("Please enter number 1 for Yes or 2 for No.")
+            except (EOFError, KeyboardInterrupt):
                 return False
-            # Wait loop continue
             
     def teach_concept(self, analogy_hint=""):
         if not self.client:
@@ -213,6 +215,17 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
             return self.duration_seconds
         elapsed = time.time() - self.start_time
         return max(0, self.duration_seconds - elapsed)
+
+    def record_interaction(self, type, content, result):
+        # Result: True (Good/Yes), False (Bad/No), None (Info)
+        res_str = "Correct" if result is True else "Wrong" if result is False else "N/A"
+        
+        self.session_history.append({
+            "type": type,
+            "content": str(content)[:100], # Store a bit more context
+            "result": res_str,
+            "timestamp": time.time()
+        })
 
     def level_up(self):
         # Simple logic to move sublevels
