@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganithamithura/screens/shapes/shape_2d_list_screen.dart';
 import 'package:get/get.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/widgets/measurements/measurement_widgets.dart';
@@ -23,12 +24,12 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
       Get.back();
       return;
     }
-    
+
     if (index == _currentNavIndex) {
       // Already on current tab
       return;
     }
-    
+
     // TODO: Navigate to other screens when ready
     Get.snackbar(
       'Coming Soon',
@@ -91,7 +92,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Scrollable content
                 Expanded(
                   child: SingleChildScrollView(
@@ -110,18 +111,18 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                           badgeText: 'Core Skills',
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Concepts Grid
                         _buildConceptsGrid(),
                         const SizedBox(height: 24),
-                        
+
                         // Learning Games Section
                         const SectionHeader(
                           title: 'Learning Games',
                           badgeText: 'Fun Practice',
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Games Grid
                         _buildGamesGrid(),
                       ],
@@ -130,7 +131,7 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 ),
               ],
             ),
-            
+
             // Bottom Navigation Bar
             Positioned(
               left: 0,
@@ -160,14 +161,8 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 icon: Icons.straighten,
                 backgroundColor: const Color(AppColors.numberColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.numberBorder),
-                progress: 0.64,
                 onTap: () {
-                  Get.snackbar(
-                    'Coming Soon',
-                    'This section activities are under development',
-                    backgroundColor: const Color(AppColors.infoColor),
-                    colorText: Colors.white,
-                  );
+                  Get.to(() => const Shape2DListScreen());
                 },
               ),
             ),
@@ -179,7 +174,6 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 icon: Icons.local_drink,
                 backgroundColor: const Color(AppColors.symbolColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.symbolBorder),
-                progress: 0.64,
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',
@@ -203,7 +197,6 @@ class _ShapesHomeScreenState extends State<ShapesHomeScreen> {
                 icon: Icons.grid_on,
                 backgroundColor: const Color(AppColors.measurementColor).withOpacity(0.24),
                 borderColor: const Color(AppColors.measurementBorder),
-                progress: 0.64,
                 onTap: () {
                   Get.snackbar(
                     'Coming Soon',

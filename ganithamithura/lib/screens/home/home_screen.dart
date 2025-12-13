@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       return;
     }
-    
+
     // TODO: Navigate to other screens when ready
     Get.snackbar(
       'Coming Soon',
@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Hi, Shehan👋',
+          'Hi, Rukshan👋',
           style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w600,

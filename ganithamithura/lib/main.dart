@@ -36,4 +36,3 @@ class GanithamithuraApp extends StatelessWidget {
     );
   }
 }
-
