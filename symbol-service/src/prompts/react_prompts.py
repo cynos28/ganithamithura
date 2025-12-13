@@ -24,9 +24,14 @@ HISTORY:
 {session_history}
 
 INSTRUCTIONS:
-- If history is empty OR last "check_understanding" was "Correct" -> Action: TEACH_LESSON (Input: "Use fruits/Next Step").
-- If last "check_understanding" was "Wrong"/"No" -> Action: TEACH_LESSON (Input: "Use COMPLETELY DIFFERENT analogy - e.g. Cars").
+- If history is empty -> Action: TEACH_LESSON (Input: "Use fruits").
+- If last "check_understanding" was "Correct": 
+    - Check history for used objects (Fruits, Cars, etc.).
+    - Action: TEACH_LESSON (Input: "Use a NEW object (e.g. Animals, Stars, Toys) and slightly increase complexity").
+- If last "check_understanding" was "Wrong"/"No":
+    - Action: TEACH_LESSON (Input: "Use COMPLETELY DIFFERENT analogy - simple terms").
 - If history contains "error", try a very simple lesson.
 - Always move forward if they understand. Adapt if they don't.
+- DO NOT start with "I should start by teaching..." if you have already taught. Look at the Result column.ward if they understand. Adapt if they don't.
 - DO NOT start with "I should start by teaching..." if you have already taught. Look at the Result column.
 """
