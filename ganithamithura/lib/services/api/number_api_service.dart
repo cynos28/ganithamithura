@@ -250,8 +250,61 @@ class NumApiService {
       print('❌ Error getting classes: $e');
       throw Exception('Error retrieving available classes: $e');
     }
-  }
-}
+  }  
+  // ==================== Digit Recognition Endpoints ====================
+  
+  /// POST /recognize/digit - Recognize handwritten digit from image
+  Future<DigitRecognitionResult> recognizeDigit({
+    required Uint8List imageBytes,
+    int? expectedDigit,
+    double confidenceThreshold = 0.7,
+  }) async {
+    try {
+      final url = Uri.parse('$numBaseUrl/recognize/digit');
+      
+      // Convert image to base64
+      final base64Image = base64Encode(imageBytes);
+      
+      final body = {
+        'image': base64Image,
+        if (expectedDigit != null) 'expected_digit': expectedDigit,
+        'confidence_threshold': confidenceThreshold,
+      };
+      
+      print('🔍 Recognizing digit...');
+      if (expectedDigit != null) {
+        print('   Expected: $expectedDigit');
+      }
+      print('   Image size: ${imageBytes.length} bytes');
+      
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      ).timeout(
+        const Duration(seconds: 15),
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final result = DigitRecognitionResult.fromJson(jsonData);
+        
+        print('✅ Recognition complete');
+        print('   Predicted: ${result.predictedDigit}');
+        print('   Confidence: ${(result.confidence * 100).toStringAsFixed(1)}%');
+        if (result.isCorrect != null) {
+          print('   Correct: ${result.isCorrect}');
+        }
+        
+        return result;
+      } else {
+        throw Exception('Recognition failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Recognition error: $e');
+      throw Exception('Error recognizing digit: $e');
+    }
+  }}
 
 // ==================== Object Detection Models ====================
 
@@ -411,3 +464,59 @@ class ValidationResult {
     };
   }
 }
+
+/// Digit Recognition Result Model
+class DigitRecognitionResult {
+  final int predictedDigit;
+  final double confidence;
+  final List<double> probabilities;
+  final List<TopPrediction> top3Predictions;
+  final bool? isCorrect;
+  final int? expected;
+  final String? feedback;
+  
+  DigitRecognitionResult({
+    required this.predictedDigit,
+    required this.confidence,
+    required this.probabilities,
+    required this.top3Predictions,
+    this.isCorrect,
+    this.expected,
+    this.feedback,
+  });
+  
+  factory DigitRecognitionResult.fromJson(Map<String, dynamic> json) {
+    return DigitRecognitionResult(
+      predictedDigit: json['predicted_digit'] as int,
+      confidence: (json['confidence'] as num).toDouble(),
+      probabilities: (json['probabilities'] as List)
+          .map((e) => (e as num).toDouble())
+          .toList(),
+      top3Predictions: (json['top_3_predictions'] as List)
+          .map((e) => TopPrediction.fromJson(e))
+          .toList(),
+      isCorrect: json['is_correct'] as bool?,
+      expected: json['expected'] as int?,
+      feedback: json['feedback'] as String?,
+    );
+  }
+}
+
+/// Top Prediction Model
+class TopPrediction {
+  final int digit;
+  final double confidence;
+  
+  TopPrediction({
+    required this.digit,
+    required this.confidence,
+  });
+  
+  factory TopPrediction.fromJson(Map<String, dynamic> json) {
+    return TopPrediction(
+      digit: json['digit'] as int,
+      confidence: (json['confidence'] as num).toDouble(),
+    );
+  }
+}
+
