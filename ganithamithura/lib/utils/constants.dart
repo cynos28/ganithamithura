@@ -4,7 +4,7 @@ library;
 class AppConstants {
   // API Configuration
   static const String baseUrl = 'http://localhost:8000';
-  static const String numBaseUrl = 'https://macular-patrimonially-olinda.ngrok-free.dev';
+  static const String numBaseUrl = 'https://uncoddled-neomi-continuingly.ngrok-free.dev';
   
   // Activity Types
   static const String activityTypeTrace = 'trace';
