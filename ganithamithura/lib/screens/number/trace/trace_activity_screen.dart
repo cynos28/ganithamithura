@@ -364,7 +364,7 @@ class _DottedNumberPainter extends CustomPainter {
         text: '$number',
         style: TextStyle(
           fontSize: 280,
-          fontWeight: FontWeight.bold,
+          fontFamily: 'Staatliches',
           foreground: paint,
         ),
       ),

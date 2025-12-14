@@ -57,6 +57,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
+  fonts:
+  - family: Staatliches
+    fonts:
+      - asset: assets/fonts/Staatliches-Regular.ttf
+
   assets:
     - assets/images/
     - assets/videos/
