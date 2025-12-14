@@ -13,202 +13,225 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from components.core.base_math_tutor import BaseMathTutor
 from components.voice_ai_math_tuor import SimpleVoiceMathTutor
-from components.core.ai_question_generator import AIQuestionGenerator
 from components.core.curriculum_helper import CurriculumHelper
-from prompts.learning_curve_prompts import get_lesson_prompt, get_agent_decision_prompt, get_explanation_prompt
-from prompts.react_prompts import get_react_prompt
+from prompts.learning_curve_prompts import get_teaching_style_prompt
+from prompts.react_prompts import get_reasoning_prompt
 
 class LearningCurveAgent(SimpleVoiceMathTutor):
     """
-    Adaptive Learning Agent that manages a 5-10 minute session.
-    Uses real voice and image generation for a rich teaching experience.
+    Adaptive Learning Agent that uses a ReAct (Reason+Act) architecture.
+    Focuses on finding the best TEACHING STRATEGY for the student.
     """
     
     def __init__(self, grade: int, level: int, sublevel: str, duration_minutes: int = 5):
-        # Initialize voice tutor parent (will setup voice/mic)
         super().__init__(grade, level, sublevel)
         
         self.duration_seconds = duration_minutes * 60
         self.start_time = None
-        self.session_history = []
+        self.client = None
+        
+        # Memory Modules
+        self.short_term_memory = []   # Last few interactions
+        self.strategies_tried = []    # List of strategies used (e.g., 'story', 'visual')
+        self.concepts_taught = []     # Topics covered
+        
         try:
             self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         except Exception:
-            self.client = None
             print("Warning: OpenAI API Key not found. Agent will run in fallback mode.")
-        self.current_streak = 0
         
-    # setup_voice is inherited from SimpleVoiceMathTutor
-
     def speak(self, text: str):
         """
         Speak text while displaying letter-by-letter synchronized with speech.
         """
         print("\n🔊 ", end="", flush=True)
 
-        # Check if we're on macOS to use 'say' command (more reliable)
         if platform.system() == 'Darwin':
             try:
-                # Calculate char delay for sync
-                # Speech rate 140 WPM = ~2.3 words/sec, ~5 chars/word = ~11.5 chars/sec
-                char_delay = 0.087  # ~11.5 chars per second
-
-                # Strip emojis for speech (keep text clean for audio)
-                # Regex to remove common emojis and symbols in the supplementary plane
+                char_delay = 0.087  
                 speech_text = re.sub(r'[^\w\s,.?!]', '', text) 
-
-                # Start speech in background using macOS 'say' command
+                
                 speech_process = subprocess.Popen(
                     ['say', '-r', '140', speech_text],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
                 )
 
-                # Small delay for speech to start
                 time.sleep(0.1)
 
-                # Display text letter by letter
                 for char in text:
                     print(char, end="", flush=True)
-                    # Adjust delay for punctuation to make it feel more natural
                     if char in [',', '.', '!', '?']:
                         time.sleep(char_delay * 2)
                     else:
                         time.sleep(char_delay)
 
-                # Wait for speech to complete
                 speech_process.wait(timeout=15)
 
             except Exception as e:
-                # Fallback to simple print if voice fails
                 print(text)
         else:
-            # Fallback for non-macOS
             print(text)
-        
-        print() # New line
+        print() 
 
     def run_session(self):
         """
-        Run the interactive learning session using ReAct (Reason+Act) Loop.
+        ReAct Logic: Perceive -> Memory -> Reason -> Act -> Feedback
         """
         print(f"\n📚 Student Profile: Grade {self.student_profile.grade}, Level {self.student_profile.level} - {self.student_profile.sublevel}")
-        print(f"Starting Learning Curve Session ({self.duration_seconds/60:.1f} mins)")
+        print(f"Starting Adaptive Teaching Session ({self.duration_seconds/60:.1f} mins)")
         
         self.start_time = time.time()
         
-        # Initial Greeting
-        greeting = f"Hello! Let's practice some math together for about {int(self.duration_seconds/60)} minutes. Are you ready?"
-        self.speak(greeting)
+        # Initial Perception
+        self.speak(f"Hello! I'm your math friend. We are going to learn about {self.student_profile.sublevel} today.")
         
-        # ReAct Loop
+        # Main ReAct Loop
         while self.get_time_remaining() > 0:
             try:
-                # 1. Plan (Reasoning)
-                prompt = get_react_prompt(
-                    self.student_profile.grade,
-                    self.student_profile.level,
-                    self.student_profile.sublevel,
-                    json.dumps(self.session_history[-5:]),
-                    int(self.get_time_remaining())
-                )
+                # 1. PERCEPTION & MEMORY
+                # (Gathered from previous loop's feedback)
                 
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.3, # Lower temperature for strict reasoning
-                    stop=["Observation:"]
-                )
+                # 2. REASONING (The Brain)
+                # Decide HOW to teach based on history
+                thought, action, strategy = self.reason()
                 
-                llm_output = response.choices[0].message.content.strip()
+                print(f"\n🧠 THOUGHT: {thought}")
+                print(f"⚡ ACTION: {action} (Strategy: {strategy})")
                 
-                # 2. Parse Thought and Action
-                thought_match = re.search(r"Thought:\s*(.*?)(?=\nAction:|$)", llm_output, re.DOTALL)
-                action_match = re.search(r"Action:\s*(.*?)(?=\nAction Input:|$)", llm_output, re.DOTALL)
-                input_match = re.search(r"Action Input:\s*(.*)", llm_output, re.DOTALL)
-                
-                thought = thought_match.group(1).strip() if thought_match else "Deciding next step..."
-                action = action_match.group(1).strip() if action_match else "TEACH_LESSON"
-                action_input = input_match.group(1).strip() if input_match else ""
-                
-                # Display Reasoning (Agentic view)
-                print(f"\n🧠 AGENT THOUGHT: {thought}")
-                print(f"⚡ ACTION: {action} ({action_input})")
-                
-                # 3. Execute Action
-                if action == "TEACH_LESSON":
-                    self.teach_concept(action_input)
-                    
-                    # Auto-chain confirmation for natural flow
-                    confirmed = self.ask_confirmation()
-                    if confirmed:
-                        self.record_interaction("check_understanding", "User confirmed Yes", True)
-                    else:
-                        self.record_interaction("check_understanding", "User said No", False)
-                elif action == "FINISH_SESSION":
-                    self.speak(action_input or "Great job! We are done.")
+                # 3. ACTION (Execution)
+                if action == "TEACH":
+                    self.execute_teach(strategy)
+                elif action == "ENCOURAGE":
+                    self.execute_encourage()
+                elif action == "FINISH":
+                    self.speak("You did great today! See you next time!")
                     break
-                    
                 else:
-                    print(f"Unknown action: {action}. Defaulting to Teach.")
-                    self.teach_concept("General")
+                    self.execute_teach("standard")
+                
+                # 4. FEEDBACK (Perception Loop)
+                # Always check for understanding after teaching
+                if action == "TEACH":
+                    understood = self.perceive_understanding()
+                    self.update_memory(action, strategy, understood)
                 
             except Exception as e:
                 print(f"ReAct Loop Error: {e}")
-                self.teach_concept("Basics")
+                self.execute_teach("simple")
 
         self.summarize_session()
 
-    def ask_confirmation(self):
-        self.speak("Do you understand? Enter 1 for Yes, 2 for No.")
-        print("\n⌨️ Waiting for input (1=Yes, 2=No)...")
-        while True:
-            try:
-                user_input = input("Enter choice (1/2): ").strip()
-                if user_input == '1':
-                    return True
-                elif user_input == '2':
-                    return False
-                else:
-                    print("Please enter number 1 for Yes or 2 for No.")
-            except (EOFError, KeyboardInterrupt):
-                return False
-            
-    def teach_concept(self, analogy_hint=""):
+    def reason(self):
+        """
+        Uses LLM to decide the next best teaching strategy.
+        """
         if not self.client:
-             self.speak(f"Learning about Grade {self.student_profile.grade} math.")
-             return
-             
-        spec = CurriculumHelper.get_spec(
+            return "Fallback mode", "TEACH", "standard"
+
+        curriculum = CurriculumHelper.get_spec(
             self.student_profile.grade, 
             self.student_profile.level, 
             self.student_profile.sublevel
         )
-        curriculum_info = json.dumps(spec) if spec else "Basic arithmetic"
-        
-        # Inject the analogy hint from ReAct into the lesson prompt
-        prompt = get_lesson_prompt(
-            self.student_profile.grade,
-            self.student_profile.level,
-            self.student_profile.sublevel,
-            curriculum_info
+        curriculum_info = json.dumps(curriculum) if curriculum else "Basic Math"
+
+        prompt = get_reasoning_prompt(
+            grade=self.student_profile.grade,
+            history=self.short_term_memory,
+            strategies_used=self.strategies_tried,
+            time_remaining=int(self.get_time_remaining()),
+            curriculum=curriculum_info
         )
-        if analogy_hint:
-             prompt += f"\nIMPORTANT Inustrction: {analogy_hint}"
-             
+        
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            stop=["Observation:"]
+        )
+        
+        output = response.choices[0].message.content.strip()
+        
+        # Parse output
+        # Expecting: Thought: ... \n Action: ... \n Strategy: ...
+        thought_match = re.search(r"Thought:\s*(.*?)(?=\nAction:|$)", output, re.DOTALL)
+        action_match = re.search(r"Action:\s*(.*?)(?=\nStrategy:|$)", output, re.DOTALL)
+        strategy_match = re.search(r"Strategy:\s*(.*)", output, re.DOTALL)
+        
+        thought = thought_match.group(1).strip() if thought_match else "Deciding next step..."
+        action = action_match.group(1).strip() if action_match else "TEACH"
+        strategy = strategy_match.group(1).strip() if strategy_match else "standard"
+        
+        # Safety fallback
+        if action not in ["TEACH", "ENCOURAGE", "FINISH"]:
+            action = "TEACH"
+            
+        return thought, action, strategy
+
+    def execute_teach(self, strategy):
+        """
+        Generates and speaks a lesson based on the chosen strategy.
+        """
+        curriculum = CurriculumHelper.get_spec(
+             self.student_profile.grade, 
+             self.student_profile.level, 
+             self.student_profile.sublevel
+        )
+        
+        prompt = get_teaching_style_prompt(
+            grade=self.student_profile.grade,
+            topic=json.dumps(curriculum),
+            style=strategy
+        )
+        
         try:
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.7
+                temperature=0.8 # Higher temp for creativity
             )
-            lesson_text = response.choices[0].message.content
+            lesson_text = response.choices[0].message.content.strip()
             self.speak(lesson_text)
-            self.record_interaction("teach", lesson_text, True)
-        except Exception as e:
-            print(f"Error in teach_concept: {e}")
-            self.speak("Let's add some numbers together.")
-            self.record_interaction("error", str(e), False)
+            
+        except Exception:
+            self.speak("Let's put some numbers together! 1 plus 1 is 2.")
+
+    def execute_encourage(self):
+        self.speak("You're doing great! Math is just like a puzzle.")
+
+    def perceive_understanding(self):
+        """
+        Ask the user if they understood. 
+        Returns True (Yes) or False (No).
+        """
+        self.speak("Did that make sense? Press 1 for Yes, 2 for No.")
+        print("\n⌨️  Waiting for input (1=Yes 👍 / 2=No 👎)...")
+        while True:
+            try:
+                user_input = input("Enter choice: ").strip()
+                if user_input == '1':
+                    print("✅ Student understood.")
+                    return True
+                elif user_input == '2':
+                    print("❌ Student needs help.")
+                    return False
+            except (EOFError, KeyboardInterrupt):
+                return False
+                
+    def update_memory(self, action, strategy, result):
+        """
+        Update short-term and long-term memory.
+        """
+        self.strategies_tried.append(strategy)
+        
+        status = "Understood" if result else "Confused"
+        entry = f"Action: {action} ({strategy}) -> Result: {status}"
+        
+        self.short_term_memory.append(entry)
+        # Keep memory small
+        if len(self.short_term_memory) > 5:
+            self.short_term_memory.pop(0)
 
     def get_time_remaining(self):
         if not self.start_time:
@@ -216,31 +239,8 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         elapsed = time.time() - self.start_time
         return max(0, self.duration_seconds - elapsed)
 
-    def record_interaction(self, type, content, result):
-        # Result: True (Good/Yes), False (Bad/No), None (Info)
-        res_str = "Correct" if result is True else "Wrong" if result is False else "N/A"
-        
-        self.session_history.append({
-            "type": type,
-            "content": str(content)[:100], # Store a bit more context
-            "result": res_str,
-            "timestamp": time.time()
-        })
-
-    def level_up(self):
-        # Simple logic to move sublevels
-        pass 
-
-    def level_down(self):
-         pass
-
     def summarize_session(self):
-        correct = len([x for x in self.session_history if x.get('result') == 'Correct'])
-        total_q = len([x for x in self.session_history if x.get('type') == 'question'])
         print("\n=== Session Summary ===")
-        print(f"Questions Attempted: {total_q}")
-        print(f"Correct Answers: {correct}")
-        if total_q > 0:
-            print(f"Accuracy: {int(correct/total_q*100)}%")
+        print(f"Strategies Used: {set(self.strategies_tried)}")
         print("=======================")
 
