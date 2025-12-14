@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/utils/constants.dart';
@@ -169,5 +170,244 @@ class NumApiService {
     } catch (e) {
       return false;
     }
+  }
+  
+  // ==================== Object Detection Endpoints ====================
+  
+  /// POST /detect/objects - Detect objects in image using YOLO
+  Future<ObjectDetectionResult> detectObjects({
+    required Uint8List imageBytes,
+    String? targetObject,
+    int? expectedCount,
+    double confidenceThreshold = 0.5,
+  }) async {
+    try {
+      final url = Uri.parse('$numBaseUrl/detect/objects');
+      
+      // Convert image to base64
+      final base64Image = base64Encode(imageBytes);
+      
+      final body = {
+        'image_base64': base64Image,
+        'target_object': targetObject,
+        'expected_count': expectedCount,
+        'confidence_threshold': confidenceThreshold,
+      };
+      
+      print('🔍 Detecting objects...');
+      print('   Target: $targetObject');
+      print('   Expected: $expectedCount');
+      print('   Image size: ${imageBytes.length} bytes');
+      
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      ).timeout(
+        const Duration(seconds: 30), // Longer timeout for detection
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final result = ObjectDetectionResult.fromJson(jsonData);
+        
+        print('✅ Detection complete');
+        print('   Total detected: ${result.totalCount}');
+        print('   Target detected: ${result.targetCount}');
+        
+        return result;
+      } else {
+        throw Exception('Detection failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Detection error: $e');
+      throw Exception('Error detecting objects: $e');
+    }
+  }
+  
+  /// GET /detect/available-classes - Get list of detectable object classes
+  Future<List<String>> getAvailableClasses() async {
+    try {
+      final url = Uri.parse('$numBaseUrl/detect/available-classes');
+      
+      final response = await http.get(
+        url,
+        headers: _getHeaders(),
+      ).timeout(
+        const Duration(seconds: 10),
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final classes = List<String>.from(jsonData['classes']);
+        
+        print('📋 Available classes: ${classes.length}');
+        return classes;
+      } else {
+        throw Exception('Failed to get classes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error getting classes: $e');
+      throw Exception('Error retrieving available classes: $e');
+    }
+  }
+}
+
+// ==================== Object Detection Models ====================
+
+/// Object Detection Result Model
+class ObjectDetectionResult {
+  final int totalCount;
+  final int? targetCount;
+  final String? targetObject;
+  final List<Detection> detections;
+  final Map<String, int> classCounts;
+  final ValidationResult? validation;
+  
+  ObjectDetectionResult({
+    required this.totalCount,
+    this.targetCount,
+    this.targetObject,
+    required this.detections,
+    required this.classCounts,
+    this.validation,
+  });
+  
+  factory ObjectDetectionResult.fromJson(Map<String, dynamic> json) {
+    return ObjectDetectionResult(
+      totalCount: json['total_count'] as int,
+      targetCount: json['target_count'] as int?,
+      targetObject: json['target_object'] as String?,
+      detections: (json['detections'] as List)
+          .map((d) => Detection.fromJson(d))
+          .toList(),
+      classCounts: Map<String, int>.from(json['class_counts']),
+      validation: json['validation'] != null
+          ? ValidationResult.fromJson(json['validation'])
+          : null,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'total_count': totalCount,
+      'target_count': targetCount,
+      'target_object': targetObject,
+      'detections': detections.map((d) => d.toJson()).toList(),
+      'class_counts': classCounts,
+      'validation': validation?.toJson(),
+    };
+  }
+}
+
+/// Individual Detection Model
+class Detection {
+  final String className;
+  final double confidence;
+  final BoundingBox bbox;
+  final int number;
+  
+  Detection({
+    required this.className,
+    required this.confidence,
+    required this.bbox,
+    required this.number,
+  });
+  
+  factory Detection.fromJson(Map<String, dynamic> json) {
+    return Detection(
+      className: json['class'] as String,
+      confidence: (json['confidence'] as num).toDouble(),
+      bbox: BoundingBox.fromJson(json['bbox']),
+      number: json['number'] as int,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'class': className,
+      'confidence': confidence,
+      'bbox': bbox.toJson(),
+      'number': number,
+    };
+  }
+}
+
+/// Bounding Box Model
+class BoundingBox {
+  final int x1;
+  final int y1;
+  final int x2;
+  final int y2;
+  
+  BoundingBox({
+    required this.x1,
+    required this.y1,
+    required this.x2,
+    required this.y2,
+  });
+  
+  factory BoundingBox.fromJson(Map<String, dynamic> json) {
+    return BoundingBox(
+      x1: json['x1'] as int,
+      y1: json['y1'] as int,
+      x2: json['x2'] as int,
+      y2: json['y2'] as int,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'x1': x1,
+      'y1': y1,
+      'x2': x2,
+      'y2': y2,
+    };
+  }
+  
+  double get width => (x2 - x1).toDouble();
+  double get height => (y2 - y1).toDouble();
+  double get centerX => x1 + (width / 2);
+  double get centerY => y1 + (height / 2);
+}
+
+/// Validation Result Model
+class ValidationResult {
+  final bool isCorrect;
+  final int detectedCount;
+  final int expectedCount;
+  final int difference;
+  final String feedback;
+  final int points;
+  
+  ValidationResult({
+    required this.isCorrect,
+    required this.detectedCount,
+    required this.expectedCount,
+    required this.difference,
+    required this.feedback,
+    required this.points,
+  });
+  
+  factory ValidationResult.fromJson(Map<String, dynamic> json) {
+    return ValidationResult(
+      isCorrect: json['is_correct'] as bool,
+      detectedCount: json['detected_count'] as int,
+      expectedCount: json['expected_count'] as int,
+      difference: json['difference'] as int,
+      feedback: json['feedback'] as String,
+      points: json['points'] as int,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'is_correct': isCorrect,
+      'detected_count': detectedCount,
+      'expected_count': expectedCount,
+      'difference': difference,
+      'feedback': feedback,
+      'points': points,
+    };
   }
 }

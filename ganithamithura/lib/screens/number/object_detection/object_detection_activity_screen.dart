@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Progress;
+import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
@@ -7,9 +9,9 @@ import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/learning_flow_manager.dart';
+import 'package:ganithamithura/services/camera_service.dart';
 
-/// ObjectDetectionActivityScreen - Placeholder for object detection
-/// TODO: Phase 2 - Integrate real ML model
+/// ObjectDetectionActivityScreen - Real-time object detection with ML
 class ObjectDetectionActivityScreen extends StatefulWidget {
   final Activity activity;
   final List<Activity> allActivities;
@@ -33,10 +35,87 @@ class _ObjectDetectionActivityScreenState
     extends State<ObjectDetectionActivityScreen> {
   final _storageService = StorageService.instance;
   final _apiService = NumApiService.instance;
+  final _cameraService = CameraService.instance;
   
+  bool _isCameraInitialized = false;
   bool _isDetecting = false;
-  int? _detectedCount;
+  ObjectDetectionResult? _detectionResult;
   bool? _result;
+  String? _targetObject;
+  String? _errorMessage;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+    _extractTargetObject();
+  }
+  
+  @override
+  void dispose() {
+    _cameraService.dispose();
+    super.dispose();
+  }
+  
+  /// Extract target object from question metadata
+  void _extractTargetObject() {
+    // Get the current question
+    final question = widget.activity.questions?.first;
+    if (question != null && question.question != null) {
+      // Extract object name from question like "Can you show me 2 apples?"
+      final questionText = question.question!.toLowerCase();
+      
+      // Common objects that might be in questions
+      final commonObjects = [
+        'apple', 'apples', 'banana', 'bananas', 'orange', 'oranges',
+        'ball', 'balls', 'star', 'stars', 'book', 'books',
+        'pencil', 'pencils', 'pen', 'pens', 'bottle', 'bottles',
+        'cup', 'cups', 'person', 'people', 'car', 'cars',
+      ];
+      
+      for (final obj in commonObjects) {
+        if (questionText.contains(obj)) {
+          // Convert plural to singular for YOLO classes
+          _targetObject = obj.replaceAll('s', '').trim();
+          if (_targetObject == 'apple') _targetObject = 'apple';
+          // YOLO uses 'person' not 'people'
+          if (obj == 'people') _targetObject = 'person';
+          break;
+        }
+      }
+    }
+    
+    debugPrint('🎯 Target object: $_targetObject');
+  }
+  
+  Future<void> _initializeCamera() async {
+    try {
+      // Request camera permission
+      final status = await Permission.camera.request();
+      
+      if (!status.isGranted) {
+        setState(() {
+          _errorMessage = 'Camera permission required';
+        });
+        return;
+      }
+      
+      await _cameraService.initialize();
+      
+      if (mounted) {
+        setState(() {
+          _isCameraInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Camera initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to initialize camera: $e';
+        });
+      }
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -46,102 +125,56 @@ class _ObjectDetectionActivityScreenState
         title: const Text('Object Detection'),
         backgroundColor: Color(AppColors.numberColor),
         foregroundColor: Colors.white,
+        actions: [
+          if (_isCameraInitialized)
+            IconButton(
+              icon: const Icon(Icons.flip_camera_ios),
+              onPressed: _switchCamera,
+              tooltip: 'Switch Camera',
+            ),
+        ],
       ),
       body: SafeArea(
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.standardPadding),
-              child: Column(
-                children: [
-                  // Instructions
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppConstants.standardPadding),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.camera_alt,
-                            color: Color(AppColors.numberColor),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Find ${widget.currentNumber} objects',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Camera preview placeholder
-                  Expanded(
-                    child: _buildCameraPlaceholder(),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Detection result
-                  if (_detectedCount != null)
-                    Card(
-                      color: _detectedCount == widget.currentNumber
-                          ? Color(AppColors.successColor).withOpacity(0.1)
-                          : Color(AppColors.warningColor).withOpacity(0.1),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppConstants.standardPadding),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _detectedCount == widget.currentNumber
-                                  ? Icons.check_circle
-                                  : Icons.info,
-                              color: _detectedCount == widget.currentNumber
-                                  ? Color(AppColors.successColor)
-                                  : Color(AppColors.warningColor),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Detected: $_detectedCount objects',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Detect button
-                  ActionButton(
-                    text: _isDetecting ? 'Detecting...' : 'Detect Objects',
-                    icon: Icons.search,
-                    isEnabled: !_isDetecting,
-                    onPressed: _mockDetection,
-                  ),
-                ],
-              ),
+            Column(
+              children: [
+                // Instructions
+                _buildInstructionCard(),
+                
+                const SizedBox(height: 8),
+                
+                // Camera preview or error
+                Expanded(
+                  child: _errorMessage != null
+                      ? _buildErrorWidget()
+                      : _isCameraInitialized
+                          ? _buildCameraPreview()
+                          : _buildLoadingWidget(),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Detection result
+                if (_detectionResult != null)
+                  _buildDetectionResult(),
+                
+                const SizedBox(height: 8),
+                
+                // Control buttons
+                _buildControlButtons(),
+              ],
             ),
             
             // Result overlay
             if (_result != null)
               _result!
                   ? SuccessAnimation(
-                      message: 'Correct count!',
+                      message: _detectionResult?.validation?.feedback ?? 'Correct!',
                       onComplete: _onSuccess,
                     )
                   : FailureAnimation(
-                      message: 'Count again!',
+                      message: _detectionResult?.validation?.feedback ?? 'Try again!',
                       onRetry: _resetDetection,
                     ),
           ],
@@ -150,39 +183,49 @@ class _ObjectDetectionActivityScreenState
     );
   }
   
-  Widget _buildCameraPlaceholder() {
+  Widget _buildInstructionCard() {
+    final question = widget.activity.questions?.first;
+    final instruction = question?.question ?? 'Find ${widget.currentNumber} objects';
+    
     return Container(
+      margin: const EdgeInsets.all(AppConstants.standardPadding),
+      padding: const EdgeInsets.all(AppConstants.standardPadding),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: Color(AppColors.numberColor).withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+        border: Border.all(
+          color: Color(AppColors.numberColor),
+          width: 2,
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
           Icon(
-            Icons.camera_alt_outlined,
-            size: 80,
-            color: Colors.grey[600],
+            Icons.camera_alt,
+            color: Color(AppColors.numberColor),
+            size: 32,
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Camera Preview',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              'TODO: Phase 2 - Integrate camera and ML model for real object detection',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  instruction,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (_targetObject != null)
+                  Text(
+                    'Looking for: $_targetObject',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -190,42 +233,239 @@ class _ObjectDetectionActivityScreenState
     );
   }
   
-  Future<void> _mockDetection() async {
-    setState(() {
-      _isDetecting = true;
-      _detectedCount = null;
-    });
-    
-    // Simulate detection delay
-    await Future.delayed(const Duration(seconds: 2));
-    
-    final mockCount = widget.currentNumber;
-    final isCorrect = mockCount == widget.currentNumber;
-    
-    setState(() {
-      _isDetecting = false;
-      _detectedCount = mockCount;
-    });
-    
-    // Auto-check after short delay
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _detectedCount != null) {
-        _checkResult(isCorrect);
-      }
-    });
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(
+            'Initializing camera...',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
   }
   
-  void _checkResult(bool isCorrect) {
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.standardPadding * 2),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Color(AppColors.errorColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? 'An error occurred',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ActionButton(
+              text: 'Retry',
+              icon: Icons.refresh,
+              onPressed: _initializeCamera,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildCameraPreview() {
+    final controller = _cameraService.controller;
+    if (controller == null) return const SizedBox();
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.standardPadding),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+        child: AspectRatio(
+          aspectRatio: controller.value.aspectRatio,
+          child: CameraPreview(controller),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildDetectionResult() {
+    final result = _detectionResult!;
+    final count = result.targetCount ?? result.totalCount;
+    final isCorrect = result.validation?.isCorrect ?? false;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.standardPadding),
+      padding: const EdgeInsets.all(AppConstants.standardPadding),
+      decoration: BoxDecoration(
+        color: isCorrect
+            ? Color(AppColors.successColor).withOpacity(0.1)
+            : Color(AppColors.warningColor).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+        border: Border.all(
+          color: isCorrect
+              ? Color(AppColors.successColor)
+              : Color(AppColors.warningColor),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isCorrect ? Icons.check_circle : Icons.info,
+                color: isCorrect
+                    ? Color(AppColors.successColor)
+                    : Color(AppColors.warningColor),
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Detected: $count ${_targetObject ?? 'objects'}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          if (result.classCounts.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: result.classCounts.entries.map((entry) {
+                return Chip(
+                  label: Text('${entry.key}: ${entry.value}'),
+                  backgroundColor: Colors.white,
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildControlButtons() {
+    return Padding(
+      padding: const EdgeInsets.all(AppConstants.standardPadding),
+      child: Column(
+        children: [
+          ActionButton(
+            text: _isDetecting ? 'Detecting...' : 'Detect Objects',
+            icon: _isDetecting ? Icons.hourglass_empty : Icons.search,
+            isEnabled: _isCameraInitialized && !_isDetecting,
+            onPressed: _performDetection,
+          ),
+          if (_detectionResult != null && _result == null) ...[
+            const SizedBox(height: 8),
+            ActionButton(
+              text: 'Check Answer',
+              icon: Icons.check,
+              color: Color(AppColors.successColor),
+              onPressed: _checkResult,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _performDetection() async {
+    setState(() {
+      _isDetecting = true;
+      _detectionResult = null;
+    });
+    
+    try {
+      // Capture frame from camera
+      final imageBytes = await _cameraService.captureCompressedFrame(quality: 80);
+      
+      debugPrint('📸 Captured frame: ${imageBytes.length} bytes');
+      
+      // Perform detection using NumApiService
+      final result = await _apiService.detectObjects(
+        imageBytes: imageBytes,
+        targetObject: _targetObject,
+        expectedCount: widget.currentNumber,
+        confidenceThreshold: 0.5,
+      );
+      
+      setState(() {
+        _detectionResult = result;
+        _isDetecting = false;
+      });
+      
+    } catch (e) {
+      debugPrint('❌ Detection error: $e');
+      setState(() {
+        _isDetecting = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Detection failed: $e'),
+            backgroundColor: Color(AppColors.errorColor),
+          ),
+        );
+      }
+    }
+  }
+  
+  Future<void> _switchCamera() async {
+    try {
+      await _cameraService.switchCamera();
+      setState(() {});
+    } catch (e) {
+      debugPrint('Failed to switch camera: $e');
+    }
+  }
+  
+  void _checkResult() {
+    if (_detectionResult == null) return;
+    
+    final validation = _detectionResult!.validation;
+    if (validation == null) return;
+    
+    final isCorrect = validation.isCorrect;
+    
     if (isCorrect) {
       // Save progress
       final progress = Progress(
         activityId: widget.activity.id,
-        score: 100,
+        score: validation.points,
         isCompleted: true,
         completedAt: DateTime.now(),
         additionalData: {
-          'detected_count': _detectedCount,
-          'target_count': widget.currentNumber,
+          'detected_count': validation.detectedCount,
+          'expected_count': validation.expectedCount,
+          'target_object': _targetObject,
         },
       );
       
@@ -234,7 +474,7 @@ class _ObjectDetectionActivityScreenState
       // Submit to backend
       _apiService.submitActivityScore(
         activityId: widget.activity.id,
-        score: 100,
+        score: validation.points,
         isCompleted: true,
         additionalData: progress.additionalData,
       ).catchError((e) {
@@ -250,7 +490,7 @@ class _ObjectDetectionActivityScreenState
   
   void _resetDetection() {
     setState(() {
-      _detectedCount = null;
+      _detectionResult = null;
       _result = null;
     });
   }

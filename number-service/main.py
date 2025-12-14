@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -6,6 +6,10 @@ import json
 import random
 from pathlib import Path
 from datetime import datetime
+import base64
+import cv2
+import numpy as np
+from object_detection_service import get_detection_service
 
 app = FastAPI(
     title="Ganitha Mithura - Number Service API",
@@ -74,6 +78,22 @@ class ScoreSubmission(BaseModel):
     is_completed: bool
     completed_at: str
     additional_data: Optional[Dict[str, Any]] = None
+
+
+class ObjectDetectionRequest(BaseModel):
+    image_base64: str
+    target_object: Optional[str] = None
+    expected_count: Optional[int] = None
+    confidence_threshold: float = 0.5
+
+
+class ObjectDetectionResponse(BaseModel):
+    total_count: int
+    target_count: Optional[int] = None
+    target_object: Optional[str] = None
+    detections: List[Dict[str, Any]]
+    class_counts: Dict[str, int]
+    validation: Optional[Dict[str, Any]] = None
 
 
 # ==================== Helper Functions ====================
@@ -338,6 +358,133 @@ async def get_activities_for_number(number: int, level: int = 1):
     Legacy endpoint - use /activities/level/{level}/number/{number} instead
     """
     return await get_activities_for_level_number(level, number)
+
+
+# ==================== Object Detection Endpoints ====================
+
+@app.post("/detect/objects")
+async def detect_objects(request: ObjectDetectionRequest):
+    """
+    POST /detect/objects
+    
+    Detect and count objects in an image using YOLO.
+    
+    Request body:
+    - image_base64: Base64 encoded image
+    - target_object: Specific object to count (optional)
+    - expected_count: Expected count for validation (optional)
+    - confidence_threshold: Detection confidence threshold (default: 0.5)
+    
+    Returns:
+    - Detection results with counts and bounding boxes
+    - Validation result if expected_count provided
+    """
+    try:
+        detection_service = get_detection_service()
+        
+        # Perform detection
+        result = detection_service.detect_from_base64(
+            base64_image=request.image_base64,
+            target_object=request.target_object,
+            confidence_threshold=request.confidence_threshold
+        )
+        
+        # Validate if expected count provided
+        if request.expected_count is not None:
+            detected_count = result['target_count'] if request.target_object else result['total_count']
+            validation = detection_service.validate_count(
+                detected_count=detected_count,
+                expected_count=request.expected_count,
+                tolerance=0
+            )
+            result['validation'] = validation
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid image data: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error during object detection: {str(e)}"
+        )
+
+
+@app.post("/detect/objects/upload")
+async def detect_objects_upload(file: UploadFile = File(...), target_object: Optional[str] = None, expected_count: Optional[int] = None):
+    """
+    POST /detect/objects/upload
+    
+    Detect objects from uploaded image file.
+    
+    Form data:
+    - file: Image file (jpg, png)
+    - target_object: Specific object to count (optional)
+    - expected_count: Expected count for validation (optional)
+    """
+    try:
+        # Read image file
+        contents = await file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if image is None:
+            raise ValueError("Failed to decode image file")
+        
+        detection_service = get_detection_service()
+        
+        # Perform detection
+        result = detection_service.detect_objects(
+            image=image,
+            target_object=target_object
+        )
+        
+        # Validate if expected count provided
+        if expected_count is not None:
+            detected_count = result['target_count'] if target_object else result['total_count']
+            validation = detection_service.validate_count(
+                detected_count=detected_count,
+                expected_count=expected_count,
+                tolerance=0
+            )
+            result['validation'] = validation
+        
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid image file: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error during object detection: {str(e)}"
+        )
+
+
+@app.get("/detect/available-classes")
+async def get_available_classes():
+    """
+    GET /detect/available-classes
+    
+    Get list of all object classes that can be detected by the model.
+    """
+    try:
+        detection_service = get_detection_service()
+        classes = detection_service.get_available_classes()
+        return {
+            "count": len(classes),
+            "classes": classes
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving classes: {str(e)}"
+        )
 
 
 # TODO: Phase 2 - Additional endpoints
