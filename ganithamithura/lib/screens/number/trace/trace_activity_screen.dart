@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart' hide Progress;
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
@@ -34,9 +38,10 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
   
   bool _isChecking = false;
   bool? _result;
+  String? _feedbackMessage;
   
-  // Target area bounds (simplified for demonstration)
-  Set<Offset> _coveredPoints = {};
+  // Canvas key for capturing image
+  final GlobalKey _canvasKey = GlobalKey();
   
   @override
   void initState() {
@@ -99,9 +104,12 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
                     onPanStart: _onPanStart,
                     onPanUpdate: _onPanUpdate,
                     onPanEnd: _onPanEnd,
-                    child: CustomPaint(
-                      painter: _DrawingPainter(_points),
-                      size: Size.infinite,
+                    child: RepaintBoundary(
+                      key: _canvasKey,
+                      child: CustomPaint(
+                        painter: _DrawingPainter(_points, includeBackground: false),
+                        size: Size.infinite,
+                      ),
                     ),
                   ),
                   
@@ -109,11 +117,11 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
                   if (_result != null)
                     _result!
                         ? SuccessAnimation(
-                            message: 'Perfect!',
+                            message: _feedbackMessage ?? 'Perfect!',
                             onComplete: _onSuccess,
                           )
                         : FailureAnimation(
-                            message: 'Try tracing more carefully',
+                            message: _feedbackMessage ?? 'Try again!',
                             onRetry: _clearDrawing,
                           ),
                 ],
@@ -123,35 +131,11 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
             // Check button
             Container(
               padding: const EdgeInsets.all(AppConstants.standardPadding),
-              child: Column(
-                children: [
-                  // Coverage indicator
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Coverage: ',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        '${(_getCoverage() * 100).toInt()}%',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _getCoverageColor(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  ActionButton(
-                    text: 'Check My Trace',
-                    icon: Icons.check_circle,
-                    isEnabled: !_isChecking && _points.length > 10,
-                    onPressed: _checkTrace,
-                  ),
-                ],
+              child: ActionButton(
+                text: _isChecking ? 'Recognizing...' : 'Check My Digit',
+                icon: _isChecking ? Icons.hourglass_empty : Icons.check_circle,
+                isEnabled: !_isChecking && _points.length > 10,
+                onPressed: _checkTrace,
               ),
             ),
           ],
@@ -185,14 +169,12 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _points.add(details.localPosition);
-      _updateCoverage(details.localPosition);
     });
   }
   
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
       _points.add(details.localPosition);
-      _updateCoverage(details.localPosition);
     });
   }
   
@@ -202,95 +184,140 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
     });
   }
   
-  void _updateCoverage(Offset point) {
-    // Simplified coverage tracking - add to covered points
-    _coveredPoints.add(Offset(
-      (point.dx / 10).floor() * 10.0,
-      (point.dy / 10).floor() * 10.0,
-    ));
-  }
-  
-  double _getCoverage() {
-    // Simplified coverage calculation
-    // In real implementation, compare with target path
-    if (_points.isEmpty) return 0.0;
-    
-    final coverage = _coveredPoints.length / 500; // Approximate target points
-    return coverage.clamp(0.0, 1.0);
-  }
-  
-  Color _getCoverageColor() {
-    final coverage = _getCoverage();
-    if (coverage >= AppConstants.traceSuccessThreshold) {
-      return Color(AppColors.successColor);
-    } else if (coverage >= 0.5) {
-      return Color(AppColors.warningColor);
+  /// Capture canvas as image
+  Future<Uint8List?> _captureCanvasImage() async {
+    try {
+      // Create a custom painter with white background for capture
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      final size = _canvasKey.currentContext!.size!;
+      
+      // Draw with white background
+      final painter = _DrawingPainter(_points, includeBackground: true);
+      painter.paint(canvas, size);
+      
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(
+        (size.width * 3.0).toInt(),
+        (size.height * 3.0).toInt(),
+      );
+      
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      
+      return byteData?.buffer.asUint8List();
+    } catch (e) {
+      debugPrint('Error capturing canvas: $e');
+      return null;
     }
-    return Color(AppColors.errorColor);
   }
   
   void _clearDrawing() {
     setState(() {
       _points.clear();
-      _coveredPoints.clear();
       _result = null;
     });
   }
   
   Future<void> _checkTrace() async {
+    // Validate that there's actual drawing
+    if (_points.length < 20) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please draw the number ${widget.currentNumber} first'),
+          backgroundColor: Color(AppColors.warningColor),
+        ),
+      );
+      return;
+    }
+    
     setState(() {
       _isChecking = true;
     });
     
-    // Calculate coverage
-    final coverage = _getCoverage();
-    final passed = coverage >= AppConstants.traceSuccessThreshold;
-    
-    // Simulate processing delay
-    await Future.delayed(const Duration(seconds: 1));
-    
-    if (passed) {
-      // Save progress
-      final progress = Progress(
-        activityId: widget.activity.id,
-        score: (coverage * 100).toInt(),
-        isCompleted: true,
-        completedAt: DateTime.now(),
-        additionalData: {
-          'coverage': coverage,
-          'points': _points.length,
-        },
+    try {
+      // Add small delay to ensure rendering is complete
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Capture canvas as image
+      final imageBytes = await _captureCanvasImage();
+      
+      if (imageBytes == null) {
+        throw Exception('Failed to capture drawing');
+      }
+      
+      debugPrint('📸 Captured drawing: ${imageBytes.length} bytes');
+      debugPrint('📊 Points drawn: ${_points.length}');
+      
+      // Recognize digit using ML
+      final result = await _apiService.recognizeDigit(
+        imageBytes: imageBytes,
+        expectedDigit: widget.currentNumber,
+        confidenceThreshold: 0.5, // Lower threshold for handwriting
       );
       
-      await _storageService.saveCompletedActivity(progress);
+      final passed = result.isCorrect ?? false;
       
-      // Submit to backend (non-blocking with proper error handling)
-      _apiService
-          .submitActivityScore(
-            activityId: widget.activity.id,
-            score: progress.score,
-            isCompleted: true,
-            additionalData: progress.additionalData,
-          )
-          .timeout(
-            Duration(seconds: AppConstants.apiTimeout),
-            onTimeout: () {
-              debugPrint('Score submission timed out - will retry later');
-              return <String, dynamic>{'status': 'timeout'};
-            },
-          )
-          .catchError((e) {
-            debugPrint('Error submitting score: $e');
-            // Store for later retry if needed
-            // TODO: Phase 2 - Implement offline score queue
-            return <String, dynamic>{'status': 'error', 'error': e.toString()};
-          });
+      setState(() {
+        _feedbackMessage = result.feedback;
+      });
+      
+      if (passed) {
+        // Save progress
+        final progress = Progress(
+          activityId: widget.activity.id,
+          score: (result.confidence * 100).toInt(),
+          isCompleted: true,
+          completedAt: DateTime.now(),
+          additionalData: {
+            'predicted_digit': result.predictedDigit,
+            'confidence': result.confidence,
+            'expected_digit': widget.currentNumber,
+          },
+        );
+        
+        await _storageService.saveCompletedActivity(progress);
+        
+        // Submit to backend (non-blocking)
+        _apiService
+            .submitActivityScore(
+              activityId: widget.activity.id,
+              score: progress.score,
+              isCompleted: true,
+              additionalData: progress.additionalData,
+            )
+            .timeout(
+              Duration(seconds: AppConstants.apiTimeout),
+              onTimeout: () {
+                debugPrint('Score submission timed out');
+                return <String, dynamic>{'status': 'timeout'};
+              },
+            )
+            .catchError((e) {
+              debugPrint('Error submitting score: $e');
+              return <String, dynamic>{'status': 'error', 'error': e.toString()};
+            });
+      }
+      
+      setState(() {
+        _isChecking = false;
+        _result = passed;
+      });
+      
+    } catch (e) {
+      debugPrint('❌ Recognition error: $e');
+      setState(() {
+        _isChecking = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Recognition failed: $e'),
+            backgroundColor: Color(AppColors.errorColor),
+          ),
+        );
+      }
     }
-    
-    setState(() {
-      _isChecking = false;
-      _result = passed;
-    });
   }
   
   void _onSuccess() async {
@@ -321,11 +348,21 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
 /// CustomPainter for drawing strokes
 class _DrawingPainter extends CustomPainter {
   final List<Offset> points;
+  final bool includeBackground;
   
-  _DrawingPainter(this.points);
+  _DrawingPainter(this.points, {this.includeBackground = false});
   
   @override
   void paint(Canvas canvas, Size size) {
+    // Draw white background only when capturing
+    if (includeBackground) {
+      final backgroundPaint = Paint()..color = Colors.white;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        backgroundPaint,
+      );
+    }
+    
     final paint = Paint()
       ..color = Color(AppColors.numberColor)
       ..strokeWidth = 8.0
@@ -340,7 +377,7 @@ class _DrawingPainter extends CustomPainter {
   
   @override
   bool shouldRepaint(covariant _DrawingPainter oldDelegate) {
-    return oldDelegate.points.length != points.length;
+    return true; // Always repaint when points change
   }
 }
 
@@ -363,8 +400,8 @@ class _DottedNumberPainter extends CustomPainter {
       text: TextSpan(
         text: '$number',
         style: TextStyle(
-          fontSize: 280,
-          fontWeight: FontWeight.bold,
+          fontSize: 500,
+          fontFamily: 'Staatliches',
           foreground: paint,
         ),
       ),

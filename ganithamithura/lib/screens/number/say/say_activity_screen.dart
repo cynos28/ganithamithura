@@ -125,11 +125,11 @@ class _SayActivityScreenState extends State<SayActivityScreen>
           
           setState(() {
             _isListening = false;
-            _recognizedText = 'one';//result.recognizedWords.toLowerCase();
+            // _recognizedText = 'one';//result.recognizedWords.toLowerCase();
           });
     
-          _checkResult();
-          return;
+          // _checkResult();
+          // return;
           
           // Store error to show in UI instead of immediate snackbar
           String title = 'Error';

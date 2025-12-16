@@ -38,6 +38,7 @@ dependencies:
   
   # Camera
   camera: ^0.10.5+9
+  image: ^4.1.7
   
   # Drawing/Canvas
   flutter_painter: 1.0.1
@@ -56,6 +57,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
+  fonts:
+  - family: Staatliches
+    fonts:
+      - asset: assets/fonts/Staatliches-Regular.ttf
+
   assets:
     - assets/images/
     - assets/videos/

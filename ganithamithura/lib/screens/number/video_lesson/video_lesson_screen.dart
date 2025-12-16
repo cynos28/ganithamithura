@@ -4,6 +4,8 @@ import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/services/learning_flow_manager.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 /// VideoLessonScreen - Display video lesson with Continue button
 class VideoLessonScreen extends StatefulWidget {
@@ -26,18 +28,96 @@ class VideoLessonScreen extends StatefulWidget {
 
 class _VideoLessonScreenState extends State<VideoLessonScreen> {
   bool _videoCompleted = false;
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
   
   @override
   void initState() {
     super.initState();
-    // Simulate video completion after 5 seconds (placeholder)
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
+    _initVideo();
+  }
+  
+  @override
+  void dispose() {
+    _chewieController?.dispose();
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initVideo() async {
+    // Determine URL from activity metadata
+    String? url;
+    try {
+      final meta = widget.activity.metadata;
+      if (meta != null) {
+        if (meta.containsKey('url')) {
+          url = meta['url'] as String?;
+        } else if (meta.containsKey('video') && meta['video'] is Map) {
+          url = (meta['video'] as Map)['url'] as String?;
+        } else if (meta.containsKey('source')) {
+          url = meta['source'] as String?;
+        }
+      }
+    } catch (_) {
+      url = null;
+    }
+
+    // Fallback: if activity title looks like a URL, use it
+    url ??= (widget.activity.title.contains('http') ? widget.activity.title : null);
+
+    debugPrint('🎬 Initializing video for number ${widget.currentNumber}');
+    debugPrint('   URL/Path: $url');
+
+    try {
+      if (url != null && url.startsWith('http')) {
+        debugPrint('   Loading network video...');
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(url));
+      } else if (url != null && url.isNotEmpty) {
+        // treat as asset
+        debugPrint('   Loading asset video...');
+        _videoController = VideoPlayerController.asset(url);
+      }
+
+      if (_videoController != null) {
+        debugPrint('   Initializing video controller...');
+        await _videoController!.initialize();
+        debugPrint('   ✅ Video initialized successfully');
+        
+        _chewieController = ChewieController(
+          videoPlayerController: _videoController!,
+          autoPlay: true,
+          looping: false,
+          showControls: true,
+        );
+
+        // listen for end of playback
+        _videoController!.addListener(() {
+          if (!_videoController!.value.isPlaying &&
+              _videoController!.value.position >= _videoController!.value.duration &&
+              !_videoCompleted) {
+            debugPrint('   ✅ Video playback completed');
+            setState(() {
+              _videoCompleted = true;
+            });
+          }
+        });
+
+        if (mounted) setState(() {});
+      } else {
+        // No URL found - mark completed so user can continue
+        debugPrint('   ⚠️ No video URL found, marking as completed');
         setState(() {
           _videoCompleted = true;
         });
       }
-    });
+    } catch (e) {
+      debugPrint('   ❌ Error initializing video: $e');
+      debugPrint('   Stack trace: ${StackTrace.current}');
+      // mark as completed so user won't be blocked
+      setState(() {
+        _videoCompleted = true;
+      });
+    }
   }
   
   @override
@@ -89,6 +169,24 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
   }
   
   Widget _buildVideoPlaceholder() {
+    // If video initialized, show Chewie player
+    if (_chewieController != null && _videoController != null && _videoController!.value.isInitialized) {
+      return Container(
+        margin: const EdgeInsets.all(AppConstants.standardPadding),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+        ),
+        child: AspectRatio(
+          aspectRatio: _videoController!.value.aspectRatio,
+          child: Chewie(
+            controller: _chewieController!,
+          ),
+        ),
+      );
+    }
+
+    // Fallback placeholder
     return Container(
       margin: const EdgeInsets.all(AppConstants.standardPadding),
       decoration: BoxDecoration(
@@ -98,8 +196,6 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // TODO: Phase 2 - Integrate actual video player
-          // Use video_player or chewie package
           Icon(
             _videoCompleted ? Icons.check_circle : Icons.play_circle_outline,
             size: 100,
@@ -111,7 +207,7 @@ class _VideoLessonScreenState extends State<VideoLessonScreen> {
           Text(
             _videoCompleted 
                 ? 'Video Completed!' 
-                : 'Playing video...',
+                : 'Preparing video...',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
