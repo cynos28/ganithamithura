@@ -25,6 +25,26 @@ class ShapesController:
         if not shapes:
             raise HTTPException(status_code=404, detail="No shapes found")
         return shapes
+
+    async def get_shapes_by_type(self, shape_type: str):
+        """
+        Retrieves all shapes of a specific type from the database.
+
+        Args:
+            shape_type (str): The type of the shapes to retrieve (e.g., "2d", "3d").
+
+        Returns:
+            list: A list of dictionaries, where each dictionary represents a shape.
+        """
+        shapes = []
+        cursor = self.db.shapes.find({"type": shape_type})
+        async for document in cursor:
+            document['_id'] = str(document['_id'])
+            shapes.append(document)
+        
+        if not shapes:
+            raise HTTPException(status_code=404, detail=f"No {shape_type} shapes found")
+        return shapes
     
     async def get_image_by_id(self, image_id: str):
         """
