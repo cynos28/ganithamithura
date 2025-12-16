@@ -18,6 +18,7 @@
         "hive",
         "hive_flutter",
         "http",
+        "image",
         "intl",
         "lottie",
         "path_provider",
@@ -137,6 +138,15 @@
       "dependencies": [
         "collection",
         "flutter"
+      ]
+    },
+    {
+      "name": "image",
+      "version": "4.6.0",
+      "dependencies": [
+        "archive",
+        "meta",
+        "xml"
       ]
     },
     {
@@ -776,6 +786,24 @@
       ]
     },
     {
+      "name": "xml",
+      "version": "6.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "petitparser"
+      ]
+    },
+    {
+      "name": "archive",
+      "version": "4.0.7",
+      "dependencies": [
+        "crypto",
+        "path",
+        "posix"
+      ]
+    },
+    {
       "name": "flutter_plugin_android_lifecycle",
       "version": "2.0.32",
       "dependencies": [
@@ -1000,15 +1028,6 @@
         "flutter",
         "http",
         "vector_graphics_codec"
-      ]
-    },
-    {
-      "name": "archive",
-      "version": "4.0.7",
-      "dependencies": [
-        "crypto",
-        "path",
-        "posix"
       ]
     },
     {
@@ -1241,6 +1260,23 @@
       ]
     },
     {
+      "name": "petitparser",
+      "version": "7.0.1",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
+    },
+    {
+      "name": "posix",
+      "version": "6.0.3",
+      "dependencies": [
+        "ffi",
+        "meta",
+        "path"
+      ]
+    },
+    {
       "name": "cross_file",
       "version": "0.3.5+1",
       "dependencies": [
@@ -1305,29 +1341,11 @@
       ]
     },
     {
-      "name": "xml",
-      "version": "6.6.1",
-      "dependencies": [
-        "collection",
-        "meta",
-        "petitparser"
-      ]
-    },
-    {
       "name": "path_parsing",
       "version": "1.1.0",
       "dependencies": [
         "meta",
         "vector_math"
-      ]
-    },
-    {
-      "name": "posix",
-      "version": "6.0.3",
-      "dependencies": [
-        "ffi",
-        "meta",
-        "path"
       ]
     },
     {
@@ -1347,14 +1365,6 @@
         "flutter",
         "meta",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "petitparser",
-      "version": "7.0.1",
-      "dependencies": [
-        "collection",
-        "meta"
       ]
     }
   ],
