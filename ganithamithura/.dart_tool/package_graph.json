@@ -15,7 +15,6 @@
         "flutter_svg",
         "get",
         "google_fonts",
-        "google_mlkit_image_labeling",
         "hive",
         "hive_flutter",
         "http",
@@ -1517,21 +1516,6 @@
         "flutter",
         "meta",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "google_mlkit_image_labeling",
-      "version": "0.12.1",
-      "dependencies": [
-        "flutter",
-        "google_mlkit_commons"
-      ]
-    },
-    {
-      "name": "google_mlkit_commons",
-      "version": "0.8.1",
-      "dependencies": [
-        "flutter"
       ]
     }
   ],

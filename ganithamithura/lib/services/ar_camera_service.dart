@@ -25,7 +25,6 @@ class ARCameraService {
   
   bool get isInitialized => _isInitialized;
   CameraController? get controller => _controller;
-  double get defaultReferenceDistance => _referenceDistance;
   
   /// Initialize camera
   Future<void> initialize() async {
@@ -185,48 +184,6 @@ class ARCameraService {
     // For now, return null - use manual measurement
     print('⚠️ Auto-measurement not yet implemented');
     return null;
-  }
-  
-  /// Toggle camera flash (if supported)
-  Future<void> toggleFlash() async {
-    if (_controller == null || !_isInitialized) return;
-    try {
-      final currentMode = _controller!.value.flashMode;
-      final newMode = currentMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
-      await _controller!.setFlashMode(newMode);
-    } catch (e) {
-      print('⚠️ Flash toggle failed: $e');
-    }
-  }
-  
-  /// Switch between front and back camera
-  Future<void> switchCamera() async {
-    if (_cameras.length < 2) return;
-    
-    try {
-      final currentIndex = _cameras.indexWhere(
-        (cam) => cam.name == _controller?.description.name,
-      );
-      final nextIndex = (currentIndex + 1) % _cameras.length;
-      
-      await dispose();
-      
-      _controller = CameraController(
-        _cameras[nextIndex],
-        ResolutionPreset.high,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.jpeg,
-      );
-      
-      await _controller!.initialize();
-      _isInitialized = true;
-      
-      print('📷 Switched to camera: ${_cameras[nextIndex].name}');
-    } catch (e) {
-      print('❌ Camera switch failed: $e');
-      // Re-initialize original camera on failure
-      await initialize();
-    }
   }
 }
 

@@ -6,20 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="04341d4a-a528-411d-ac81-7cff2db09c71" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/.dart_tool/package_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/.dart_tool/package_config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/.dart_tool/package_graph.json" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/.dart_tool/package_graph.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/.flutter-plugins-dependencies" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/ios/Runner/GeneratedPluginRegistrant.m" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/ios/Runner/GeneratedPluginRegistrant.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/measurements/ar_measurement_screen.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/measurements/arcore_measurement_screen.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/services/ar_camera_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/services/ar_camera_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/widgets/measurements/ar_camera_widget.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/widgets/measurements/arcore_measurement_widget.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ganithamithura/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/measurement-service/app/models/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/measurement-service/app/models/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/home/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/screens/home/home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/learn_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/learn_units_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/unit_card_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/units_lessons/capacity_lesson_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/units_lessons/length_lesson_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/learn/units_lessons/mass_lesson_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/screens/measurements/ar_measurement_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/screens/measurements/ar_measurement_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/services/api/contextual_question_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/services/api/contextual_question_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ganithamithura/lib/services/api/measurement_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/ganithamithura/lib/services/api/measurement_api_service.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

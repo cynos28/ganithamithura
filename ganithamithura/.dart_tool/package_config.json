@@ -320,18 +320,6 @@
       "languageVersion": "3.7"
     },
     {
-      "name": "google_mlkit_commons",
-      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/google_mlkit_commons-0.8.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.16"
-    },
-    {
-      "name": "google_mlkit_image_labeling",
-      "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/google_mlkit_image_labeling-0.12.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.16"
-    },
-    {
       "name": "graphs",
       "rootUri": "file:///Users/shehandulmina/.pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
