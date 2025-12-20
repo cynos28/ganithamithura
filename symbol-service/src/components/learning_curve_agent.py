@@ -78,13 +78,22 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         """
         ReAct Logic: Perceive -> Memory -> Reason -> Act -> Feedback
         """
-        print(f"\n📚 Student Profile: Grade {self.student_profile.grade}, Level {self.student_profile.level} - {self.student_profile.sublevel}")
+        print(f"\n📚 Student Profile: Grade {self.student_profile.grade}, Level {self.student_profile.level}")
         print(f"Starting Adaptive Teaching Session ({self.duration_seconds/60:.1f} mins)")
         
         self.start_time = time.time()
         
+        # Progression Path
+        self.phases = ["Starter", "Explorer", "Solver", "Champion"]
+        try:
+            self.current_phase_idx = self.phases.index(self.student_profile.sublevel)
+        except ValueError:
+            self.current_phase_idx = 0
+            
+        self.student_profile.sublevel = self.phases[self.current_phase_idx]
+
         # Initial Perception
-        self.speak(f"Hello! I'm your math friend. We are going to learn about {self.student_profile.sublevel} today.")
+        self.speak(f"Hello! I'm your math friend. We are starting with {self.student_profile.sublevel} level.")
         
         # Main ReAct Loop
         while self.get_time_remaining() > 0:
@@ -115,6 +124,26 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
                 if action == "TEACH":
                     understood = self.perceive_understanding()
                     self.update_memory(action, strategy, understood)
+                    
+                    if understood:
+                        # SUCCESS: PROGRESSION LOGIC
+                        if self.current_phase_idx < len(self.phases) - 1:
+                            self.current_phase_idx += 1
+                            new_phase = self.phases[self.current_phase_idx]
+                            self.student_profile.sublevel = new_phase
+                            
+                            self.speak(f"Awesome! You mastered that. Let's move up to {new_phase} mode!")
+                            print(f"\n🚀 PROMOTED:  {self.phases[self.current_phase_idx-1]} -> {new_phase}")
+                            
+                            # Clear specific strategy memory so we start fresh for new topic
+                            # but keep general history
+                            self.strategies_tried = [] 
+                        else:
+                            self.speak("Wow! You are a Champion! You completed all levels for this topic!")
+                            break # Session complete
+                    else:
+                        print(f"\n🔄 STAYING: Retrying {self.student_profile.sublevel} with different strategy.")
+
                 
             except Exception as e:
                 print(f"ReAct Loop Error: {e}")

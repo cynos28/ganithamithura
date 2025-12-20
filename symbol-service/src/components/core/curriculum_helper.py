@@ -48,6 +48,9 @@ class CurriculumHelper:
             # Convert spec to legacy format
             converted = {
                 'focus': spec.get('focus', ''),
+                'what_is_taught': spec.get('what_is_taught', ''),
+                'students_should_understand': spec.get('students_should_understand', []),
+                'what_should_teach': spec.get('what_should_teach', ''),
                 'operations': spec.get('operations', ['addition']),
             }
 

@@ -17,7 +17,38 @@ def main():
         return
 
     print("--- Learning Curve Agent Runner ---")
-    grade, level, sublevel = BaseMathTutor.get_student_profile_interactive()
+    
+    # 1. Get Grade
+    try:
+        grade = int(input("Enter Grade (1-3): ").strip())
+        if grade not in [1, 2, 3]: raise ValueError
+    except:
+        grade = 1
+        print("Defaulting to Grade 1")
+
+    # 2. Get Level
+    try:
+        level = int(input("Enter Level (1-3): ").strip())
+        if level not in [1, 2, 3]: raise ValueError
+    except:
+        level = 1
+        print("Defaulting to Level 1")
+
+    # 3. Get Sublevel (Strict)
+    print("\nSelect Phase:")
+    phases = ["Starter", "Explorer", "Solver", "Champion"]
+    for i, p in enumerate(phases):
+        print(f"{i+1}. {p}")
+    
+    try:
+        idx = int(input("Choose phase (1-4): ").strip()) - 1
+        if 0 <= idx < len(phases):
+            sublevel = phases[idx]
+        else:
+            raise ValueError
+    except:
+        sublevel = "Starter"
+        print("Defaulting to Starter")
     
     # Let user pick duration
     try:
