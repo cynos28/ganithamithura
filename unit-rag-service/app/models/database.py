@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
-
+from app.models.games import GameParameters, GameSession
 
 # MongoDB Models using Beanie ODM
 class DocumentModel(Document):
@@ -151,6 +151,8 @@ async def init_db():
             StudentAnswerModel,
             StudentAbilityModel,
             StudentProgressModel,
+            GameParameters,
+            GameSession,
         ]
     )
     

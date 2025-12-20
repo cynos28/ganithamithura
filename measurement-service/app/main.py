@@ -5,6 +5,8 @@ Measurement Service - AR Measurement Context Processing
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import measurement
+from app.routes.games import router as adaptive_games_router
+from app.utils.game_seed import seed_game_parameters
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -26,7 +28,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(measurement.router)
-
+app.include_router(adaptive_games_router)
 
 @app.get("/")
 async def root():

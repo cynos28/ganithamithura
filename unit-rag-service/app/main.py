@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.models.database import init_db
 from app.routes import upload, questions, adaptive, progress, contextual
-
+from app.routes import measurement
+from app.routes.games import router as adaptive_games_router
+from app.utils.game_seed import seed_game_parameters
 from typing import Optional
 
 # Initialize FastAPI app
@@ -30,6 +32,9 @@ app.include_router(questions.router)
 app.include_router(adaptive.router)
 app.include_router(progress.router)
 app.include_router(contextual.router)
+app.include_router(measurement.router)
+app.include_router(adaptive_games_router)
+
 
 
 @app.get("/documents")
@@ -163,6 +168,7 @@ async def get_questions_by_document_alias(
 async def startup_event():
     """Initialize database on startup"""
     await init_db()
+    await seed_game_parameters()
     print(f"✅ Server running on {settings.host}:{settings.port}")
     print(f"✅ Environment: {settings.environment}")
     print(f"✅ Docs available at: http://{settings.host}:{settings.port}/docs")
@@ -172,7 +178,7 @@ async def startup_event():
 async def root():
     """Root endpoint - health check"""
     return {
-        "service": "Ganithamithura RAG Service",
+        "service": "Measurement Service",
         "status": "running",
         "version": "1.0.0",
         "environment": settings.environment
