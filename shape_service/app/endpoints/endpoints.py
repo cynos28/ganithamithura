@@ -3,6 +3,7 @@ from app.controllers.shapes_detection import ShapesDetectionController
 from app.controllers.shapes_controller import ShapesController
 from authentication_service.auth_service import get_current_user
 from app.controllers.game_controller import GameController
+from app.controllers.report_controller import ReportController
 from app.models.model import GameAnswer, UserBadgeList
 
 
@@ -11,6 +12,7 @@ router = APIRouter()
 shapes_detection_controller = ShapesDetectionController()
 shapes_controller = ShapesController()
 game_controller = GameController()
+report_controller = ReportController()
 
 @router.post("/detect-shape/")
 async def detect_shape(request: Request, image_file: UploadFile = File(None)):
@@ -39,3 +41,7 @@ async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_curren
 @router.get("/game/badges", response_model=UserBadgeList)
 async def get_all_users_badges(user: dict = Depends(get_current_user)):
     return await game_controller.get_all_users_badges()
+
+@router.get("/game/report")
+async def get_user_game_report(user: dict = Depends(get_current_user)):
+    return await report_controller.get_user_game_report(user)
