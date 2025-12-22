@@ -45,25 +45,29 @@ class QuestionGenerator:
             "system": "You are creating questions for Grade 1 students (ages 6-7). Use simple words from the 200 most common English words. Keep questions 5-10 words long. Focus on visual recognition, counting, and basic identification. Use emojis to make it fun!",
             "bloom_levels": ["remember", "understand"],
             "question_types": ["mcq", "true_false"],
-            "difficulty_range": [1, 2]
+            "difficulty_range": [1, 5],  # Full range for adaptive selection
+            "base_difficulty": 1  # Starting point for this grade
         },
         2: {
             "system": "You are creating questions for Grade 2 students (ages 7-8). Use simple vocabulary and short sentences. Focus on basic comprehension, simple calculations, and comparison. Make it engaging with emojis!",
             "bloom_levels": ["remember", "understand"],
             "question_types": ["mcq", "short_answer"],
-            "difficulty_range": [2, 3]
+            "difficulty_range": [1, 5],  # Full range for adaptive selection
+            "base_difficulty": 2  # Starting point for this grade
         },
         3: {
             "system": "You are creating questions for Grade 3 students (ages 8-9). Use grade-appropriate vocabulary. Focus on application, simple problem-solving, and multi-step thinking. Include helpful hints!",
             "bloom_levels": ["understand", "apply"],
             "question_types": ["mcq", "short_answer"],
-            "difficulty_range": [3, 4]
+            "difficulty_range": [1, 5],  # Full range for adaptive selection
+            "base_difficulty": 3  # Starting point for this grade
         },
         4: {
             "system": "You are creating questions for Grade 4 students (ages 9-10). Focus on analysis, reasoning, word problems, and applying concepts to new situations. Encourage critical thinking!",
             "bloom_levels": ["apply", "analyze"],
             "question_types": ["mcq", "short_answer"],
-            "difficulty_range": [4, 5]
+            "difficulty_range": [1, 5],  # Full range for adaptive selection
+            "base_difficulty": 4  # Starting point for this grade
         }
     }
     
@@ -95,7 +99,11 @@ Generate {num_questions} questions for Grade {grade_level} students following th
 
 1. Topic Focus: ONLY {topic.upper()} - ignore all other topics in the content
 2. Question Types: Use {', '.join(grade_config['question_types'])}
-3. Difficulty: Range from {grade_config['difficulty_range'][0]} to {grade_config['difficulty_range'][1]} (1=easiest, 5=hardest)
+3. **ADAPTIVE DIFFICULTY DISTRIBUTION**: 
+   - Generate questions across ALL difficulty levels {grade_config['difficulty_range'][0]} to {grade_config['difficulty_range'][1]}
+   - DISTRIBUTE evenly: Make some easy (1-2), some medium (3), some hard (4-5)
+   - This allows adaptive learning - system will pick the right difficulty for each student
+   - Base difficulty for Grade {grade_level} is {grade_config['base_difficulty']}, but create variety
 4. Bloom's Taxonomy: Focus on {', '.join(grade_config['bloom_levels'])}
 5. For MCQ questions: Provide exactly 4 options, with one correct answer
 6. Include helpful hints that guide without giving away the answer

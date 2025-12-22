@@ -111,7 +111,7 @@ class AdaptiveQuestionResponse(BaseModel):
 class AnswerSubmission(BaseModel):
     student_id: str
     question_id: str  # MongoDB ObjectId as string
-    unit_id: int
+    unit_id: str  # Changed from int to str to support "unit_length_1" format
     answer: str
     time_taken: Optional[int] = None  # seconds
 

@@ -2,6 +2,8 @@ import numpy as np
 from typing import List, Dict, Any, Optional
 from app.models.database import StudentAbilityModel, StudentAnswerModel, QuestionModel
 from app.config import settings
+from beanie.operators import In, NotIn
+from bson import ObjectId
 
 
 class AdaptiveEngine:
@@ -124,12 +126,33 @@ class AdaptiveEngine:
         # Calculate optimal difficulty (grade-aware)
         target_difficulty = self.select_optimal_difficulty(student_ability.ability_score, grade)
         
+        print(f"📊 Adaptive selection for student={student_id}, unit={unit_id}, grade={grade}")
+        print(f"   Ability: {student_ability.ability_score:.2f}, Target difficulty: {target_difficulty}")
+        
         # Get answered question IDs
         answered = await StudentAnswerModel.find(
             StudentAnswerModel.student_id == student_id,
             StudentAnswerModel.unit_id == unit_id
         ).to_list()
-        answered_ids = [str(ans.question_id) for ans in answered]
+        # question_id in answers is stored as string, need to convert to ObjectId for comparison
+        answered_ids = []
+        for ans in answered:
+            try:
+                answered_ids.append(ObjectId(ans.question_id))
+            except:
+                # If it's already an ObjectId or invalid, skip
+                pass
+        
+        # Check total questions available for this unit
+        total_questions = await QuestionModel.find(
+            QuestionModel.unit_id == unit_id
+        ).count()
+        
+        print(f"   📚 Total questions for unit '{unit_id}': {total_questions}")
+        print(f"   ✅ Already answered: {len(answered_ids)} questions")
+        if answered_ids:
+            print(f"   🔍 Answered IDs (first 3): {[str(id) for id in answered_ids[:3]]}")
+        print(f"   🆕 Remaining: {total_questions - len(answered_ids)} questions")
         
         # Identify weak concepts (mastery < 0.5)
         weak_concepts = [
@@ -138,53 +161,102 @@ class AdaptiveEngine:
             if mastery < 0.5
         ]
         
-        # Build base query with unit_id filter
-        base_query = {"unit_id": unit_id}
-        if answered_ids:
-            base_query["_id"] = {"$nin": answered_ids}
+        print(f"   🚫 Excluding {len(answered_ids)} answered questions")
         
         # Priority 1: Questions on weak concepts at target difficulty
         if weak_concepts:
-            question = await QuestionModel.find_one(
-                base_query,
-                QuestionModel.difficulty_level == target_difficulty,
-                {"concepts": {"$in": weak_concepts}}
-            )
+            if answered_ids:
+                question = await QuestionModel.find_one(
+                    QuestionModel.unit_id == unit_id,
+                    QuestionModel.grade_level == grade,
+                    QuestionModel.difficulty_level == target_difficulty,
+                    In(QuestionModel.question_type, ["mcq", "true_false"]),
+                    NotIn(QuestionModel.id, answered_ids),
+                    {"concepts": {"$in": weak_concepts}}
+                )
+            else:
+                question = await QuestionModel.find_one(
+                    QuestionModel.unit_id == unit_id,
+                    QuestionModel.grade_level == grade,
+                    QuestionModel.difficulty_level == target_difficulty,
+                    In(QuestionModel.question_type, ["mcq", "true_false"]),
+                    {"concepts": {"$in": weak_concepts}}
+                )
             
             if question:
+                print(f"   ✅ Selected (weak concept): {str(question.id)[:12]}... (difficulty {question.difficulty_level})")
+                print(f"   📝 Question: {question.question_text[:60]}...")
                 return question
         
         # Priority 2: Any question at target difficulty for this unit
-        question = await QuestionModel.find_one(
-            base_query,
-            QuestionModel.difficulty_level == target_difficulty
-        )
+        if answered_ids:
+            question = await QuestionModel.find_one(
+                QuestionModel.unit_id == unit_id,
+                QuestionModel.grade_level == grade,
+                QuestionModel.difficulty_level == target_difficulty,
+                In(QuestionModel.question_type, ["mcq", "true_false"]),
+                NotIn(QuestionModel.id, answered_ids)
+            )
+        else:
+            question = await QuestionModel.find_one(
+                QuestionModel.unit_id == unit_id,
+                QuestionModel.grade_level == grade,
+                QuestionModel.difficulty_level == target_difficulty,
+                In(QuestionModel.question_type, ["mcq", "true_false"])
+            )
         
         if question:
+            print(f"   ✅ Selected question ID: {str(question.id)[:12]}... (difficulty {question.difficulty_level})")
+            print(f"   📝 Question preview: {question.question_text[:60]}...")
             return question
         
         # Priority 3: Question at adjacent difficulty for this unit
         for diff_offset in [1, -1, 2, -2]:
             adj_difficulty = target_difficulty + diff_offset
             if self.min_difficulty <= adj_difficulty <= self.max_difficulty:
-                question = await QuestionModel.find_one(
-                    base_query,
-                    {"_id": {"$nin": answered_ids}} if answered_ids else {},
-                    QuestionModel.difficulty_level == adj_difficulty
-                )
+                if answered_ids:
+                    question = await QuestionModel.find_one(
+                        QuestionModel.unit_id == unit_id,
+                        QuestionModel.grade_level == grade,
+                        QuestionModel.difficulty_level == adj_difficulty,
+                        In(QuestionModel.question_type, ["mcq", "true_false"]),
+                        NotIn(QuestionModel.id, answered_ids)
+                    )
+                else:
+                    question = await QuestionModel.find_one(
+                        QuestionModel.unit_id == unit_id,
+                        QuestionModel.grade_level == grade,
+                        QuestionModel.difficulty_level == adj_difficulty,
+                        In(QuestionModel.question_type, ["mcq", "true_false"])
+                    )
                 
                 if question:
+                    print(f"   ✅ Selected (adjacent diff {adj_difficulty}): {str(question.id)[:12]}... ")
+                    print(f"   📝 Question: {question.question_text[:60]}...")
                     return question
         
         # Fallback: Any unanswered question
-        return await QuestionModel.find_one(
-            {"_id": {"$nin": answered_ids}} if answered_ids else {}
-        )
+        if answered_ids:
+            fallback = await QuestionModel.find_one(
+                NotIn(QuestionModel.id, answered_ids)
+            )
+        else:
+            fallback = await QuestionModel.find_one()
+        
+        if fallback:
+            print(f"⚠️  Using fallback question (difficulty {fallback.difficulty_level}) - no match at target {target_difficulty}")
+        else:
+            print(f"❌ NO QUESTIONS FOUND! Please upload curriculum documents to generate questions.")
+            print(f"   Total questions in DB: {total_questions}")
+            print(f"   Already answered: {len(answered_ids)}")
+        
+        return fallback
     
     async def process_answer(
         self,
         student_id: str,
         question: QuestionModel,
+        unit_id: str,
         is_correct: bool,
         time_taken: int,
         grade_level: int = 1
@@ -196,7 +268,7 @@ class AdaptiveEngine:
         """
         
         # Get student state (grade-aware)
-        student_ability = await self.get_student_state(student_id, str(question.id), grade_level)
+        student_ability = await self.get_student_state(student_id, unit_id, grade_level)
         
         # Update ability score
         new_ability = self.update_ability(
@@ -232,7 +304,7 @@ class AdaptiveEngine:
         answer_record = StudentAnswerModel(
             student_id=student_id,
             question_id=str(question.id),
-            unit_id=str(question.id),  # Assuming question.id relates to unit
+            unit_id=unit_id,  # Use the correct unit_id from submission
             answer_given="",  # Will be filled by caller
             is_correct=is_correct,
             time_taken=time_taken,

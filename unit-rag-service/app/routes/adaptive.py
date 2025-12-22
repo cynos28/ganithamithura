@@ -38,11 +38,16 @@ async def get_next_question(
             detail="No suitable questions found for this student"
         )
     
+    # Auto-generate options for true/false questions if missing
+    options = question.options or []
+    if question.question_type == "true_false" and not options:
+        options = ["True", "False"]
+    
     return QuestionResponse(
         id=str(question.id),
         question_text=question.question_text,
         question_type=question.question_type,
-        options=question.options or [],
+        options=options,
         grade_level=question.grade_level,
         difficulty_level=question.difficulty_level,
         bloom_level=question.bloom_level or "",
@@ -74,6 +79,7 @@ async def submit_answer(submission: AnswerSubmission):
     feedback_data = await adaptive_engine.process_answer(
         student_id=submission.student_id,
         question=question,
+        unit_id=submission.unit_id,  # Pass the unit_id from submission
         is_correct=is_correct,
         time_taken=submission.time_taken
     )
