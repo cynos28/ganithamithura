@@ -96,8 +96,9 @@ async def generate_contextual_questions(request: ContextualQuestionRequest):
         saved_questions = []
         for q_data in questions:
             try:
+                # AR questions use ar_topic_grade format (separate from practice questions)
                 question = QuestionModel(
-                    unit_id=f"ar_{context.topic.lower()}_{request.student_id}",
+                    unit_id=f"ar_{context.topic.lower()}_{request.grade}",
                     topic=context.topic,
                     question_text=q_data['question_text'],
                     question_type=q_data.get('question_type', 'mcq'),
@@ -307,7 +308,8 @@ async def get_adaptive_measurement_question(request: ContextualQuestionRequest):
         context = request.measurement_context
         
         # Get or create student ability state for this measurement type (grade-aware)
-        unit_id = f"measurement_{context.measurement_type}_{request.student_id}"
+        # Use ar_topic_grade format to keep AR questions separate from practice questions
+        unit_id = f"ar_{context.topic.lower()}_{request.grade}"
         student_ability = await adaptive_engine.get_student_state(
             student_id=request.student_id,
             unit_id=unit_id,
