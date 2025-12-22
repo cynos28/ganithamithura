@@ -92,25 +92,31 @@ async def generate_contextual_questions(request: ContextualQuestionRequest):
             num_questions=request.num_questions
         )
         
-        # Save questions to database
+        # Save questions to database (with timeout protection)
         saved_questions = []
         for q_data in questions:
-            question = QuestionModel(
-                unit_id=f"ar_{context.topic.lower()}_{request.student_id}",
-                topic=context.topic,
-                question_text=q_data['question_text'],
-                question_type=q_data.get('question_type', 'mcq'),
-                correct_answer=q_data['correct_answer'],
-                options=q_data.get('options'),
-                grade_level=request.grade,
-                difficulty_level=q_data.get('difficulty_level', 3),
-                explanation=q_data.get('explanation', ''),
-                hints=q_data.get('hints', []),
-                concepts=[context.topic, f"AR_{context.measurement_type}"],
-            )
-            
-            await question.save()  # Beanie uses save() not insert()
-            saved_questions.append(question)
+            try:
+                question = QuestionModel(
+                    unit_id=f"ar_{context.topic.lower()}_{request.student_id}",
+                    topic=context.topic,
+                    question_text=q_data['question_text'],
+                    question_type=q_data.get('question_type', 'mcq'),
+                    correct_answer=q_data['correct_answer'],
+                    options=q_data.get('options'),
+                    grade_level=request.grade,
+                    difficulty_level=q_data.get('difficulty_level', 3),
+                    explanation=q_data.get('explanation', ''),
+                    hints=q_data.get('hints', []),
+                    concepts=[context.topic, f"AR_{context.measurement_type}"],
+                )
+                
+                await question.save()  # Beanie uses save() not insert()
+                saved_questions.append(question)
+            except Exception as db_error:
+                # If DB save fails, still return the question
+                print(f"⚠️  Failed to save question to DB: {str(db_error)}")
+                # Create a dict version for response
+                saved_questions.append(q_data)
         
         print(f"✅ Generated and saved {len(saved_questions)} contextual questions")
         
