@@ -9,7 +9,8 @@ from datetime import datetime
 
 from app.services.question_generator import question_generator
 from app.services.embeddings_service import embeddings_service
-from app.models.database import QuestionModel
+from app.models.database import QuestionModel, StudentAnswerModel
+from app.services.adaptive_engine import adaptive_engine
 
 router = APIRouter(prefix="/api/v1/contextual", tags=["Contextual Questions"])
 
@@ -148,15 +149,34 @@ async def _generate_ar_questions(
     measurement_context: ARMeasurementContext,
     curriculum_context: str,
     grade: int,
-    num_questions: int
+    num_questions: int,
+    target_difficulty: Optional[int] = None,
+    exclude_questions: List[str] = None
 ) -> List[dict]:
     """Generate questions using LLM with AR measurement context"""
     
     from app.utils.llm_client import llm_client
     import json
+    import random
+    
+    exclude_questions = exclude_questions or []
+    
+    # Add variety prompts to ensure different question types
+    variety_prompts = [
+        "Focus on unit conversion questions",
+        "Create comparison questions (bigger/smaller)",
+        "Generate measurement calculation questions", 
+        "Ask about practical applications",
+        "Create estimation and rounding questions"
+    ]
+    
+    selected_variety = random.choice(variety_prompts)
+    exclusion_note = f"\n\nAVOID THESE RECENT QUESTIONS:\n{chr(10).join([f'- {q}' for q in exclude_questions])}" if exclude_questions else ""
     
     # Build personalized prompt
-    prompt = f"""Generate {num_questions} educational questions based on this REAL measurement by a student:
+    difficulty_instruction = f"at difficulty level {target_difficulty} (1=easiest, 5=hardest)" if target_difficulty else "progressing from easy to hard"
+    
+    prompt = f"""Generate {num_questions} educational question(s) {difficulty_instruction} based on this REAL measurement by a student:
 
 STUDENT'S MEASUREMENT:
 {measurement_context.personalized_prompt}
@@ -168,21 +188,24 @@ Grade Level: {grade}
 CURRICULUM CONTEXT:
 {curriculum_context[:2000]}
 
+VARIETY FOCUS: {selected_variety}
+
 CRITICAL RULES FOR AR-BASED QUESTIONS:
 1. Use "YOUR {measurement_context.object_name}" to make it personal
 2. Reference the EXACT measurement ({measurement_context.value}{measurement_context.unit})
 3. Make questions conversational, like talking about THEIR object
-4. Progress from easy to hard
+4. Create DIFFERENT types of questions each time for variety
 5. Include these difficulty hints: {', '.join(measurement_context.difficulty_hints[:3])}
 
 EXAMPLE GOOD QUESTIONS:
 ✅ "Your {measurement_context.object_name} is {measurement_context.value}{measurement_context.unit}. How many millimeters is that?"
 ✅ "If you have 3 {measurement_context.object_name}s like yours, what is the total length?"
 ✅ "Your {measurement_context.object_name} is {measurement_context.value}{measurement_context.unit}. Is it longer or shorter than 20cm?"
+✅ "Round your {measurement_context.object_name}'s measurement to the nearest 10cm."
 
 AVOID GENERIC QUESTIONS:
 ❌ "A pencil is X cm. Convert to mm." (too generic)
-❌ "What is the length?" (doesn't use their measurement)
+❌ "What is the length?" (doesn't use their measurement){exclusion_note}
 
 Generate ONLY valid JSON in this format:
 {{
@@ -265,3 +288,191 @@ def _generate_fallback_questions(
     })
     
     return questions[:num_questions]
+
+
+@router.post("/adaptive-measurement-question")
+async def get_adaptive_measurement_question(request: ContextualQuestionRequest):
+    """
+    Get next adaptive question based on measurement context
+    Uses IRT to select optimal difficulty for student
+    """
+    
+    try:
+        context = request.measurement_context
+        
+        # Get or create student ability state for this measurement type (grade-aware)
+        unit_id = f"measurement_{context.measurement_type}_{request.student_id}"
+        student_ability = await adaptive_engine.get_student_state(
+            student_id=request.student_id,
+            unit_id=unit_id,
+            grade_level=request.grade
+        )
+        
+        # Calculate optimal difficulty based on current ability and grade
+        target_difficulty = adaptive_engine.select_optimal_difficulty(
+            student_ability.ability_score,
+            grade_level=request.grade
+        )
+        
+        print(f"🎯 Student ability: {student_ability.ability_score:.2f}, Target difficulty: {target_difficulty}")
+        
+        # Get recent questions to avoid repetition
+        recent_questions = await QuestionModel.find(
+            QuestionModel.unit_id == unit_id,
+            QuestionModel.grade_level == request.grade
+        ).sort(-QuestionModel.id).limit(5).to_list()
+        
+        recent_question_texts = [q.question_text for q in recent_questions] if recent_questions else []
+        
+        # Build RAG query
+        rag_query = f"{context.topic} measurement {context.value}{context.unit} {context.object_name}"
+        
+        # Retrieve relevant curriculum chunks
+        filter_meta = {"topic": context.topic} if hasattr(embeddings_service, 'collection') and embeddings_service.collection else {}
+        relevant_chunks = await embeddings_service.search_similar_chunks(
+            query=rag_query,
+            n_results=5,
+            filter_metadata=filter_meta
+        )
+        
+        # Build context
+        if relevant_chunks:
+            curriculum_context = "\n\n".join([chunk['text'] for chunk in relevant_chunks])
+        else:
+            curriculum_context = f"Teaching {context.topic} measurement concepts for grade {request.grade}"
+        
+        # Generate ONE question at target difficulty (with uniqueness check)
+        questions = await _generate_ar_questions(
+            measurement_context=context,
+            curriculum_context=curriculum_context,
+            grade=request.grade,
+            num_questions=1,
+            target_difficulty=target_difficulty,
+            exclude_questions=recent_question_texts  # Pass recent questions to avoid
+        )
+        
+        if not questions:
+            raise HTTPException(status_code=500, detail="Failed to generate question")
+        
+        q_data = questions[0]
+        
+        # Save question to database
+        question = QuestionModel(
+            unit_id=unit_id,
+            topic=context.topic,
+            question_text=q_data['question_text'],
+            question_type=q_data.get('question_type', 'mcq'),
+            correct_answer=q_data['correct_answer'],
+            options=q_data.get('options'),
+            grade_level=request.grade,
+            difficulty_level=target_difficulty,
+            explanation=q_data.get('explanation', ''),
+            hints=q_data.get('hints', []),
+            concepts=[context.topic, f"measurement_{context.measurement_type}"],
+        )
+        
+        await question.save()
+        
+        print(f"✅ Generated adaptive question at difficulty {target_difficulty}")
+        
+        return {
+            "success": True,
+            "question": ContextualQuestion(
+                question_id=str(question.id),
+                question_text=question.question_text,
+                question_type=question.question_type,
+                options=question.options,
+                correct_answer=question.correct_answer,
+                explanation=question.explanation,
+                difficulty_level=question.difficulty_level,
+                hints=question.hints,
+            ),
+            "student_ability": student_ability.ability_score,
+            "target_difficulty": target_difficulty,
+        }
+        
+    except Exception as e:
+        print(f"❌ Error generating adaptive measurement question: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating adaptive question: {str(e)}"
+        )
+
+
+@router.post("/submit-measurement-answer")
+async def submit_measurement_answer(
+    student_id: str,
+    question_id: str,
+    answer: str,
+    measurement_type: str,
+    time_taken: Optional[int] = None
+):
+    """
+    Submit answer for measurement question and update student ability
+    """
+    
+    try:
+        # Get the question
+        question = await QuestionModel.get(question_id)
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found")
+        
+        # Check if answer is correct
+        is_correct = answer.strip().lower() == question.correct_answer.strip().lower()
+        
+        # Get student ability state (grade-aware - use grade 1 as default for now)
+        # TODO: Store and retrieve actual student grade from profile
+        grade = 1  # Default grade level
+        unit_id = f"measurement_{measurement_type}_{student_id}"
+        student_ability = await adaptive_engine.get_student_state(
+            student_id=student_id,
+            unit_id=unit_id,
+            grade_level=grade
+        )
+        
+        # Update ability using IRT
+        old_ability = student_ability.ability_score
+        new_ability = adaptive_engine.update_ability(
+            current_ability=old_ability,
+            is_correct=is_correct,
+            question_difficulty=question.difficulty_level
+        )
+        
+        # Calculate new target difficulty (grade-aware)
+        new_target = adaptive_engine.select_optimal_difficulty(new_ability, grade_level=grade)
+        
+        # Update student record
+        student_ability.ability_score = new_ability
+        student_ability.current_difficulty = new_target
+        await student_ability.save()
+        
+        # Save answer record
+        answer_record = StudentAnswerModel(
+            student_id=student_id,
+            question_id=str(question.id),
+            unit_id=unit_id,
+            answer_given=answer,
+            is_correct=is_correct,
+            time_taken=time_taken or 0,
+            difficulty_at_attempt=question.difficulty_level,
+        )
+        await answer_record.insert()
+        
+        print(f"📊 Ability: {old_ability:.2f} → {new_ability:.2f}, Next difficulty: {new_target}")
+        
+        return {
+            "is_correct": is_correct,
+            "correct_answer": question.correct_answer,
+            "explanation": question.explanation,
+            "old_ability": round(old_ability, 2),
+            "new_ability": round(new_ability, 2),
+            "next_difficulty": new_target,
+            "ability_change": round(new_ability - old_ability, 2),
+        }
+        
+    except Exception as e:
+        print(f"❌ Error submitting measurement answer: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error submitting answer: {str(e)}"
+        )

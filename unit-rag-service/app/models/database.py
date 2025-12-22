@@ -67,11 +67,11 @@ class StudentAnswerModel(Document):
     """Student answer history"""
     student_id: Indexed(str)  # Indexed for fast lookups
     question_id: str  # MongoDB ObjectId as string
-    unit_id: int
+    unit_id: str  # Changed to str to support descriptive IDs
     answer_given: Optional[str] = None
     is_correct: bool
     time_taken: Optional[int] = None  # seconds
-    difficulty_at_attempt: int
+    difficulty_at_attempt: int  # Difficulty level when question was attempted
     answered_at: datetime = Field(default_factory=datetime.utcnow)
     
     class Settings:
@@ -87,7 +87,7 @@ class StudentAnswerModel(Document):
 class StudentAbilityModel(Document):
     """Student ability tracking using IRT"""
     student_id: Indexed(str, unique=True)  # Unique index
-    unit_id: int
+    unit_id: str  # Changed to str to support descriptive IDs like "measurement_length_student_123"
     current_difficulty: int = Field(default=1, ge=1, le=5)
     ability_score: float = Field(default=0.0)  # IRT ability parameter
     concepts_mastered: Dict[str, Any] = Field(default_factory=dict)

@@ -47,25 +47,34 @@ class AdaptiveEngine:
         # Clamp to reasonable range
         return max(-3.0, min(3.0, new_ability))
     
-    def select_optimal_difficulty(self, ability: float) -> int:
+    def select_optimal_difficulty(self, ability: float, grade_level: int = 1) -> int:
         """
         Select optimal question difficulty for target success rate
         
-        For 70% success rate: difficulty = ability - ln(1/0.7 - 1) ≈ ability - 0.85
+        Grade-aware difficulty calculation:
+        - Grade 1: Start at difficulty 1 (very easy)
+        - Grade 2: Start at difficulty 2 (easy)
+        - Grade 3: Start at difficulty 3 (medium)
+        - Grade 4: Start at difficulty 4 (hard)
+        
+        Then adjust based on student's ability score
         """
-        # Calculate continuous difficulty
-        optimal_difficulty = ability - np.log((1.0 / self.target_success_rate) - 1)
+        # Clamp grade to valid range [1, 4]
+        grade = max(1, min(4, grade_level))
         
-        # Convert to discrete difficulty level (1-5)
-        difficulty_level = int(np.round(optimal_difficulty)) + 3  # Center at 3
+        # Calculate difficulty: base on grade, adjust by ability
+        # When ability = 0, difficulty matches grade level
+        # Ability range [-3, 3] allows ±3 level adjustment
+        difficulty_level = int(np.round(float(grade) + ability))
         
-        # Clamp to valid range
+        # Clamp to valid range [1, 5]
         return max(self.min_difficulty, min(self.max_difficulty, difficulty_level))
     
     async def get_student_state(
         self,
         student_id: str,
-        unit_id: str
+        unit_id: str,
+        grade_level: int = 1
     ) -> StudentAbilityModel:
         """Get or create student ability state"""
         
@@ -75,12 +84,15 @@ class AdaptiveEngine:
         )
         
         if not student_ability:
-            # Create new student record
+            # Create new student record with grade-appropriate starting difficulty
+            # Grade 1 → difficulty 1, Grade 2 → difficulty 2, etc.
+            grade = max(1, min(4, grade_level))
+            
             student_ability = StudentAbilityModel(
                 student_id=student_id,
                 unit_id=unit_id,
-                ability_score=settings.initial_ability_score,
-                current_difficulty=3,  # Start at medium
+                ability_score=settings.initial_ability_score,  # Start at 0.0
+                current_difficulty=grade,  # Start at grade level
                 concepts_mastered={}
             )
             await student_ability.insert()
@@ -103,11 +115,14 @@ class AdaptiveEngine:
         4. Find unanswered question matching criteria
         """
         
-        # Get student state
-        student_ability = await self.get_student_state(student_id, unit_id)
+        # Default to grade 1 if not specified
+        grade = grade_level if grade_level is not None else 1
         
-        # Calculate optimal difficulty
-        target_difficulty = self.select_optimal_difficulty(student_ability.ability_score)
+        # Get student state (creates new record with grade-appropriate difficulty)
+        student_ability = await self.get_student_state(student_id, unit_id, grade)
+        
+        # Calculate optimal difficulty (grade-aware)
+        target_difficulty = self.select_optimal_difficulty(student_ability.ability_score, grade)
         
         # Get answered question IDs
         answered = await StudentAnswerModel.find(
@@ -171,7 +186,8 @@ class AdaptiveEngine:
         student_id: str,
         question: QuestionModel,
         is_correct: bool,
-        time_taken: int
+        time_taken: int,
+        grade_level: int = 1
     ) -> Dict[str, Any]:
         """
         Process student answer and update ability
@@ -179,8 +195,8 @@ class AdaptiveEngine:
         Returns feedback and updated state
         """
         
-        # Get student state
-        student_ability = await self.get_student_state(student_id, str(question.id))
+        # Get student state (grade-aware)
+        student_ability = await self.get_student_state(student_id, str(question.id), grade_level)
         
         # Update ability score
         new_ability = self.update_ability(
@@ -202,9 +218,9 @@ class AdaptiveEngine:
             
             concepts_mastered[concept] = round(new_mastery, 3)
         
-        # Update student record
+        # Update student record (grade-aware difficulty)
         student_ability.ability_score = new_ability
-        student_ability.current_difficulty = self.select_optimal_difficulty(new_ability)
+        student_ability.current_difficulty = self.select_optimal_difficulty(new_ability, grade_level)
         student_ability.concepts_mastered = concepts_mastered
         student_ability.total_questions += 1
         if is_correct:
