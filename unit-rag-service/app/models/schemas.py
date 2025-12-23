@@ -79,7 +79,7 @@ class QuestionGenerationRequest(BaseModel):
     document_id: str = Field(..., description="MongoDB document ID (get from /api/v1/upload/ endpoint)", example="69249f2aea9d88b2815084f5")
     grade_levels: List[int] = Field(default=[1, 2, 3, 4], description="Grade levels for kindergarten (1-4)", example=[1, 2, 3, 4])
     questions_per_grade: int = Field(default=10, description="Number of questions per grade level", ge=1, le=50)
-    question_types: List[str] = Field(default=["mcq", "short_answer"], description="Types of questions to generate")
+    question_types: List[str] = Field(default=["mcq", "true_false"], description="Types of questions to generate (MCQ and true/false only for Flutter UI)")
     use_rag: bool = Field(default=True, description="Use RAG (vector search) to retrieve relevant chunks instead of full document")
 
 

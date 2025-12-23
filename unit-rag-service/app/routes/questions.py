@@ -66,7 +66,7 @@ async def generate_questions(
         document_id=request.document_id,
         grade_levels=request.grade_levels,
         questions_per_grade=request.questions_per_grade,
-        question_types=request.question_types,
+        question_types=['mcq', 'true_false'],  # Only MCQ and true/false for Flutter UI
         use_rag=request.use_rag
     )
     

@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     # Question Generation
     questions_per_grade: int = 10
     max_generation_retries: int = 3
+    llm_timeout: int = 120  # 2 minutes timeout for LLM requests
     
     # Adaptive Learning
     initial_ability_score: float = 0.0

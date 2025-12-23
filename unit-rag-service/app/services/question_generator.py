@@ -51,21 +51,21 @@ class QuestionGenerator:
         2: {
             "system": "You are creating questions for Grade 2 students (ages 7-8). Use simple vocabulary and short sentences. Focus on basic comprehension, simple calculations, and comparison. Make it engaging with emojis!",
             "bloom_levels": ["remember", "understand"],
-            "question_types": ["mcq", "short_answer"],
+            "question_types": ["mcq", "true_false"],  # Only MCQ for Flutter UI
             "difficulty_range": [1, 5],  # Full range for adaptive selection
             "base_difficulty": 2  # Starting point for this grade
         },
         3: {
             "system": "You are creating questions for Grade 3 students (ages 8-9). Use grade-appropriate vocabulary. Focus on application, simple problem-solving, and multi-step thinking. Include helpful hints!",
             "bloom_levels": ["understand", "apply"],
-            "question_types": ["mcq", "short_answer"],
+            "question_types": ["mcq", "true_false"],  # Only MCQ for Flutter UI
             "difficulty_range": [1, 5],  # Full range for adaptive selection
             "base_difficulty": 3  # Starting point for this grade
         },
         4: {
             "system": "You are creating questions for Grade 4 students (ages 9-10). Focus on analysis, reasoning, word problems, and applying concepts to new situations. Encourage critical thinking!",
             "bloom_levels": ["apply", "analyze"],
-            "question_types": ["mcq", "short_answer"],
+            "question_types": ["mcq", "true_false"],  # Only MCQ for Flutter UI
             "difficulty_range": [1, 5],  # Full range for adaptive selection
             "base_difficulty": 4  # Starting point for this grade
         }
@@ -131,12 +131,17 @@ Make questions engaging, age-appropriate, and educational!
 """
         
         try:
+            print(f"📤 Sending request to OpenAI (model: {llm_client.openai_model})...")
+            print(f"📊 Prompt length: {len(prompt)} chars, Context length: {len(context)} chars")
+            
             response = await llm_client.generate_completion(
                 prompt=prompt,
                 system_message=grade_config['system'],
                 temperature=0.8,
                 max_tokens=2000
             )
+            
+            print(f"📥 Received response from OpenAI ({len(response)} chars)")
             
             # Parse JSON response
             # Remove markdown code blocks if present

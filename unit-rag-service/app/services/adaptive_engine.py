@@ -235,18 +235,21 @@ class AdaptiveEngine:
                     print(f"   📝 Question: {question.question_text[:60]}...")
                     return question
         
-        # Fallback: Any unanswered question
+        # Fallback: Any unanswered MCQ/true_false question
         if answered_ids:
             fallback = await QuestionModel.find_one(
+                In(QuestionModel.question_type, ["mcq", "true_false"]),
                 NotIn(QuestionModel.id, answered_ids)
             )
         else:
-            fallback = await QuestionModel.find_one()
+            fallback = await QuestionModel.find_one(
+                In(QuestionModel.question_type, ["mcq", "true_false"])
+            )
         
         if fallback:
-            print(f"⚠️  Using fallback question (difficulty {fallback.difficulty_level}) - no match at target {target_difficulty}")
+            print(f"⚠️  Using fallback question (difficulty {fallback.difficulty_level}, type: {fallback.question_type}) - no match at target {target_difficulty}")
         else:
-            print(f"❌ NO QUESTIONS FOUND! Please upload curriculum documents to generate questions.")
+            print(f"❌ NO MCQ/TRUE_FALSE QUESTIONS FOUND! Please generate questions from admin dashboard.")
             print(f"   Total questions in DB: {total_questions}")
             print(f"   Already answered: {len(answered_ids)}")
         
