@@ -48,11 +48,11 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
 
         if platform.system() == 'Darwin':
             try:
-                char_delay = 0.087  
+                char_delay = 0.11  
                 speech_text = re.sub(r'[^\w\s,.?!]', '', text) 
                 
                 speech_process = subprocess.Popen(
-                    ['say', '-r', '140', speech_text],
+                    ['say', '-r', '110', speech_text],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
                 )
@@ -93,7 +93,8 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         self.student_profile.sublevel = self.phases[self.current_phase_idx]
 
         # Initial Perception
-        self.speak(f"Hello! I'm your math friend. Let's have some fun with numbers!")
+        # Initial Perception
+        # self.speak(f"Hello! I'm your math friend. Let's have some fun with numbers!")
         
         # Main ReAct Loop
         while self.get_time_remaining() > 0:

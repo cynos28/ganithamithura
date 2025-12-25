@@ -51,26 +51,22 @@ def get_teaching_style_prompt(grade, topic, style):
     
     === INSTRUCTIONS ===
     - You will be provided with specific text for the Welcome, Stories, and Conclusion.
-    - YOU MUST OUTPUT THE PROVIDED TEXT EXACTLY AS WRITTEN.
+    - Use the provided text as a GUIDE.
+    - Vary the phrasing slightly each time so it sounds fresh.
+    - Keep vocabulary VERY SIMPLE (Grade 1 level). NO complex words.
     - DO NOT CHANGE THE NUMBERS.
-    - DO NOT PARAPHRASE.
+    - Paraphrase slightly but keep the core meaning and numbers.
     - DO NOT ADD "Here is a story...". JUST TELL THE STORY.
-    - If the provided text is a description (e.g. "Tell a story about..."), ONLY THEN should you be creative.
     - OTHERWISE, READ THE SCRIPT VERBATIM.
     
     === YOUR SCRIPT STRUCTURE (FOLLOW EXACTLY) ===
     
-    STEP 1: WELCOME
     {intro_narrative}
     
-    STEP 2: CONTEXT / TEACHING
-    Story 1
     {story_1_guide}
     
-    Story 2
     {story_2_guide}
     
-    STEP 3: CONCLUSION
     {conclusion_guide}
     
     **CRITICAL RULES**:
