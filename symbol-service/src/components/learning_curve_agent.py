@@ -52,7 +52,7 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
                 speech_text = re.sub(r'[^\w\s,.?!]', '', text) 
                 
                 speech_process = subprocess.Popen(
-                    ['say', '-r', '110', speech_text],
+                    ['say', '-r', '90', speech_text],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL
                 )
