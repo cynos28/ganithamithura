@@ -14,524 +14,272 @@ Each specification includes:
 
 CURRICULUM = {
     'GRADE_01': {
-        'name': 'Grade 1 - Single Digit Addition',
-        'Level_1': {
+        'name': 'Grade 1 - Addition Learning Curve',
+        'Level_1': { # "Addition (+) means joining"
             'Starter': {
-                'description': 'Basic single-step addition with small numbers',
-                'operations': ['+'],
+                'name': 'Foundations',
+                'focus': 'Addition means joining',
+                'what_is_taught': 'Addition (+) means joining and finding how many altogether.',
+                'students_should_understand': ['Addition means joining', 'Plus (+) sign means together'],
                 'addends_max': 5,
                 'result_max': 5,
-                'result_min': 0,
                 'examples': ['2 + 3 = 5', '1 + 4 = 5'],
-                'focus': 'Introduce addition as joining two small groups.',
-                'what_is_taught': 'Students learn that addition begins by combining two separate groups to form a bigger group. They observe that joining always increases the total quantity.',
-                'students_should_understand': [
-                    'Addition means joining',
-                    'Joining makes the group bigger',
-                    'The plus (+) symbol represents joining'
-                ],
-                'what_should_teach': 'Explain addition as joining two small groups. Use very simple language and examples up to 5. Focus only on meaning, not calculation. Do not ask questions.'
+                'narrative_intro': "Hello, little friend. Welcome back. Today, we are going to learn something fun. We are going to learn about addition. Addition is something we use every day. We use addition when we get more things. We use addition when we put things together. Do not worry. We will go slowly. We will learn step by step. Let’s begin.",
+                'story_1_guide': "Let me tell you a small story. I have apples. I have two apples. One apple. Two apples. These apples are mine. I am holding them carefully. Now something happens. My mother comes to me. She gives me more apples. She gives me three apples. One apple. Two apples. Three apples. Now I have my apples and my mother’s apples. (Pause). When we get more, we add. We use a special sign. This sign is called plus. Plus means join. Join means together. When we see plus, we put groups together. Now I put all the apples together. My two apples and my mother’s three apples join together. They are now one big group. Let us count together. One. Two. Three. Four. Five. Now I have five apples. Two plus three equals five.",
+                'story_2_guide': "Let me tell you another story. I have toys. I have one toy. One toy is mine. Now my friend comes. My friend gives me more toys. My friend gives me four toys. One toy. Two toys. Three toys. Four toys. Now we join them. One toy and four toys join together. (Counting) One. Two. Three. Four. Five. One plus four equals five.",
+                'conclusion_guide': "Let us remember what we learned today. Addition means joining. Plus means together. When we join groups, we find how many altogether. Two plus three equals five. One plus four equals five. Addition helps us know how many we have in all. You did a wonderful job today. You are learning well. Now you are ready to go back and practice. See you again."
             },
-            'Explorer': {
-                'description': 'Addition patterns - doubles and near-doubles',
-                'operations': ['+'],
-                'addends_max': 8,
-                'result_max': 9,
-                'result_min': 5,
-                'examples': ['3 + 4 = 7', '4 + 4 = 8'],
-                'focus': 'Recognize simple addition patterns.',
-                'what_is_taught': 'Students learn about doubles and near-doubles, where similar number combinations repeat predictable patterns.',
-                'students_should_understand': [
-                    'Some additions repeat patterns',
-                    'Doubles and near-doubles make addition easier'
-                ],
-                'what_should_teach': 'Explain doubles and near-doubles in addition. Use examples with totals below 9. Keep explanations short and friendly.'
+            'Explorer': { # "Patterns (Doubles)"
+                'name': 'Patterns',
+                'focus': 'Doubles and Near-Doubles',
+                'what_is_taught': 'Recognizing simple addition patterns like doubles.',
+                'students_should_understand': ['Same numbers make doubles', 'Doubles make addition easy'],
+                'addends_max': 5,
+                'result_max': 10,
+                'examples': ['4 + 4 = 8', '3 + 4 = 7'],
+                'narrative_intro': "Hello, little friend. Welcome back. You did very well. You already know that addition means joining. Today, we will learn something new. We will learn how some numbers like to join in special ways. Some numbers look the same. Some numbers look almost the same. These special ways help us understand addition better. Let’s go slowly and learn together.",
+                'story_1_guide': "I have balls. I have four red balls. One red ball. Two red balls. Three red balls. Four red balls. Now I have blue balls. I have four blue balls. One blue ball. Two blue balls. Three blue balls. Four blue balls. I put the red balls and blue balls together. Four and four join. They are the same number. Let us count all the balls. One. Two. Three. Four. Five. Six. Seven. Eight. Four plus four equals eight. When the numbers are the same, we call this a double. Doubles are special. Same number and same number. Two and two. Three and three. Four and four. Doubles make addition easy.",
+                'story_2_guide': "Now let me tell you another story. I have three pencils. One pencil. Two pencils. Three pencils. My teacher gives me four more pencils. One pencil. Two pencils. Three pencils. Four pencils. Three and four are close friends. They are almost the same. Now we join them together. Let us count. One. Two. Three. Four. Five. Six. Seven. Three plus four equals seven. This is called a near-double.",
+                'conclusion_guide': "Let us remember today’s learning. Same numbers make doubles. Close numbers make near-doubles. Four plus four equals eight. Three plus four equals seven. These patterns help us understand addition. You are learning smart ways to add. Well done, little friend. Now you are ready to practice."
             },
-            'Solver': {
-                'description': 'Addition combining numbers up to 11',
-                'operations': ['+'],
+            'Solver': { # "Building totals near 10"
+                'name': 'Making Ten',
+                'focus': 'Building totals near 10',
+                'what_is_taught': 'Ten is a friendly number. Many pairs make 10.',
+                'students_should_understand': ['10 is important', 'We can group to make 10'],
                 'addends_max': 9,
-                'result_max': 11,
-                'result_min': 5,
-                'examples': ['7 + 3 = 10', '6 + 5 = 11'],
-                'focus': 'Build totals near 10.',
-                'what_is_taught': 'Students learn how numbers combine to reach 10 or slightly above, introducing early number flexibility.',
-                'students_should_understand': [
-                    '10 is an important reference number',
-                    'Numbers can be grouped to reach 10'
-                ],
-                'what_should_teach': 'Explain how numbers can be added to make 10 first. Use examples up to 11. Do not include tasks or questions.'
+                'result_max': 12,
+                'examples': ['6 + 4 = 10', '7 + 3 = 10'],
+                'narrative_intro': "Hello again, little learner. Welcome back. You already know how to join numbers. Today, we will learn about a special number. This number is ten. Ten is very important in addition. Let’s learn why.",
+                'story_1_guide': "I have crayons. I have six crayons. One. Two. Three. Four. Five. Six. My friend gives me more crayons. My friend gives me four crayons. One. Two. Three. Four. Now I join them together. Six and four join. Six plus four equals ten. Ten feels complete. Ten is a friendly number. Many numbers like to join and make ten. Five and five. Six and four. Seven and three.",
+                'story_2_guide': "Here is another story. I have seven stickers. My sister gives me three more. Seven plus three equals ten. Now she gives me one more sticker. Ten and one join. Ten plus one equals eleven. We moved past ten.",
+                'conclusion_guide': "Let us remember. Ten is important. Many numbers join to make ten. Six plus four equals ten. Seven plus three equals ten. Understanding ten helps us add better. You are learning well. Now you are ready to continue."
             },
-            'Champion': {
-                'description': 'Addition building up to 14 with strategy paths',
-                'operations': ['+'],
+            'Champion': { # "Flexible thinking"
+                'name': 'Flexible Thinking',
+                'focus': 'Different ways to make the same total',
+                'what_is_taught': 'Addition is flexible. Same answer can be made different ways.',
+                'students_should_understand': ['More than one way to reach a total', 'Addition is flexible'],
                 'addends_max': 9,
                 'result_max': 14,
-                'result_min': 10,
-                'examples': ['8 + 6 = 14', '7 + 5 = 12'],
-                'focus': 'Flexible thinking in addition.',
-                'what_is_taught': 'Students learn that the same total can be made in multiple ways using near-doubles and make 10 ideas.',
-                'students_should_understand': [
-                    'Addition is flexible',
-                    'There is more than one way to reach a total'
-                ],
-                'what_should_teach': 'Explain flexible ways to make the same total. Use examples up to 14. Emphasize understanding over speed.'
+                'examples': ['6 + 6 = 12', '7 + 5 = 12'],
+                'narrative_intro': "Hello, smart learner. Welcome back. Today, we will learn something special. We will learn that addition is flexible. That means there is more than one way to make the same answer.",
+                'story_1_guide': "I want twelve blocks. I take six blocks. One. Two. Three. Four. Five. Six. Then I take six more blocks. Six and six join. Six plus six equals twelve.",
+                'story_2_guide': "Now I try a different way. I take seven blocks. Then I take five blocks. Seven and five join. Seven plus five equals twelve. The total is the same. Addition is flexible. The answer can stay the same, even when the numbers change. We can choose different pairs. We can still reach the same total. Eight plus four equals twelve. Nine plus three equals twelve. Many paths. One answer.",
+                'conclusion_guide': "Let us remember today’s lesson. Addition is flexible. The same total can be made in many ways. Six plus six equals twelve. Seven plus five equals twelve. Understanding is more important than speed. You are thinking like a champion. Now you are ready to practice. See you again."
             }
         },
-        'Level_2': {
+        'Level_2': { # "Missing Addends"
             'Starter': {
-                'description': 'One unknown in addition equations',
-                'operations': ['+', 'unknown_addend'],
-                'operand_max': 15,
-                'result_max': 15,
-                'examples': ['□ + 4 = 9'],
-                'focus': 'Introduce missing addends.',
-                'what_is_taught': 'Students learn that addition can have an unknown part and that the missing number completes the total.',
-                'students_should_understand': [
-                    'Addition shows parts and a whole',
-                    'A missing number can be found by reasoning'
-                ],
-                'what_should_teach': 'Explain missing-addend addition. Use examples like box plus number equals total. Focus on understanding parts and whole.'
+                'name': 'Missing Parts',
+                'focus': 'Missing Addends',
+                'what_is_taught': 'Sometimes a number is hidden. We can find it.',
+                'students_should_understand': ['Addition has parts and a whole', 'Hidden numbers can be found'],
+                'operations': ['missing_addend'],
+                'addends_max': 9,
+                'result_max': 10,
+                'examples': ['4 + ? = 9', '6 + ? = 10'],
+                'narrative_intro': "Hello, little friend. Welcome back. You have been learning very well. You already know how to add numbers. You know that addition means joining. Today, we will learn something new about addition. Sometimes, we do not see all the numbers. Sometimes, one number is hidden. Do not worry. We can still find the answer. We will go slowly. We will learn step by step. Let’s begin.",
+                'story_1_guide': "Let me tell you a small story. I have apples. Some apples are on the table. Some apples are in a basket. Together, there are nine apples. I can see the apples on the table. I see four apples. One apple. Two apples. Three apples. Four apples. I cannot see the apples in the basket. But I know they are there. I know the total is nine. When one part is hidden, addition still works. The apples on the table and the apples in the basket join together. Four apples plus something equals nine apples. Let us think carefully. Four apples are here. Nine apples are in all. The missing part is five. Four plus five equals nine.",
+                'story_2_guide': "Let me tell you another story. I have toys. Some toys are on the floor. Some toys are in a box. Together, there are ten toys. I can see six toys on the floor. One toy. Two toys. Three toys. Four toys. Five toys. Six toys. I cannot see the toys in the box. But I know the total is ten. Six plus something equals ten. The missing part is four. Six plus four equals ten.",
+                'conclusion_guide': "Let us remember what we learned today. Addition has parts and a whole. Sometimes one part is hidden. We can find the missing part. Four plus five equals nine. Six plus four equals ten. You are learning to think carefully. You are doing a wonderful job. Now you are ready."
             },
-            'Explorer': {
-                'description': 'Addition crossing 10 with larger addends',
-                'operations': ['+'],
-                'addends_min': 5,
+            'Explorer': { # "Crossing 10"
+                'name': 'Crossing 10',
+                'focus': 'Crossing the 10 boundary',
+                'what_is_taught': 'What happens when numbers go past 10.',
+                'students_should_understand': ['Numbers become bigger', 'Crossing 10'],
                 'addends_max': 9,
                 'result_max': 15,
-                'result_min': 12,
-                'examples': ['9 + 6 = 15'],
-                'focus': 'Crossing 10 with addition.',
-                'what_is_taught': 'Students learn how addition moves past 10 into larger numbers and recognize when a sum crosses a decade boundary.',
-                'students_should_understand': [
-                    'Some additions go past 10',
-                    'Crossing 10 changes number size'
-                ],
-                'what_should_teach': 'Explain what happens when addition crosses 10. Use examples with 8 or 9 as addends.'
+                'examples': ['9 + 2 = 11', '8 + 5 = 13'],
+                'narrative_intro': "Hello, little explorer. Welcome back. You already know how to add numbers. You know how to join groups. Today, we will learn something exciting. We will learn what happens when numbers go past ten. Ten is a special number. When we pass ten, numbers become bigger. Do not worry. We will go slowly. We will learn step by step. Let’s begin.",
+                'story_1_guide': "Let me tell you a small story. I have balls. I have nine balls. One. Two. Three. Four. Five. Six. Seven. Eight. Nine. Now my friend comes. My friend gives me two more balls. When we add to nine, we reach ten. Nine plus one makes ten. One more makes eleven. Nine plus two equals eleven.",
+                'story_2_guide': "Here is another story. I have eight crayons. One to eight. My teacher gives me five more crayons. Eight plus five equals thirteen.",
+                'conclusion_guide': "Let us remember what we learned today. Ten is a special number. Some additions cross ten. Nine plus two equals eleven. Eight plus five equals thirteen. You are learning bigger numbers. You are doing very well. Now you are ready to go back and practice. See you again."
             },
-            'Solver': {
-                'description': 'Three-addend problems with grouping',
-                'operations': ['+', '+'],  # Three addends
+            'Solver': { # "Adding Three Numbers"
+                'name': 'Three Numbers',
+                'focus': 'Adding three numbers',
+                'what_is_taught': 'We can join three groups together by grouping.',
+                'students_should_understand': ['Group two first', 'Order does not change total'],
+                'operations': ['three_addends'],
                 'addends_max': 9,
                 'result_max': 15,
                 'examples': ['4 + 5 + 3 = 12'],
-                'focus': 'Three-number addition.',
-                'what_is_taught': 'Students learn how three numbers can be combined by grouping them mentally.',
-                'students_should_understand': [
-                    'Numbers can be grouped in addition',
-                    'Order does not change the total'
-                ],
-                'what_should_teach': 'Explain how three numbers can be added together. Focus on grouping numbers. Do not give exercises.'
+                'narrative_intro': "Hello again, little thinker. Welcome back. You know how to add two numbers. Today, we will add three numbers. Adding three numbers means joining more groups. We will take our time. We will think carefully. Let’s begin.",
+                'story_1_guide': "Let me tell you a story. I have three groups of blocks. The first group has four blocks. The second group has five blocks. The third group has three blocks. When we add three numbers, we can group them. We choose two numbers first. Four and five join. Four plus five equals nine. Now nine joins with three. Nine plus three equals twelve. Four plus five plus three equals twelve.",
+                'story_2_guide': "Here is another example. I have six blocks, two blocks, and five blocks. Six and two make eight. Eight and five make thirteen.",
+                'conclusion_guide': "Let us remember today’s learning. Three numbers can join together. Grouping makes addition easier. Four plus five plus three equals twelve. Six plus two plus five equals thirteen. You are learning strong math ideas. Well done. Now you are ready to go back and practice."
             },
-            'Champion': {
-                'description': 'Larger combinations reaching 17',
-                'operations': ['+'],
+            'Champion': { # "Larger Facts"
+                'name': 'Larger Facts',
+                'focus': 'Larger addition confidence',
+                'what_is_taught': 'Using all skills for bigger numbers up to 17.',
+                'students_should_understand': ['Big numbers follow same rules', 'Confidence'],
                 'addends_max': 10,
-                'addends_min': 6,
                 'result_max': 17,
-                'result_min': 10,
                 'examples': ['9 + 8 = 17', '10 + 5 = 15'],
-                'focus': 'Fluency with larger sums.',
-                'what_is_taught': 'Students strengthen confidence with larger addition facts and prepare for higher reasoning.',
-                'students_should_understand': [
-                    'Larger numbers follow the same rules',
-                    'Addition concepts stay consistent'
-                ],
-                'what_should_teach': 'Explain addition with larger numbers up to 17. Focus on confidence and understanding.'
+                'narrative_intro': "Welcome back, champion learner. You have learned many addition ideas. You can join numbers. You can cross ten. You can add three numbers. Today, we will use all of this together. You are ready for bigger numbers. Let’s begin.",
+                'story_1_guide': "Let me tell you a story. I have nine stickers. My friend gives me eight more stickers. Nine plus eight equals seventeen.",
+                'story_2_guide': "I have ten blocks. My teacher gives me five more blocks. Ten plus five equals fifteen.",
+                'conclusion_guide': "Let us remember today’s lesson. Addition works for big numbers too. The same ideas always help us. Nine plus eight equals seventeen. Ten plus five equals fifteen. You are thinking like a champion. You should feel proud. Now you are ready to go back and practice. See you again."
             }
         },
-        'Level_3': {
+        'Level_3': { # "Missing Addends with Larger Totals"
             'Starter': {
-                'description': 'Missing addend with higher targets',
-                'operations': ['+', 'unknown_addend'],
-                'addends_min': 5,
+                'name': 'Higher Missing Addends',
+                'focus': 'Missing parts with totals near 20',
+                'what_is_taught': 'Finding hidden numbers when the total is large (16-18).',
+                'students_should_understand': ['Reasoning replaces counting', 'Part + Part = Whole'],
                 'addends_max': 10,
                 'result_max': 18,
-                'examples': ['□ + 8 = 16'],
-                'focus': 'Missing addends with higher totals.',
-                'what_is_taught': 'Students revisit missing numbers but with totals approaching 18.',
-                'students_should_understand': [
-                    'Missing numbers can be larger',
-                    'Reasoning replaces counting'
-                ],
-                'what_should_teach': 'Explain missing-addend addition with larger totals. Use simple explanations.'
+                'examples': ['8 + ? = 16', '9 + ? = 18'],
+                'narrative_intro': "Hello, little friend. Welcome back. You have learned a lot about addition. You know how numbers join. You know how to find totals. Today, we will see bigger totals. One number may still be hidden. But do not worry. The idea is the same. We will go slowly. We will think carefully. Let’s begin.",
+                'story_1_guide': "Let me tell you a small story. I know the total number of apples is sixteen. Sixteen apples in all. I can see some apples. I see eight apples. One. Two. Three. Four. Five. Six. Seven. Eight. I cannot see the rest of the apples. But I know they are there. When one part is hidden, we think about the whole. Eight apples are here. Sixteen apples are in all. Eight plus eight equals sixteen.",
+                'story_2_guide': "Here is another story. The total is eighteen toys. I can see nine toys. One to nine. Nine plus nine equals eighteen.",
+                'conclusion_guide': "Let us remember what we learned today. Sometimes a number is hidden. We can still find it. Eight plus eight equals sixteen. Nine plus nine equals eighteen. You are learning strong thinking skills. Well done. Now you are ready to go back and practice."
             },
-            'Explorer': {
-                'description': 'Two-addend combinations with larger numbers',
-                'operations': ['+'],
+            'Explorer': { # "Higher Patterns"
+                'name': 'Higher Patterns',
+                'focus': 'Doubles/Near-Doubles to 20',
+                'what_is_taught': 'Using patterns for sums like 8+9.',
+                'students_should_understand': ['Doubles help us solve near-doubles'],
                 'addends_max': 10,
-                'addends_min': 8,
                 'result_max': 20,
                 'examples': ['8 + 8 = 16', '8 + 9 = 17'],
-                'focus': 'Upper-range addition patterns.',
-                'what_is_taught': 'Students recognize doubles and near-doubles with higher numbers.',
-                'students_should_understand': [
-                    'Patterns still apply to bigger numbers'
-                ],
-                'what_should_teach': 'Explain higher-number doubles and near-doubles. Use examples near 20.'
+                'narrative_intro': "Welcome back, little explorer. You already know about patterns in addition. Today, the numbers will be bigger. But patterns still help us. Let us look at some strong number pairs. Let’s begin.",
+                'story_1_guide': "I have eight blocks. I take eight more blocks. Eight plus eight equals sixteen. These numbers are the same. This is called a double.",
+                'story_2_guide': "Now I try something close. I take eight blocks. Then I take nine blocks. Eight plus nine equals seventeen. Eight and nine are close numbers. This is a near-double.",
+                'conclusion_guide': "Let us remember today’s learning. Eight plus eight equals sixteen. Eight plus nine equals seventeen. Patterns help us add. Even with bigger numbers. You are learning smart ways to think. Now you are ready to go back and practice."
             },
-            'Solver': {
-                'description': 'Three-number addition approaching 20',
-                'operations': ['+', '+'],
-                'addends_max': 9,
+            'Solver': { # "Grouping to 20"
+                'name': 'Grouping to 20',
+                'focus': 'Three numbers summing to ~20',
+                'what_is_taught': 'Grouping efficiently to reach totals near 20.',
+                'students_should_understand': ['Look for pairs that make 10 first'],
+                'addends_max': 10,
                 'result_max': 20,
                 'examples': ['6 + 7 + 5 = 18'],
-                'focus': 'Three-number addition near 20.',
-                'what_is_taught': 'Students learn to group numbers to approach 20.',
-                'students_should_understand': [
-                    'Grouping helps manage larger totals'
-                ],
-                'what_should_teach': 'Explain how three numbers can make totals near 20. Focus on grouping ideas.'
+                'narrative_intro': "Hello again, careful thinker. You know how to add three numbers. Today, the totals will be bigger. We will stay calm and focused. Grouping will help us. Let’s begin.",
+                'story_1_guide': "I have three numbers. Six. Seven. Five. We add them step by step. Six and seven make thirteen. Thirteen and five make eighteen. Six plus seven plus five equals eighteen.",
+                'story_2_guide': "Here is another example. Eight plus six plus four. Six and four make ten. Ten and eight make eighteen.",
+                'conclusion_guide': "Let us remember what we learned today. Three numbers can make big totals. Grouping helps us think clearly. Six plus seven plus five equals eighteen. Eight plus six plus four equals eighteen. You are solving big ideas now. Well done."
             },
-            'Champion': {
-                'description': 'Target 20 with missing numbers',
-                'operations': ['+', 'unknown_addend'],
-                'result_target': 20,
-                'missing_max': 12,
-                'examples': ['□ + 9 = 20', '8 + 7 + □ = 20'],
-                'focus': 'Target-20 reasoning.',
-                'what_is_taught': 'Students learn how different combinations reach exactly 20, including missing values.',
-                'students_should_understand': [
-                    '20 can be made in many ways',
-                    'Reasoning works backwards from a target'
-                ],
-                'what_should_teach': 'Explain how to make 20 using different number combinations. Include missing-number explanations.'
-            }
-        }
-    },
-    'GRADE_02': {
-        'name': 'Grade 2 - Multi-digit and Multiplication Intro',
-        'Level_1': {
-            'Starter': {
-                'description': 'Basic single-step addition and subtraction (0-20)',
-                'operations': ['+', '-'],
-                'operand_max': 20,
+            'Champion': { # "Target 20"
+                'name': 'Target 20',
+                'focus': 'Making exactly 20',
+                'what_is_taught': 'Different combinations that result in exactly 20.',
+                'students_should_understand': ['Working backwards', 'Goal is 20'],
+                'addends_max': 12,
                 'result_max': 20,
-                'examples': ['6 + 8 = 14', '17 − 9 = 8'],
-                'focus': 'Addition and subtraction meaning.',
-                'what_is_taught': 'Students learn addition increases and subtraction decreases quantities.',
-                'students_should_understand': [
-                    '(+) Adds and (-) removes'
-                ],
-                'what_should_teach': 'Explain how addition and subtraction change numbers.'
-            },
-            'Explorer': {
-                'description': 'Multiplication as repeated addition',
-                'operations': ['×','+', '-'],
-                'factors_max': 5,
-                'product_max': 30,
-                'examples': ['3 × 4 = 12', '5 - 2 = 3', '4 + 4 = 8'],
-                'focus': 'Comparing quantities.',
-                'what_is_taught': 'Students learn greater than and less than symbols.',
-                'students_should_understand': [
-                    '> means greater',
-                    '< means less'
-                ],
-                'what_should_teach': 'Explain greater than and less than with examples.'
-            },
-            'Solver': {
-                'description': 'Mixed operations with comparison symbols',
-                'operations': ['+', '-', '×', '>', '<', '='],
-                'operand_max': 30,
-                'result_max': 40,
-                'examples': ['6 × 3 > 18 − 4'],
-                'focus': 'Multiplication meaning.',
-                'what_is_taught': 'Students learn multiplication as equal groups.',
-                'students_should_understand': [
-                    '× means repeated addition'
-                ],
-                'what_should_teach': 'Explain multiplication as equal groups.'
-            },
-            'Champion': {
-                'description': 'Two-step equations combining operations',
-                'operations': ['+', '-', '×','>', '<', '='],
-                'operand_max': 20,
-                'result_max': 30,
-                'examples': ['(3 × 4) + 8 = 20', '18 − (2 × 3) = 12'],
-                'focus': 'Choosing the correct symbol.',
-                'what_is_taught': 'Students decide which symbol fits a situation.',
-                'students_should_understand': [
-                    'Each symbol has a role'
-                ],
-                'what_should_teach': 'Explain how to choose the correct math symbol.'
+                'examples': ['? + 9 = 20', '8 + 7 + 5 = 20'],
+                'narrative_intro': "Welcome back, math champion. You have learned many addition ideas. Today, we will reach a big goal. The goal is twenty. You are ready for this step. Let’s begin.",
+                'story_1_guide': "I see nine. The total must be twenty. Nine plus eleven equals twenty.",
+                'story_2_guide': "Now I try another way. Eight plus seven plus five. Eight and seven make fifteen. Fifteen and five make twenty.",
+                'conclusion_guide': "Let us remember today’s lesson. Twenty can be made in many ways. Nine plus eleven equals twenty. Eight plus seven plus five equals twenty. You have reached a big goal. You are thinking like a champion. Now you are ready to go back and practice. See you again."
             }
         },
-        'Level_2': {
+    },
+    'GRADE_02': { # User referred to this as "Level 2"
+        'name': 'Grade 2 - Deeper Addition Concepts',
+        'Level_1': { 
             'Starter': {
-                'description': 'Two-digit addition/subtraction with regrouping',
-                'operations': ['+', '-'],
-                'operand_max': 30,
-                'result_max': 50,
-                'examples': ['27 + 14 = 41', '45 − 19 = 26'],
-                'focus': 'Larger addition and subtraction.',
-                'what_is_taught': 'Students apply + and − to bigger numbers.',
-                'students_should_understand': [
-                    'Same rules apply to larger numbers'
-                ],
-                'what_should_teach': 'Explain addition and subtraction with larger numbers.'
+                'name': 'Missing Parts',
+                'focus': 'Missing Addends',
+                'what_is_taught': 'Sometimes a number is hidden. We find the missing part.',
+                'students_should_understand': ['Addition has parts and a whole', 'We can find the missing part'],
+                'operations': ['missing_addend'],
+                'addends_max': 9,
+                'result_max': 10,
+                'examples': ['4 + ? = 9', '6 + ? = 10'],
+                'narrative_intro': 'Hello! Today we play a mystery game. One number is hiding!',
+                'what_should_teach': 'Story about apples in a basket (hidden) vs on table (visible).'
             },
             'Explorer': {
-                'description': 'Multiplication tables 2-10',
-                'operations': ['×','+', '-'],
-                'factors_max': 10,
-                'product_max': 50,
-                'examples': ['6 × 5 = 30', '10 × 4 = 40'],
-                'focus': 'Multiplication fluency.',
-                'what_is_taught': 'Students strengthen understanding of × with tables.',
-                'students_should_understand': [
-                    'Multiplication patterns repeat'
-                ],
-                'what_should_teach': 'Explain multiplication patterns.'
+                'name': 'Crossing 10',
+                'focus': 'Crossing 10 boundary',
+                'what_is_taught': 'What happens when numbers get bigger than 10? They "cross" ten.',
+                'students_should_understand': ['Numbers grow past 10', '9 needs 1 more to be 10'],
+                'addends_max': 9,
+                'result_max': 15,
+                'examples': ['9 + 2 = 11', '8 + 5 = 13'],
+                'narrative_intro': 'Hello Explorer. Today we see what happens when numbers get really big and cross 10.',
+                'what_should_teach': 'Story about having 9 balls and getting 2 more.'
             },
             'Solver': {
-                'description': 'Comparing two expressions with symbols',
-                'operations': ['+', '-', '×', '>', '<', '='],
-                'operand_max': 30,
-                'result_max': 50,
-                'examples': ['24 − 9 > 4 × 4'],
-                'focus': 'Comparing expressions.',
-                'what_is_taught': 'Students compare results of operations.',
-                'students_should_understand': [
-                    'Comparisons describe size'
-                ],
-                'what_should_teach': 'Explain how to compare two results.'
+                'name': 'Three Numbers',
+                'focus': 'Adding three numbers',
+                'what_is_taught': 'We can join three groups together by starting with two.',
+                'students_should_understand': ['Group two numbers first', 'Then add the third'],
+                'operations': ['three_addends'],
+                'addends_max': 9,
+                'result_max': 15,
+                'examples': ['4 + 5 + 3 = 12'],
+                'narrative_intro': 'Hello Thinker. Today we join THREE groups together.',
+                'what_should_teach': 'Story about three groups of blocks.'
             },
             'Champion': {
-                'description': 'Mixed multi-operation equations',
-                'operations': ['+', '-', '×'],
-                'operand_max': 50,
-                'result_max': 60,
-                'examples': ['(8 × 3) − 10 = 14', '(6 × 4) + 12 = 36'],
-                'focus': 'Mixed symbol reasoning.',
-                'what_is_taught': 'Students interpret expressions with multiple symbols.',
-                'students_should_understand': [
-                    'Symbol order matters'
-                ],
-                'what_should_teach': 'Explain how different symbols work together.'
-            }
-        },
-        'Level_3': {
-            'Starter': {
-                'description': 'Two-digit addition/subtraction with regrouping',
-                'operations': ['+', '-'],
-                'operand_max': 70,
-                'result_max': 100,
-                'examples': ['64 + 27 = 91', '95 − 38 = 57'],
-                'focus': 'Two digit operations.',
-                'what_is_taught': 'Students work with larger values conceptually.',
-                'students_should_understand': [
-                    'Place value matters'
-                ],
-                'what_should_teach': 'Explain working with larger numbers.'
-            },
-            'Explorer': {
-                'description': 'Multiplication table mastery (2-10)',
-                'operations': ['×','+', '-'],
-                'factors_max': 10,
-                'product_max': 100,
-                'examples': ['9 × 7 = 63', '8 × 9 = 72'],
-                'focus': 'Multiplication mastery.',
-                'what_is_taught': 'Students solidify × understanding.',
-                'students_should_understand': [
-                    'Multiplication scales numbers'
-                ],
-                'what_should_teach': 'Explain multiplication as scaling.'
-            },
-            'Solver': {
-                'description': 'Comparing multiplication and addition',
-                'operations': ['+', '×', '>', '<', '='],
-                'operand_max': 12,
-                'result_max': 100,
-                'examples': ['6 × 9 = 54', '7 × 8 > 60'],
-                'focus': 'Comparison with operations.',
-                'what_is_taught': 'Students compare computed results.',
-                'students_should_understand': [
-                    'Symbols guide reasoning'
-                ],
-                'what_should_teach': 'Explain comparing results.'
-            },
-            'Champion': {
-                'description': 'Multi-operation fluency with BODMAS',
-                'operations': ['+', '-', '×'],
-                'operand_max': 20,
-                'result_max': 100,
-                'examples': ['(5 × 8) − 14 = 26', '(6 × 7) + 12 = 54'],
-                'focus': 'Full symbol interpretation.',
-                'what_is_taught': 'Students reason across all symbols.',
-                'students_should_understand': [
-                    'Symbols describe relationships'
-                ],
-                'what_should_teach': 'Explain interpreting expressions with many symbols.'
+                'name': 'Larger Facts',
+                'focus': 'Larger addition confidence',
+                'what_is_taught': 'Using all our skills for bigger numbers up to 20.',
+                'students_should_understand': ['Big numbers follow same rules', 'Trust your counting'],
+                'addends_max': 10,
+                'result_max': 17,
+                'examples': ['9 + 8 = 17', '10 + 5 = 15'],
+                'narrative_intro': 'Hello Champion. You are ready for big numbers!',
+                'what_should_teach': 'Story about 9 stickers plus 8 stickers.'
             }
         }
     },
-    'GRADE_03': {
-        'name': 'Grade 3 - Extended Multi-digit and Complex Operations',
+    'GRADE_03': { # User referred to this as "Level 3"
+        'name': 'Grade 3 - Advanced Mental Strategies',
         'Level_1': {
             'Starter': {
-                'description': 'Multi-digit addition/subtraction with regrouping',
-                'operations': ['+', '-'],
-                'operand_max': 50,
-                'result_max': 60,
-                'examples': ['34 + 27 = 61', '56 − 18 = 38'],
-                'focus': 'Addition and subtraction together.',
-                'what_is_taught': 'Students learn number increases and decreases.',
-                'students_should_understand': [
-                    'Symbols can combine'
-                ],
-                'what_should_teach': 'Explain addition and subtraction together.'
+                'name': 'Higher Missing Addends',
+                'focus': 'Missing parts with totals near 20',
+                'what_is_taught': 'Finding hidden numbers when the total is large (16-18).',
+                'students_should_understand': ['Reasoning replaces counting', 'Part + Part = Whole'],
+                'addends_max': 10,
+                'result_max': 18,
+                'examples': ['8 + ? = 16', '9 + ? = 18'],
+                'narrative_intro': 'Hello! We revisit our mystery game, but the numbers are bigger now.',
+                'what_should_teach': 'Story about 16 total apples, seeing only 8.'
             },
             'Explorer': {
-                'description': 'Multiplication tables 6-9',
-                'operations': ['×','+', '-'],
-                'factors_max': 9,
-                'factors_min': 6,
-                'product_max': 81,
-                'examples': ['6 × 7 = 42', '8 × 9 = 72'],
-                'focus': 'Multiplication depth.',
-                'what_is_taught': 'Students understand grouping and scaling.',
-                'students_should_understand': [
-                    'Groups must be equal'
-                ],
-                'what_should_teach': 'Explain multiplication grouping.'
+                'name': 'Higher Patterns',
+                'focus': 'Doubles/Near-Doubles to 20',
+                'what_is_taught': 'Using patterns for sums like 8+9.',
+                'students_should_understand': ['Doubles help us solve near-doubles'],
+                'addends_max': 10,
+                'result_max': 20,
+                'examples': ['8 + 8 = 16', '8 + 9 = 17'],
+                'narrative_intro': 'Hello! Let\'s look for number patterns in the big numbers.',
+                'what_should_teach': 'Story comparing 8+8 and 8+9.'
             },
             'Solver': {
-                'description': 'Comparison symbols with computed results',
-                'operations': ['+', '-', '×', '>', '<', '='],
-                'operand_max': 50,
-                'result_max': 60,
-                'examples': ['3 × 9 > 28', '45 − 8 = 37'],
-                'focus': 'Division meaning.',
-                'what_is_taught': 'Students learn division as equal sharing.',
-                'students_should_understand': [
-                    'Division splits evenly'
-                ],
-                'what_should_teach': 'Explain division as sharing.'
+                'name': 'Grouping to 20',
+                'focus': 'Three numbers summing to ~20',
+                'what_is_taught': 'Grouping efficiently to reach totals near 20.',
+                'students_should_understand': ['Look for pairs that make 10 first'],
+                'addends_max': 10,
+                'result_max': 20,
+                'examples': ['6 + 7 + 5 = 18'],
+                'narrative_intro': 'Hello! We are building big towers with three numbers.',
+                'what_should_teach': 'Story about 6, 7, and 5 joining.'
             },
             'Champion': {
-                'description': 'Multi-operation integration in equations',
-                'operations': ['+', '-', '×'],
-                'operand_max': 30,
-                'result_max': 60,
-                'examples': ['(5 × 6) − 10 = 20', '(3 × 9) + 12 = 39'],
-                'focus': 'Comparison symbols.',
-                'what_is_taught': 'Students compare results.',
-                'students_should_understand': [
-                    '> and < compare size'
-                ],
-                'what_should_teach': 'Explain comparison symbols.'
-            }
-        },
-        'Level_2': {
-            'Starter': {
-                'description': 'Addition and subtraction within 80',
-                'operations': ['+', '-'],
-                'operand_max': 70,
-                'result_max': 80,
-                'examples': ['64 + 13 = 77', '75 − 19 = 56'],
-                'focus': 'Multi-step number change.',
-                'what_is_taught': 'Students interpret chained operations.',
-                'students_should_understand': [
-                    'Steps affect totals'
-                ],
-                'what_should_teach': 'Explain multi-step number changes.'
-            },
-            'Explorer': {
-                'description': 'Multiplication and addition in comparisons',
-                'operations': ['+', '×', '>', '<', '='],
-                'factors_max': 10,
-                'product_max': 80,
-                'examples': ['8 × 6 > 50', '9 × 7 < 70'],
-                'focus': 'Multiplication and division relationship.',
-                'what_is_taught': 'Students see × and ÷ as opposites.',
-                'students_should_understand': [
-                    'Division reverses multiplication'
-                ],
-                'what_should_teach': 'Explain the relationship between multiplication and division.'
-            },
-            'Solver': {
-                'description': 'Three-operation equations with order',
-                'operations': ['+', '-', '×'],
-                'operand_max': 30,
-                'result_max': 80,
-                'examples': ['(9 × 4) − 16 + 8 = 28'],
-                'focus': 'Comparing expressions.',
-                'what_is_taught': 'Students compare multi-operation results.',
-                'students_should_understand': [
-                    'Structure matters'
-                ],
-                'what_should_teach': 'Explain comparing expressions.'
-            },
-            'Champion': {
-                'description': 'Estimation and multi-step verification',
-                'operations': ['+', '-', '×'],
-                'operand_max': 15,
-                'result_max': 80,
-                'examples': ['(5 × 6) + 8 = 38'],
-                'focus': 'Reasoning before calculation.',
-                'what_is_taught': 'Students interpret symbol meaning first.',
-                'students_should_understand': [
-                    'Understanding comes before rules'
-                ],
-                'what_should_teach': 'Explain interpreting expressions before calculating.'
-            }
-        },
-        'Level_3': {
-            'Starter': {
-                'description': 'Addition/subtraction near 100 with regrouping',
-                'operations': ['+', '-'],
-                'operand_max': 90,
-                'result_max': 100,
-                'examples': ['58 + 37 = 95', '94 − 28 = 66'],
-                'focus': 'Larger-number reasoning.',
-                'what_is_taught': 'Students reason with numbers near 100.',
-                'students_should_understand': [
-                    'Same symbol rules apply'
-                ],
-                'what_should_teach': 'Explain working with larger values.'
-            },
-            'Explorer': {
-                'description': 'Two-digit × one-digit multiplication',
-                'operations': ['×','+', '-'],
-                'multiplicand_max': 20,
-                'multiplier_max': 10,
-                'product_max': 100,
-                'examples': ['12 × 8 = 96', '9 × 9 = 81'],
-                'focus': 'Advanced multiplication.',
-                'what_is_taught': 'Students strengthen scaling understanding.',
-                'students_should_understand': [
-                    'Multiplication grows quantities quickly'
-                ],
-                'what_should_teach': 'Explain advanced multiplication.'
-            },
-            'Solver': {
-                'description': 'Mixed operations determining final result',
-                'operations': ['+', '-', '×'],
-                'operand_max': 20,
-                'result_max': 100,
-                'examples': ['(7 × 8) − 24 = 32', '9 × 5 + 15 = 60'],
-                'focus': 'Mixed operations.',
-                'what_is_taught': 'Students interpret multiple symbols together.',
-                'students_should_understand': [
-                    'Symbols interact logically'
-                ],
-                'what_should_teach': 'Explain how multiple symbols interact.'
-            },
-            'Champion': {
-                'description': 'Multi-step equations targeting 100',
-                'operations': ['+', '-', '×'],
-                'operand_max': 20,
-                'result_approx': 100,
-                'examples': ['(6 × 9) + (8 × 6) = 102', '(9 × 8) + 25 = 97'],
-                'focus': 'Symbol mastery.',
-                'what_is_taught': 'Students consolidate understanding of all symbols.',
-                'students_should_understand': [
-                    'Symbol meaning guides reasoning'
-                ],
-                'what_should_teach': 'Explain how all math symbols work together.'
+                'name': 'Target 20',
+                'focus': 'Making exactly 20',
+                'what_is_taught': 'Different combinations that result in exactly 20.',
+                'students_should_understand': ['Working backwards from target', 'Start with the biggest number'],
+                'addends_max': 12,
+                'result_max': 20,
+                'examples': ['? + 9 = 20', '8 + 7 + 5 = 20'],
+                'narrative_intro': 'Hello Champion. Our goal today is the number TWENTY.',
+                'what_should_teach': 'Story about different ways to fill a box of 20.'
             }
         }
-    },
+    }
 }
 
 def get_curriculum_spec(grade: str, level: int, sublevel: str) -> dict:

@@ -93,7 +93,7 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         self.student_profile.sublevel = self.phases[self.current_phase_idx]
 
         # Initial Perception
-        self.speak(f"Hello! I'm your math friend. We are starting with {self.student_profile.sublevel} level.")
+        self.speak(f"Hello! I'm your math friend. Let's have some fun with numbers!")
         
         # Main ReAct Loop
         while self.get_time_remaining() > 0:
@@ -132,7 +132,7 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
                             new_phase = self.phases[self.current_phase_idx]
                             self.student_profile.sublevel = new_phase
                             
-                            self.speak(f"Awesome! You mastered that. Let's move up to {new_phase} mode!")
+                            self.speak(f"Awesome! You mastered that. Let's try the next challenge!")
                             print(f"\n🚀 PROMOTED:  {self.phases[self.current_phase_idx-1]} -> {new_phase}")
                             
                             # Clear specific strategy memory so we start fresh for new topic
@@ -201,12 +201,19 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
     def execute_teach(self, strategy):
         """
         Generates and speaks a lesson based on the chosen strategy.
+        Includes SELF-VERIFICATION loop for high accuracy.
         """
         curriculum = CurriculumHelper.get_spec(
              self.student_profile.grade, 
              self.student_profile.level, 
              self.student_profile.sublevel
         )
+        print(f"DEBUG EXECUTE_TEACH: Grade={self.student_profile.grade} Level={self.student_profile.level} Sublevel={self.student_profile.sublevel}")
+        print(f"DEBUG CURRICULUM KEY FOCUS: {curriculum.get('focus')}")
+        
+        # Validation Limits
+        # Validation Limits - Check against RESULT max so we don't flag the answer
+        max_num = curriculum.get('result_max', curriculum.get('addends_max', curriculum.get('operand_max', 100)))
         
         prompt = get_teaching_style_prompt(
             grade=self.student_profile.grade,
@@ -214,17 +221,41 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
             style=strategy
         )
         
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.8 # Higher temp for creativity
-            )
-            lesson_text = response.choices[0].message.content.strip()
-            self.speak(lesson_text)
-            
-        except Exception:
-            self.speak("Let's put some numbers together! 1 plus 1 is 2.")
+        for attempt in range(2):
+            try:
+                # Add retry context on second attempt
+                final_prompt = prompt
+                if attempt > 0:
+                    final_prompt += f"\n\nPREVIOUS GENERATION WAS REJECTED. YOU USED NUMBERS > {max_num}. PLEASE RESPECT THE LIMIT."
+
+                response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": final_prompt}],
+                    temperature=0.7 
+                )
+                lesson_text = response.choices[0].message.content.strip()
+                
+                # --- VERIFICATION STEP ---
+                # Extract all numbers from text
+                numbers = [int(n) for n in re.findall(r'\d+', lesson_text)]
+                
+                # Check constraints
+                violations = [n for n in numbers if n > max_num]
+                
+                if violations:
+                    print(f"⚠️  Logic Constraint Triggered: Found numbers {violations} > {max_num}. Regenerating...")
+                    print(f"FAILED LESSON TEXT: {lesson_text}") 
+                    print(f"DEBUG PROMPT PREVIEW: {final_prompt[:200]}...")
+                    continue # Retry
+                else:
+                    self.speak(lesson_text)
+                    return # Success
+                
+            except Exception as e:
+                print(f"Gen Error: {e}")
+                
+        # Fallback if both retries fail
+        self.speak("Let's stick to small numbers. 1 plus 1 is 2.")
 
     def execute_encourage(self):
         self.speak("You're doing great! Math is just like a puzzle.")

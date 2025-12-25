@@ -27,16 +27,18 @@ def get_reasoning_prompt(grade, history, strategies_used, time_remaining, curric
     3. **FINISH**: 
        - End session (only if time is up or goal met).
        
-    DECISION LOGIC:
-    - ANALYZE the last result in HISTORY.
-    - **CRITICAL**: If the last result was "Confused" (User said No), you MUST change the strategy.
-      * DO NOT use the same strategy as the last interaction.
-      * Example: If 'standard' failed, try 'analogy' or 'visual'.
-    - If "Understood" -> You can deepen the topic (TEACH 'standard') or FINISH.
-    - If history is empty -> Start with TEACH 'standard' or 'visual'.
+    DECISION LOGIC (HIGH LEVEL):
+    1. **ANALYZE STATE**: Look at the last interaction. Why did it fail/succeed?
+       - If failed: Was the explanation too abstract? Too fast?
+       - If succeeded: Are they ready for a challenge?
+    2. **PEDAGOGICAL REASONING**:
+       - "Student didn't understand [concept] with [strategy]. I need to bridge the gap using [new_strategy]."
+    3. **STRATEGY SELECTION**:
+       - SWITCH strategies if confused. (Visual -> Analogy).
+       - ADVANCE if understood (handled by system, you just provide content).
     
     FORMAT:
-    Thought: <Analyze student state and past strategies>
+    Thought: <Pedagogical Analysis: Why the previous step result happened and what the student needs now>
     Action: <TEACH / ENCOURAGE / FINISH>
     Strategy: <standard / analogy / visual / story / simplified> (Required for TEACH)
     """

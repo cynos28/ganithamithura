@@ -3,6 +3,8 @@ Prompts for the Learning Curve Agent.
 Focuses on Adaptive Teaching Styles.
 """
 
+import json
+
 def get_teaching_style_prompt(grade, topic, style):
     """
     Generate a lesson script based on a specific PEDAGOGICAL STYLE.
@@ -12,46 +14,69 @@ def get_teaching_style_prompt(grade, topic, style):
     if isinstance(topic, str):
         try:
              curriculum_dict = json.loads(topic)
-        except:
+             # print(f"DEBUG PROMPT: Successfully loaded JSON. Keys: {list(curriculum_dict.keys())}")
+        except Exception as e:
+             print(f"DEBUG PROMPT: JSON LOAD FAILED: {e}")
+             print(f"DEBUG PROMPT TOPIC WAS: {topic}")
              pass
     elif isinstance(topic, dict):
         curriculum_dict = topic
 
-    focus = curriculum_dict.get('focus', 'Math')
+    # Extract Pedagogical Data from new spec
+    focus = curriculum_dict.get('focus', 'Math topic')
+    intro_narrative = curriculum_dict.get('narrative_intro', f'Hello! Today we learn about {focus}.')
+    story_1_guide = curriculum_dict.get('story_1_guide', f'Tell a simple story about {focus}.')
+    story_2_guide = curriculum_dict.get('story_2_guide', 'Tell another example.')
+    conclusion_guide = curriculum_dict.get('conclusion_guide', 'Encourage the student.')
+    
     what_taught = curriculum_dict.get('what_is_taught', '')
     should_understand = ", ".join(curriculum_dict.get('students_should_understand', []))
-    teacher_instruction = curriculum_dict.get('what_should_teach', '')
-
-    base = f"You are a friendly Math Tutor for Grade {grade}. \n"
-    base += f"TOPIC FOCUS: {focus}\n"
     
-    if what_taught:
-        base += f"WHAT TO TEACH: {what_taught}\n"
-    if should_understand:
-        base += f"STUDENTS SHOULD UNDERSTAND: {should_understand}\n"
-    if teacher_instruction:
-        base += f"SPECIFIC INSTRUCTION: {teacher_instruction}\n"
+    # Extract Numerical Constraints
+    addends_max = curriculum_dict.get('addends_max', curriculum_dict.get('operand_max', 10))
+    result_max = curriculum_dict.get('result_max', 20)
+    allowed_ops = ", ".join(curriculum_dict.get('operations', ['+']))
 
-    base += "\n"
+    base = f"""
+    You are an expert Math Tutor Agent.
+    Goal: SPEAK the provided script to the student.
     
-    if style == 'analogy':
-        base += "STYLE: Use a creative ANALOGY (e.g., Sports team, Cooking, Building blocks). Explain the math using this comparison."
-    elif style == 'visual':
-        base += "STYLE: VISUAL HEAVY. Use lots of EMOJIS (🍎, 🚗, ⭐️, 🐱) to represent every number. Keep text minimal."
-    elif style == 'story':
-        base += "STYLE: STORYTELLER. Create a very short (2 sentence) story involving characters to explain the math."
-    elif style == 'simplified':
-        base += "STYLE: ELI5 (Explain Like I'm 5). Use extremely simple words. No jargon. Short sentences."
-    else:
-        base += "STYLE: STANDARD. multiple clear examples. Direct and friendly."
-        
-    base += """
-    \nGUIDELINES:
-    - Speak 1-on-1 to the student ("You"). NEVER say "Class".
-    - Tone: Warm, encouraging, energetic.
-    - **CRITICAL**: Use NEW examples. NEVER repeat previous examples. If you used Apples, use Cars next. Variety is key.
-    - **CRITICAL**: If the style is 'standard', KEEP IT CONCISE.
-    - End with a cheerful concluding sentence.
-    - DO NOT ask "Do you understand?" (The system handles that).
+    === CURRICULUM CONTEXT ===
+    TOPIC: {focus}
+    MAIN CONCEPT: {what_taught}
+    
+    === STRICT MATH CONSTRAINTS ===
+    - Max Number: {addends_max}
+    - Max Result: {result_max}
+    
+    === INSTRUCTIONS ===
+    - You will be provided with specific text for the Welcome, Stories, and Conclusion.
+    - YOU MUST OUTPUT THE PROVIDED TEXT EXACTLY AS WRITTEN.
+    - DO NOT CHANGE THE NUMBERS.
+    - DO NOT PARAPHRASE.
+    - DO NOT ADD "Here is a story...". JUST TELL THE STORY.
+    - If the provided text is a description (e.g. "Tell a story about..."), ONLY THEN should you be creative.
+    - OTHERWISE, READ THE SCRIPT VERBATIM.
+    
+    === YOUR SCRIPT STRUCTURE (FOLLOW EXACTLY) ===
+    
+    STEP 1: WELCOME
+    {intro_narrative}
+    
+    STEP 2: CONTEXT / TEACHING
+    Story 1
+    {story_1_guide}
+    
+    Story 2
+    {story_2_guide}
+    
+    STEP 3: CONCLUSION
+    {conclusion_guide}
+    
+    **CRITICAL RULES**:
+    - DO NOT USE HEADERS like "Voice:" or "Narrator:".
+    - OUTPUT ONLY THE SPOKEN TEXT under the STEP headers.
+    - KEEP NUMBERS <= {addends_max}. IF YOU USE LARGER NUMBERS, YOU FAIL.
     """
+    
     return base
