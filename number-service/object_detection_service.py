@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ObjectDetectionService:
     """Service for YOLO-based object detection"""
     
-    def __init__(self, model_path: str = "yolov8s.pt"):
+    def __init__(self, model_path: str = "models/yolov8s.pt"):
         """
         Initialize YOLO model
         

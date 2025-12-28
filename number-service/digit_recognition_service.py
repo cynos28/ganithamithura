@@ -33,60 +33,45 @@ class DigitRecognitionService:
         self._initialized = True
     
     def _load_model(self):
-        """Load pre-trained digit recognition model"""
+        """Load custom digit recognition model"""
         try:
             import tensorflow as tf
             from tensorflow import keras
-            
-            logger.info("Loading digit recognition model...")
-            
-            # Use pre-trained MNIST model
-            # In production, you'd train a custom model with better accuracy
-            self.model = keras.models.Sequential([
-                keras.layers.Input(shape=(28, 28, 1)),
-                keras.layers.Conv2D(32, (3, 3), activation='relu'),
-                keras.layers.MaxPooling2D((2, 2)),
-                keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                keras.layers.MaxPooling2D((2, 2)),
-                keras.layers.Conv2D(64, (3, 3), activation='relu'),
-                keras.layers.Flatten(),
-                keras.layers.Dense(64, activation='relu'),
-                keras.layers.Dropout(0.5),
-                keras.layers.Dense(10, activation='softmax')
-            ])
-            
-            # Try to load pre-trained weights if available
             import os
-            weights_path = 'models/digit_recognition.weights.h5'
             
-            try:
-                if os.path.exists(weights_path):
-                    self.model.load_weights(weights_path)
-                    logger.info("✅ Loaded pre-trained digit recognition weights")
-                else:
-                    raise FileNotFoundError("Weights file not found")
-            except:
-                logger.warning("⚠️ No pre-trained weights found, training model...")
-                # Load pre-trained MNIST model from TensorFlow
-                mnist = keras.datasets.mnist
-                (x_train, y_train), (x_test, y_test) = mnist.load_data()
-                x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255
-                x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255
+            logger.info("Loading custom digit recognition model...")
+            
+            # Path to your custom model
+            model_path = 'models/my_digit_model.h5'
+            
+            if os.path.exists(model_path):
+                # Load your custom trained model
+                self.model = keras.models.load_model(model_path)
+                logger.info(f"✅ Loaded custom digit model from {model_path}")
+                logger.info(f"   Model input shape: {self.model.input_shape}")
+                logger.info(f"   Model output shape: {self.model.output_shape}")
+            else:
+                logger.warning(f"⚠️ Custom model not found at {model_path}")
+                logger.info("Building default model architecture...")
+                
+                # Build the same architecture as in HandWritten.ipynb
+                self.model = keras.models.Sequential([
+                    keras.layers.Conv2D(32, (3,3), activation="relu", input_shape=(28,28,1)),
+                    keras.layers.MaxPooling2D(),
+                    keras.layers.Conv2D(64, (3,3), activation="relu"),
+                    keras.layers.MaxPooling2D(),
+                    keras.layers.Flatten(),
+                    keras.layers.Dense(128, activation="relu"),
+                    keras.layers.Dense(10, activation="softmax")
+                ])
                 
                 self.model.compile(
-                    optimizer='adam',
-                    loss='sparse_categorical_crossentropy',
-                    metrics=['accuracy']
+                    optimizer="adam",
+                    loss="sparse_categorical_crossentropy",
+                    metrics=["accuracy"]
                 )
                 
-                logger.info("Training digit recognition model (this may take a few minutes)...")
-                self.model.fit(x_train, y_train, epochs=5, batch_size=128, 
-                             validation_split=0.1, verbose=0)
-                
-                # Save trained weights
-                os.makedirs('models', exist_ok=True)
-                self.model.save_weights(weights_path)
-                logger.info("✅ Model trained and saved")
+                logger.warning("⚠️ Model loaded but not trained. Please train using HandWritten.ipynb")
             
         except ImportError:
             logger.error("❌ TensorFlow not installed. Install with: pip install tensorflow")
@@ -108,8 +93,8 @@ class DigitRecognitionService:
             else:
                 gray = image
             
-            # Invert colors (MNIST expects white digits on black background)
-            gray = cv2.bitwise_not(gray)
+            # NO INVERSION NEEDED - Flutter app sends white digits on black background
+            # which matches the training data format from HandWritten.ipynb
             
             # Find bounding box of drawn content
             coords = cv2.findNonZero(gray)
@@ -218,6 +203,9 @@ class DigitRecognitionService:
     def recognize_from_base64(self, base64_image: str) -> dict:
         """Recognize digit from base64 encoded image"""
         try:
+            import os
+            from datetime import datetime
+            
             # Decode base64
             image_data = base64.b64decode(base64_image)
             nparr = np.frombuffer(image_data, np.uint8)
@@ -225,6 +213,14 @@ class DigitRecognitionService:
             
             if image is None:
                 raise ValueError("Failed to decode image")
+            
+            # Save incoming image for debugging
+            debug_dir = "debug_images"
+            os.makedirs(debug_dir, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            debug_path = os.path.join(debug_dir, f"incoming_{timestamp}.png")
+            cv2.imwrite(debug_path, image)
+            logger.info(f"💾 Saved incoming image to: {debug_path}")
             
             return self.recognize_digit(image)
             
