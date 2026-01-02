@@ -141,11 +141,11 @@ async def generate_questions_task(
             question_count += 1
             print(f"💾 Saved question {question_count} with document_id: {document_id}, unit_id: {unit_id}, question_id: {str(question.id)}")
         
-        # Update document question count
-        document.questions_count = question_count
+        # Update document question count (INCREMENT existing count)
+        document.questions_count = document.questions_count + question_count
         await document.save()
         
-        print(f"✅ Generated {question_count} questions for document {document_id}")
+        print(f"✅ Generated {question_count} new questions for document {document_id} (Total: {document.questions_count})")
         
     except Exception as e:
         print(f"❌ Error generating questions: {str(e)}")

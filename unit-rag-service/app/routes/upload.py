@@ -261,7 +261,9 @@ async def list_documents(
 
 @router.delete("/{document_id}")
 async def delete_document(document_id: str):
-    """Delete a document and its vector embeddings"""
+    """Delete a document, its vector embeddings, and associated questions"""
+    from app.models.database import QuestionModel
+    
     document = await DocumentModel.get(document_id)
     
     if not document:
@@ -274,7 +276,21 @@ async def delete_document(document_id: str):
         except Exception as e:
             print(f"Warning: Could not delete from vector DB: {e}")
     
+    # Delete associated questions
+    questions_deleted = 0
+    try:
+        questions = await QuestionModel.find(QuestionModel.document_id == document_id).to_list()
+        for question in questions:
+            await question.delete()
+            questions_deleted += 1
+        print(f"✅ Deleted {questions_deleted} questions associated with document {document_id}")
+    except Exception as e:
+        print(f"Warning: Error deleting associated questions: {e}")
+    
     # Delete from MongoDB
     await document.delete()
     
-    return {"message": "Document deleted successfully"}
+    return {
+        "message": "Document deleted successfully",
+        "questions_deleted": questions_deleted
+    }

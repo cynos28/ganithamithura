@@ -77,7 +77,7 @@ async def list_all_documents(
 async def delete_document_alias(document_id: str):
     """Alias for DELETE endpoint compatible with Next.js dashboard"""
     from fastapi import HTTPException
-    from app.models.database import DocumentModel
+    from app.models.database import DocumentModel, QuestionModel
     from app.services.embeddings_service import embeddings_service
     from bson import ObjectId
     
@@ -96,10 +96,25 @@ async def delete_document_alias(document_id: str):
         except Exception as e:
             print(f"Warning: Could not delete from vector DB: {e}")
     
+    # Delete associated questions
+    questions_deleted = 0
+    try:
+        questions = await QuestionModel.find(QuestionModel.document_id == document_id).to_list()
+        for question in questions:
+            await question.delete()
+            questions_deleted += 1
+        print(f"✅ Deleted {questions_deleted} questions associated with document {document_id}")
+    except Exception as e:
+        print(f"Warning: Error deleting associated questions: {e}")
+    
     # Delete from MongoDB
     await document.delete()
     
-    return {"message": "Document deleted successfully", "id": document_id}
+    return {
+        "message": "Document deleted successfully",
+        "id": document_id,
+        "questions_deleted": questions_deleted
+    }
 
 
 @app.get("/questions/document/{document_id}")
