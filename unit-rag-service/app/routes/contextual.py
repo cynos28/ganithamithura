@@ -413,6 +413,7 @@ async def submit_measurement_answer(
     question_id: str,
     answer: str,
     measurement_type: str,
+    grade: int = 1,
     time_taken: Optional[int] = None
 ):
     """
@@ -428,10 +429,9 @@ async def submit_measurement_answer(
         # Check if answer is correct
         is_correct = answer.strip().lower() == question.correct_answer.strip().lower()
         
-        # Get student ability state (grade-aware - use grade 1 as default for now)
-        # TODO: Store and retrieve actual student grade from profile
-        grade = 1  # Default grade level
-        unit_id = f"measurement_{measurement_type}_{student_id}"
+        # Use same unit_id format as get_adaptive_measurement_question
+        # ar_topic_grade format to match question generation
+        unit_id = f"ar_{measurement_type.lower()}_{grade}"
         student_ability = await adaptive_engine.get_student_state(
             student_id=student_id,
             unit_id=unit_id,

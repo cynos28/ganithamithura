@@ -67,10 +67,15 @@ class AdaptiveEngine:
         # Calculate difficulty: base on grade, adjust by ability
         # When ability = 0, difficulty matches grade level
         # Ability range [-3, 3] allows ±3 level adjustment
-        difficulty_level = int(np.round(float(grade) + ability))
+        raw_difficulty = float(grade) + ability
+        difficulty_level = int(np.round(raw_difficulty))
         
         # Clamp to valid range [1, 5]
-        return max(self.min_difficulty, min(self.max_difficulty, difficulty_level))
+        clamped = max(self.min_difficulty, min(self.max_difficulty, difficulty_level))
+        
+        print(f"🎚️ Difficulty calc: grade={grade} + ability={ability:.2f} = {raw_difficulty:.2f} → {clamped}")
+        
+        return clamped
     
     async def get_student_state(
         self,
