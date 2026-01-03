@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from endpoints import endpoints
+from app.endpoints import endpoints
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Shape Patterns Backend")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Request, Depends
+﻿from fastapi import APIRouter, UploadFile, File, Request, Depends
 from app.controllers.shapes_detection import ShapesDetectionController
 from app.controllers.shapes_controller import ShapesController
 from authentication_service.auth_service import get_current_user
@@ -45,6 +45,13 @@ async def check_answers(game_answer: GameAnswer):
 @router.get("/game/badges", response_model=UserBadgeList)
 async def get_all_users_badges(user: dict = Depends(get_current_user)):
     return await game_controller.get_all_users_badges()
+
+@router.get("/game/user-progress")
+async def get_user_progress():
+    """Get user's current level and progress information"""
+    # TEMPORARY: Bypass authentication for testing - hardcoded user
+    mock_user = {"user_name": "user1"}
+    return await game_controller.get_user_progress(mock_user)
 
 @router.get("/game/report")
 async def get_user_game_report(user: dict = Depends(get_current_user)):

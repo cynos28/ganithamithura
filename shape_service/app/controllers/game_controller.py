@@ -291,3 +291,77 @@ class GameController:
             return UserBadgeList(users=users)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+    
+    async def get_user_progress(self, user: dict):
+        """
+        Get user's current level and progress information.
+        
+        Args:
+            user: Dictionary containing user information (user_name)
+            
+        Returns:
+            Dictionary with user progress including highest passed level and level details
+        """
+        try:
+            db = get_database()
+            users_collection = db["users"]
+            games_collection = db["games"]
+            
+            user_name = user.get("user_name")
+            user_doc = await users_collection.find_one({"user_name": user_name})
+            
+            if not user_doc:
+                # Return default progress for new user
+                return {
+                    "highest_passed_level": 0,
+                    "levels": [
+                        {
+                            "level": i,
+                            "is_locked": i > 1,
+                            "is_passed": False,
+                            "status": "locked" if i > 1 else "available",
+                            "attempts": 0
+                        }
+                        for i in range(1, 7)
+                    ]
+                }
+            
+            # Get all game levels
+            levels_info = []
+            highest_passed = 0
+            
+            for level_num in range(1, 7):
+                game_id = f"level{level_num}"
+                game = await games_collection.find_one({"game_id": game_id})
+                
+                # Check if user has passed this level
+                user_games = user_doc.get("games", [])
+                level_passed = any(
+                    g.get("game_id") == game_id and g.get("is_passed", False)
+                    for g in user_games
+                )
+                
+                if level_passed and level_num > highest_passed:
+                    highest_passed = level_num
+                
+                # Count attempts
+                attempts = sum(1 for g in user_games if g.get("game_id") == game_id)
+                
+                # Determine if level is locked (can only play if previous level is passed or it's level 1)
+                is_locked = level_num > 1 and highest_passed < (level_num - 1)
+                
+                levels_info.append({
+                    "level": level_num,
+                    "is_locked": is_locked,
+                    "is_passed": level_passed,
+                    "status": "passed" if level_passed else ("locked" if is_locked else "available"),
+                    "attempts": attempts
+                })
+            
+            return {
+                "highest_passed_level": highest_passed,
+                "levels": levels_info
+            }
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error fetching user progress: {str(e)}")
