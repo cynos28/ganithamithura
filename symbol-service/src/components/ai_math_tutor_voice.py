@@ -738,6 +738,10 @@ Choose fresh, creative contexts that haven't been used recently.
         except Exception:
             pass
 
+    def get_user_input(self) -> str:
+        """Get input from user (overrideable)"""
+        return input().strip()
+
     def ask_question(self, question_data: Dict):
         """
         Ask question with voice and display, including AI-generated image.
@@ -760,7 +764,7 @@ Choose fresh, creative contexts that haven't been used recently.
         # Get answer
         try:
             print("Your answer: ", end="", flush=True)
-            user_input = input().strip()
+            user_input = self.get_user_input()
 
             # Check quit
             if user_input.lower() in ['quit', 'exit', 'q']:
@@ -851,14 +855,14 @@ Choose fresh, creative contexts that haven't been used recently.
         instructions = "I will speak questions. You type your answer. Type quit to exit."
         self.speak_with_display(instructions)
 
-        # Wait for initial questions to be pre-generated (optimized wait)
+        # Wait for initial questions to be pre-generated
         wait_time = 0
-        max_wait = 10  # Reduced from 15s
+        max_wait = 15
         while self.question_queue.qsize() < 1 and wait_time < max_wait:
-            time.sleep(0.2)  # Check more frequently (was 0.5s)
+            time.sleep(0.2)
             wait_time += 0.2
 
-        time.sleep(0.2)  # Reduced from 0.5s
+        time.sleep(0.2)
 
         try:
             question_count = 0
