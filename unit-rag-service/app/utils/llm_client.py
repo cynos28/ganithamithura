@@ -24,10 +24,11 @@ class LLMClient:
         prompt: str,
         system_message: str = "You are a helpful assistant.",
         temperature: float = 0.7,
-        max_tokens: int = 2000,
+        max_tokens: int = 1000,
+        use_streaming: bool = False,
     ) -> str:
         """
-        Generate completion with retry logic and extended timeout
+        Generate completion with retry logic, optimized timeout, and optional streaming
         """
         
         # Try OpenAI with retries
@@ -43,10 +44,21 @@ class LLMClient:
                     ],
                     temperature=temperature,
                     max_tokens=max_tokens,
-                    timeout=120.0,  # 2 minutes timeout for complex question generation
+                    timeout=60.0,  # Reduced to 60s for faster failure detection
+                    stream=use_streaming,
                 )
-                print(f"✅ Generated with OpenAI ({self.openai_model})")
-                return response.choices[0].message.content
+                
+                if use_streaming:
+                    # Collect streaming chunks
+                    content = ""
+                    for chunk in response:
+                        if chunk.choices[0].delta.content:
+                            content += chunk.choices[0].delta.content
+                    print(f"✅ Generated with OpenAI ({self.openai_model}) - Streaming")
+                    return content
+                else:
+                    print(f"✅ Generated with OpenAI ({self.openai_model})")
+                    return response.choices[0].message.content
                 
             except Exception as openai_error:
                 error_msg = str(openai_error)

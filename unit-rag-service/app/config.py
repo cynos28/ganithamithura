@@ -33,10 +33,14 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-ada-002"
     top_k_retrieval: int = 5
     
-    # Question Generation
+    # Question Generation - OPTIMIZED FOR SPEED
     questions_per_grade: int = 10
     max_generation_retries: int = 3
-    llm_timeout: int = 120  # 2 minutes timeout for LLM requests
+    llm_timeout: int = 60  # Reduced from 120s to 60s for faster failure detection
+    llm_max_tokens: int = 1000  # Reduced from 2000 - sufficient for 5-10 questions
+    llm_temperature: float = 0.7  # Reduced from 0.8 for more consistent responses
+    enable_question_cache: bool = True  # Cache questions for 1 hour
+    parallel_generation: bool = True  # Generate questions for multiple grades in parallel
     
     # Adaptive Learning
     initial_ability_score: float = 0.0

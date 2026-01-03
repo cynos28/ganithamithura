@@ -1,11 +1,50 @@
 import json
 from typing import List, Dict, Any
+import asyncio
+import hashlib
+from datetime import datetime, timedelta
 from app.utils.llm_client import llm_client
 from app.services.embeddings_service import embeddings_service
 
 
 class QuestionGenerator:
     """Generate questions from document content using LLM with RAG"""
+    
+    def __init__(self):
+        # Simple in-memory cache: {cache_key: (questions, timestamp)}
+        self._cache = {}
+        self._cache_ttl = timedelta(hours=1)  # Cache expires after 1 hour
+    
+    def _get_cache_key(self, context: str, grade_level: int, topic: str, num_questions: int) -> str:
+        """Generate cache key from parameters"""
+        # Use first 500 chars of context + other params for cache key
+        content = f"{context[:500]}|{grade_level}|{topic}|{num_questions}"
+        return hashlib.md5(content.encode()).hexdigest()
+    
+    def _get_cached_questions(self, cache_key: str) -> List[Dict[str, Any]]:
+        """Get questions from cache if available and not expired"""
+        if cache_key in self._cache:
+            questions, timestamp = self._cache[cache_key]
+            if datetime.now() - timestamp < self._cache_ttl:
+                print(f"✅ Cache hit! Returning {len(questions)} cached questions")
+                return questions
+            else:
+                # Expired, remove from cache
+                del self._cache[cache_key]
+                print(f"⏰ Cache expired, regenerating...")
+        return None
+    
+    def _cache_questions(self, cache_key: str, questions: List[Dict[str, Any]]):
+        """Store questions in cache"""
+        self._cache[cache_key] = (questions, datetime.now())
+        print(f"💾 Cached {len(questions)} questions (total cache size: {len(self._cache)})")
+        
+        # Simple cache size management: keep only last 100 entries
+        if len(self._cache) > 100:
+            # Remove oldest entries
+            sorted_keys = sorted(self._cache.items(), key=lambda x: x[1][1])
+            for key, _ in sorted_keys[:20]:  # Remove oldest 20
+                del self._cache[key]
     
     async def retrieve_relevant_chunks(
         self,
@@ -78,67 +117,61 @@ class QuestionGenerator:
         topic: str,
         num_questions: int = 5
     ) -> List[Dict[str, Any]]:
-        """Generate questions from given context"""
+        """Generate questions from given context with caching"""
         
         if grade_level not in self.GRADE_PROMPTS:
             raise ValueError(f"Invalid grade level: {grade_level}")
         
+        # Check cache first
+        cache_key = self._get_cache_key(context, grade_level, topic, num_questions)
+        cached = self._get_cached_questions(cache_key)
+        if cached:
+            return cached
+        
         grade_config = self.GRADE_PROMPTS[grade_level]
         
         prompt = f"""
-Based on this educational content, generate questions ONLY about {topic.upper()} measurement:
+Context about {topic.upper()} measurement:
 
-{context}
+{context[:1500]}
 
-IMPORTANT RULES:
-- Generate ONLY questions about {topic.upper()} (e.g., {topic} units, {topic} conversions, {topic} measurements)
-- DO NOT include questions about other measurement topics
-- Focus exclusively on {topic}-related concepts
+Generate {num_questions} Grade {grade_level} questions about {topic.upper()} only.
 
-Generate {num_questions} questions for Grade {grade_level} students following these rules:
+Rules:
+- Topic: ONLY {topic.upper()} measurement
+- Types: {', '.join(grade_config['question_types'])}
+- Difficulty: Mix levels {grade_config['difficulty_range'][0]}-{grade_config['difficulty_range'][1]} (easy, medium, hard)
+- MCQ: Exactly 4 options
+- Include hints and explanation
 
-1. Topic Focus: ONLY {topic.upper()} - ignore all other topics in the content
-2. Question Types: Use {', '.join(grade_config['question_types'])}
-3. **ADAPTIVE DIFFICULTY DISTRIBUTION**: 
-   - Generate questions across ALL difficulty levels {grade_config['difficulty_range'][0]} to {grade_config['difficulty_range'][1]}
-   - DISTRIBUTE evenly: Make some easy (1-2), some medium (3), some hard (4-5)
-   - This allows adaptive learning - system will pick the right difficulty for each student
-   - Base difficulty for Grade {grade_level} is {grade_config['base_difficulty']}, but create variety
-4. Bloom's Taxonomy: Focus on {', '.join(grade_config['bloom_levels'])}
-5. For MCQ questions: Provide exactly 4 options, with one correct answer
-6. Include helpful hints that guide without giving away the answer
-7. Provide clear explanations for the correct answer
-8. Tag relevant concepts covered (related to {topic} only)
-
-Return ONLY valid JSON in this exact format:
+JSON format:
 {{
   "questions": [
     {{
-      "question_text": "Your question here",
-      "question_type": "mcq or short_answer or true_false",
-      "correct_answer": "The correct answer",
-      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+      "question_text": "...",
+      "question_type": "mcq|true_false",
+      "correct_answer": "...",
+      "options": ["A", "B", "C", "D"],
       "difficulty_level": 1-5,
-      "bloom_level": "remember/understand/apply/analyze",
-      "concepts": ["concept1", "concept2"],
-      "explanation": "Why this is the correct answer",
-      "hints": ["Helpful hint 1", "Helpful hint 2"]
+      "bloom_level": "{grade_config['bloom_levels'][0]}|{grade_config['bloom_levels'][-1]}",
+      "concepts": ["concept1"],
+      "explanation": "...",
+      "hints": ["hint1"]
     }}
   ]
 }}
-
-Make questions engaging, age-appropriate, and educational!
 """
         
         try:
             print(f"📤 Sending request to OpenAI (model: {llm_client.openai_model})...")
-            print(f"📊 Prompt length: {len(prompt)} chars, Context length: {len(context)} chars")
+            print(f"📊 Optimized prompt: {len(prompt)} chars, Context: {len(context[:1500])} chars")
             
             response = await llm_client.generate_completion(
                 prompt=prompt,
                 system_message=grade_config['system'],
-                temperature=0.8,
-                max_tokens=2000
+                temperature=0.7,  # Reduced from 0.8 for faster, more consistent responses
+                max_tokens=1000,  # Reduced from 2000 - enough for 5-10 questions
+                use_streaming=False,
             )
             
             print(f"📥 Received response from OpenAI ({len(response)} chars)")
@@ -159,7 +192,12 @@ Make questions engaging, age-appropriate, and educational!
             for q in questions_data.get('questions', []):
                 q['grade_level'] = grade_level
             
-            return questions_data.get('questions', [])
+            questions = questions_data.get('questions', [])
+            
+            # Cache the results
+            self._cache_questions(cache_key, questions)
+            
+            return questions
         
         except json.JSONDecodeError as e:
             raise Exception(f"Failed to parse LLM response as JSON: {str(e)}")
@@ -176,15 +214,13 @@ Make questions engaging, age-appropriate, and educational!
         question_types: List[str] = None,
         use_rag: bool = True
     ) -> List[Dict[str, Any]]:
-        """Generate questions for a document across multiple grades using RAG"""
+        """Generate questions for a document across multiple grades using RAG - OPTIMIZED with parallel generation"""
         
         if not document_content or len(document_content) < 50:
             raise Exception("Document content is too short or empty")
         
-        # Generate questions for each grade level
-        all_questions = []
-        
-        for grade in grade_levels:
+        async def generate_for_grade(grade: int):
+            """Helper function to generate questions for a single grade"""
             try:
                 print(f"🎯 Generating {questions_per_grade} questions for grade {grade} (Topic: {topic})...")
                 
@@ -200,13 +236,13 @@ Make questions engaging, age-appropriate, and educational!
                     
                     # Fallback to document content if no chunks found
                     if not context or len(context) < 100:
-                        print(f"⚠️  No chunks found, using full document (first 3000 chars)")
-                        context = document_content[:3000] if len(document_content) > 3000 else document_content
+                        print(f"⚠️  No chunks found, using full document (first 1500 chars)")
+                        context = document_content[:1500] if len(document_content) > 1500 else document_content
                     else:
                         print(f"✅ Retrieved {len(context)} characters of relevant context")
                 else:
                     # Use document content directly (legacy mode)
-                    context = document_content[:3000] if len(document_content) > 3000 else document_content
+                    context = document_content[:1500] if len(document_content) > 1500 else document_content
                 
                 questions = await self.generate_questions_from_context(
                     context=context,
@@ -214,12 +250,22 @@ Make questions engaging, age-appropriate, and educational!
                     topic=topic,
                     num_questions=questions_per_grade
                 )
-                all_questions.extend(questions)
                 print(f"✅ Generated {len(questions)} questions for grade {grade}")
+                return questions
             except Exception as e:
                 print(f"❌ Error generating questions for grade {grade}: {str(e)}")
-                continue
+                return []
         
+        # Generate questions for all grades IN PARALLEL instead of serially
+        print(f"🚀 Starting parallel generation for {len(grade_levels)} grades...")
+        results = await asyncio.gather(*[generate_for_grade(grade) for grade in grade_levels])
+        
+        # Flatten results
+        all_questions = []
+        for questions in results:
+            all_questions.extend(questions)
+        
+        print(f"✅ Total questions generated: {len(all_questions)}")
         return all_questions
     
     async def regenerate_question_with_adjustments(
