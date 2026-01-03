@@ -1,10 +1,10 @@
-README.md
 pyproject.toml
-app/_init_.py
+app/__init__.py
 app/database.py
 app/main.py
 app/constants/constants.py
 app/controllers/game_controller.py
+app/controllers/report_controller.py
 app/controllers/shapes_controller.py
 app/controllers/shapes_detection.py
 app/endpoints/endpoints.py
@@ -17,4 +17,3 @@ shape_service.egg-info/dependency_links.txt
 shape_service.egg-info/entry_points.txt
 shape_service.egg-info/requires.txt
 shape_service.egg-info/top_level.txt
-tests/test_endpoints.py

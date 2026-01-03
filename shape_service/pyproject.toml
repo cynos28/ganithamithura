@@ -1,7 +1,7 @@
 [project]
 name = "shape-service"
 version = "0.1.0"
-description = "Add your description here"
+description = "Shapes Service for the Ganithamithura project."
 readme = "README.md"
 authors = [
     { name = "Dilshan Kumara", email = "140689829+Dilshankumara0122@users.noreply.github.com" }
@@ -9,25 +9,27 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.120.4",
-    "motor>=3.7.1",
     "uvicorn[standard]>=0.38.0",
-    "numpy",
-    "Pillow",
-    "transformers",
-    "python-multipart",
-    "torch",
-    "pytest",
-    "httpx",
     "python-dotenv>=1.0.0",
+    "pymongo>=4.10.1",
+    "motor>=3.7.0",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.2",
     "python-jose[cryptography]>=3.3.0",
-    "passlib[argon2,bcrypt]>=1.7.4",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.20",
+    "numpy>=2.3.5",
+    "pillow>=12.0.0",
+    "transformers>=4.57.3",
+    "torch>=2.9.1",
+    "requests>=2.32.5",
 ]
 
 [project.scripts]
 shape-service = "app.main:app"
 
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

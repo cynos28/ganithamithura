@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 
 class Answer(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    
     question_id: str = Field(..., alias="shape_id")
     answer: str = Field(..., alias="selected_word")
     

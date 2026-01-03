@@ -12,7 +12,7 @@ dependencies = [
     "uvicorn[standard]>=0.38.0",
     "python-dotenv>=1.0.0",
     "user_management_service",
-    "shape_service",
+    "shape-service",
 ]
 
 [project.scripts]
@@ -28,4 +28,4 @@ include = ["app*"]
 
 [tool.uv.sources]
 user_management_service = { path = "../user_management_service", editable = true }
-shape_service = { path = "../shape_service", editable = true }
+shape-service = { path = "../shape_service", editable = true }

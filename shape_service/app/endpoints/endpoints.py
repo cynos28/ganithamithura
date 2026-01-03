@@ -31,12 +31,16 @@ async def get_image_by_id(image_id: str):
     return await shapes_controller.get_image_by_id(image_id)
 
 @router.get("/game/start")
-async def start_game(user: dict = Depends(get_current_user)):
-    return await game_controller.start_game(user)
+async def start_game(game_id: str = None):
+    # TEMPORARY: Bypass authentication for testing - hardcoded user
+    mock_user = {"user_name": "user1"}
+    return await game_controller.start_game(mock_user, game_id)
 
 @router.post("/game/check-answers")
-async def check_answers(game_answer: GameAnswer, user: dict = Depends(get_current_user)):
-    return await game_controller.check_answers(game_answer, user)
+async def check_answers(game_answer: GameAnswer):
+    # TEMPORARY: Bypass authentication for testing - hardcoded user
+    mock_user = {"user_name": "user1"}
+    return await game_controller.check_answers(game_answer, mock_user)
 
 @router.get("/game/badges", response_model=UserBadgeList)
 async def get_all_users_badges(user: dict = Depends(get_current_user)):
