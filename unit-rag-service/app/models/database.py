@@ -10,6 +10,33 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
 from app.models.games import GameParameters, GameSession
 
+
+class ChatHistoryModel(Document):
+    """Chat conversation history between student and AI tutor"""
+    student_id: str = Field(..., max_length=100)
+    unit_id: str = Field(..., max_length=50)  # unit_length_1, unit_weight_1, etc.
+    messages: List[Dict[str, Any]] = Field(default_factory=list)  # List of {message, isUser, timestamp, reply}
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    total_messages: int = Field(default=0)
+    topics_discussed: List[str] = Field(default_factory=list)  # Auto-extracted topics for analytics
+    
+    # Advanced learning features
+    difficulty_level: int = Field(default=2)  # 1=simple, 2=medium, 3=advanced (adapts based on student responses)
+    struggle_count: int = Field(default=0)  # Track confusion/struggle indicators
+    question_asking_score: int = Field(default=0)  # Reward asking good questions
+    game_mode_active: bool = Field(default=False)  # Track if in game/quiz mode
+    hint_count: int = Field(default=0)  # Track how many hints given
+    
+    class Settings:
+        name = "chat_history"
+        indexes = [
+            "student_id",
+            "unit_id",
+            [("student_id", 1), ("unit_id", 1)],  # Compound index
+        ]
+
+
 # MongoDB Models using Beanie ODM
 class DocumentModel(Document):
     """Document uploaded by teachers"""
@@ -153,6 +180,7 @@ async def init_db():
             StudentProgressModel,
             GameParameters,
             GameSession,
+            ChatHistoryModel,
         ]
     )
     

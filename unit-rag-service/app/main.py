@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.models.database import init_db
-from app.routes import upload, questions, adaptive, progress, contextual
+from app.routes import upload, questions, adaptive, progress, contextual, chat
 from app.routes import measurement
 from app.routes.games import router as adaptive_games_router
 from app.utils.game_seed import seed_game_parameters
@@ -34,6 +34,7 @@ app.include_router(progress.router)
 app.include_router(contextual.router)
 app.include_router(measurement.router)
 app.include_router(adaptive_games_router)
+app.include_router(chat.router)
 
 
 
