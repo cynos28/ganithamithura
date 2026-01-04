@@ -231,11 +231,19 @@ class WebSocketTextWrapper(AIMathTutor):
         is_correct = (abs(user_answer - correct_answer) < 0.01)
 
         if is_correct:
-            # Simple feedback for text mode
-            self.send_feedback("Correct!", True)
+            # AI Feedback
+            feedback = self._generate_correct_feedback(correct_answer, question_data['question_text'])
+            self.send_feedback(feedback, True)
             return True
         else:
-            self.send_feedback(f"Wrong. Answer is {correct_answer}.", False)
+            # AI Feedback
+            feedback = self._generate_wrong_feedback(
+                user_answer=user_answer,
+                correct_answer=correct_answer,
+                question_text=question_data['question_text'],
+                expression=question_data['expression']
+            )
+            self.send_feedback(feedback, False)
             return False
 
     def get_user_input(self) -> str:
