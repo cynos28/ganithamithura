@@ -53,8 +53,13 @@ class AIVoiceMathTutor:
         Args:
             grade: Grade level (1, 2, or 3)
             performance_level: Performance level (1, 2, or 3)
+            grade: Grade level (1, 2, or 3)
+            performance_level: Performance level (1, 2, or 3)
             sublevel: Sublevel name (Starter, Explorer, Solver, or Champion)
+            input_mode: Interaction mode ('typing' or 'voice')
         """
+        self.input_mode = "typing"  # Default
+
         # Initialize OpenAI client
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
@@ -319,11 +324,23 @@ Choose fresh, creative contexts that haven't been used recently.
                 return question_data
 
             except json.JSONDecodeError:
+                print(f"⚠️ JSON Error on attempt {attempt+1}. Retrying...")
                 if attempt < max_attempts - 1:
-                    continue  # Try again
-            except Exception:
+                    time.sleep(1) # Brief pause
+                    continue
+            except Exception as e:
+                error_str = str(e).lower()
+                wait_time = (attempt + 1) * 2 # Exponential backoff: 2s, 4s, 6s...
+                
+                if "rate limit" in error_str or "429" in error_str:
+                     print(f"⏳ Rate limit hit on attempt {attempt+1}. Waiting {wait_time}s...")
+                     time.sleep(wait_time)
+                else:
+                     print(f"⚠️ Question generation error: {e}. Retrying in 1s...")
+                     time.sleep(1)
+
                 if attempt < max_attempts - 1:
-                    continue  # Try again
+                    continue
 
         # All attempts failed, use fallback
         return self._generate_fallback_question()
@@ -700,8 +717,32 @@ Choose fresh, creative contexts that haven't been used recently.
 
             return image_url
 
-        except Exception:
-            return None
+        except Exception as e:
+            # Handle specific OpenAI errors
+            error_msg = str(e).lower()
+            if "content_policy_violation" in error_msg or "unsafe" in error_msg or "bad request" in error_msg:
+                 print(f"⚠️ Image flagged by safety system. Retrying with safe fallback.")
+                 try:
+                     # Fallback to extremely simple, safe prompt
+                     safe_prompt = f"A cute colorful illustration of {self.student_profile.grade} objects for a math lesson. Bright colors, children's book style."
+                     response = self.openai_client.images.generate(
+                        model="dall-e-3",
+                        prompt=safe_prompt,
+                        size="1024x1024", 
+                        quality="standard",
+                        n=1
+                     )
+                     return response.data[0].url
+                 except Exception as e2:
+                     print(f"❌ Fallback image generation failed: {e2}")
+                     return None
+            
+            elif "rate limit" in error_msg:
+                 print("⏳ Image generation rate limited. Skipping image.")
+                 return None
+            else:
+                 print(f"❌ Image generation failed: {e}")
+                 return None
 
     def _display_image(self, image_url: str):
         """
@@ -852,7 +893,11 @@ Choose fresh, creative contexts that haven't been used recently.
 
         time.sleep(0.8)
 
-        instructions = "I will speak questions. You type your answer. Type quit to exit."
+        if self.input_mode == 'voice':
+            instructions = "I will speak questions. You can say your answer. Say quit to exit."
+        else:
+            instructions = "I will speak questions. You type your answer. Type quit to exit."
+        
         self.speak_with_display(instructions)
 
         # Wait for initial questions to be pre-generated

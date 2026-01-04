@@ -22,12 +22,12 @@ from typing import Optional, Dict
 from dotenv import load_dotenv
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')) # Not needed if running from server root
 
-from core.base_math_tutor import BaseMathTutor
-from core.ai_question_generator import AIQuestionGenerator
-from core.number_extractor import NumberExtractor
-from config.voice_microphone_config import VoiceConfig, MicrophoneConfig
+from src.components.core.base_math_tutor import BaseMathTutor
+from src.components.core.ai_question_generator import AIQuestionGenerator
+from src.components.core.number_extractor import NumberExtractor
+from src.config.voice_microphone_config import VoiceConfig, MicrophoneConfig
 
 # Load environment variables
 load_dotenv()

@@ -14,10 +14,11 @@ from typing import Dict, List
 from openai import OpenAI
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+# Add parent directory to path for imports
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from components.core.curriculum_helper import CurriculumHelper
-from prompts.ai_question_prompts import get_ai_question_generation_prompt
+from src.components.core.curriculum_helper import CurriculumHelper
+from src.prompts.ai_question_prompts import get_ai_question_generation_prompt
 
 
 class AIQuestionGenerator:
@@ -68,9 +69,11 @@ class AIQuestionGenerator:
 
         # Get or initialize operation sequence for this profile
         if profile_key not in AIQuestionGenerator._operation_sequence:
+            # Shuffle operations or start at random index to prevent same start on server restart
+            import random
             AIQuestionGenerator._operation_sequence[profile_key] = {
                 'operations': available_ops,
-                'index': 0
+                'index': random.randint(0, len(available_ops) - 1)
             }
 
         seq = AIQuestionGenerator._operation_sequence[profile_key]
@@ -111,13 +114,21 @@ class AIQuestionGenerator:
         )
 
         max_retries = 3
+        avoid_list = [q.get('expression', '') for q in AIQuestionGenerator._recent_questions[-3:]]
+        
         for attempt in range(max_retries):
+            # Regenerate/Update prompt with avoidance instructions
+            current_prompt = prompt
+            if attempt > 0 or avoid_list:
+                 import random
+                 current_prompt += f"\n\nVARIATION REQUEST {random.randint(1000, 9999)}: Ensure the numbers are different from: {', '.join(avoid_list)}. DO NOT REUSE these numbers."
+
             try:
                 client = AIQuestionGenerator._get_client()
                 response = client.chat.completions.create(
                     model=AIQuestionGenerator.MODEL,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=AIQuestionGenerator.TEMPERATURE,
+                    messages=[{"role": "user", "content": current_prompt}],
+                    temperature=AIQuestionGenerator.TEMPERATURE + (attempt * 0.1), # Increase creativity on retries
                     max_tokens=AIQuestionGenerator.MAX_TOKENS
                 )
 
@@ -130,6 +141,7 @@ class AIQuestionGenerator:
 
                     # Validate against curriculum specs
                     if not AIQuestionGenerator._validate_curriculum(question_data, spec):
+                        print(f"⚠️ Invalid curriculum: {question_data}")
                         if attempt < max_retries - 1:
                             continue
                         else:
@@ -139,7 +151,11 @@ class AIQuestionGenerator:
                     if not AIQuestionGenerator._is_duplicate(question_data):
                         AIQuestionGenerator._add_recent_question(question_data)
                         return question_data
-                    elif attempt < max_retries - 1:
+                    
+                    print(f"⚠️ Duplicate detected: {question_data['expression']}")
+                    if attempt < max_retries - 1:
+                        # Add this duplicate to avoid list for next retry
+                        avoid_list.append(question_data.get('expression', ''))
                         continue
                     else:
                         # Use it anyway if we exhausted retries

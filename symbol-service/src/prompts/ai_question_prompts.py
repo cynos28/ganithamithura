@@ -146,22 +146,25 @@ CRITICAL RULES:
 1. MUST focus on: {focus if focus else 'varied math operations'}
 2. Create a SHORT, FUN, relatable scenario for a {_get_grade_name(grade)} student
 3. Use simple words children understand
-4. Include relatable context (toys, animals, fruits, school, friends, etc.)
-5. Question format: "[Scenario] How many/much [item]?"
+4. Include relatable context (toys, animals, fruits, school, friends, space, magic, etc.)
+5. Question format: KEEP IT SIMPLE but VARY structure (e.g., "There are...", "I see...", "If you have...", "Tom finds...")
 6. Keep operands between {operand_min}-{operand_max}
 7. Keep result between {result_min}-{result_max}
 8. NO "What is", NO "Calculate", NO complex language
-9. EXTREMELY IMPORTANT: Make each question COMPLETELY DIFFERENT
-   - Different scenario/story context (NOT boxes, baskets, or packs - use animals, toys, food, people, etc.)
-   - Different numbers/operands
-   - NEVER repeat similar problem types
+9. EXTREMELY IMPORTANT: VARY THE SENTENCE STRUCTURE
+   - DO NOT always say "Person has X. Person gets Y."
+   - Use: "There are 3 frogs. 2 more hop in."
+   - Use: "I see 5 stars. Look, 4 more stars appear!"
+   - Use: "If you have 6 cookies and bake 6 more..."
+   - Use: "A box holds 10 crayons. 5 are red. How many are not red?"
+   - NEVER repeat the previous question's structure.
 10. DO NOT create similar questions - be extremely creative
 
 SPECIFIC EXAMPLES for {_get_grade_name(grade)} {sublevel}:
 {examples}
 
 RESPOND WITH ONLY THIS JSON (no extra text):
-{{"question": "child-friendly story with math", "expression": "A op B" or "A op B op C", "answer": number}}"""
+{{"question": "creative child-friendly story", "expression": "A op B" or "A op B op C", "answer": number}}"""
 
 
 def _build_examples_for_focus(grade: int, level: int, sublevel: str, operations: list) -> str:
@@ -180,13 +183,17 @@ def _build_examples_for_focus(grade: int, level: int, sublevel: str, operations:
     # Examples for different grades and sublevels
     if grade == 1:
         if sublevel == 'Starter':
-            return '- "Maria has 3 apples. She gets 2 more. How many apples does Maria have?" (3 + 2 = 5)'
+            return '''- "I see 3 blue birds. 2 red birds fly in. How many birds are there now?" (3 + 2 = 5)
+- "There are 4 cookies on a plate. Mom puts 1 more cookie. How many cookies altogether?" (4 + 1 = 5)
+- "If you find 2 shells and your friend finds 2 shells, how many shells do you have together?" (2 + 2 = 4)'''
         elif sublevel == 'Explorer':
-            return '- "Emma has 5 toys and 5 more toys. How many toys does Emma have?" (5 + 5 = 10)'
+            return '''- "There are 5 stars in the sky. Look! 5 more stars appear. How many stars do you see?" (5 + 5 = 10)
+- "A cat has 4 legs. A dog has 4 legs. How many legs do they have together?" (4 + 4 = 8)'''
         elif sublevel == 'Solver':
-            return '- "Leo has 7 stickers. He gets 4 more. How many stickers does Leo have?" (7 + 4 = 11)'
+            return '''- "You have 7 stickers. You win 4 more in a game. How many stickers do you have now?" (7 + 4 = 11)
+- "There are 6 ducks in the pond. 4 more ducks jump in. How many ducks are swimming?" (6 + 4 = 10)'''
         elif sublevel == 'Champion':
-            return '- "Zara has 8 pencils. Her friend gives her 6 more. How many pencils does Zara have?" (8 + 6 = 14)'
+            return '- "Zara collects 8 pencils. Ben gives her 6 more. How many pencils does Zara have?" (8 + 6 = 14)'
 
     elif grade == 2:
         if sublevel == 'Starter':

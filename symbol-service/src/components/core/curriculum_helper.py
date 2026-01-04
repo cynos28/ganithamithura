@@ -14,9 +14,10 @@ import sys
 from typing import Dict, Optional
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+# Add parent directory to path for imports
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from curriculum.curriculum_spec import get_curriculum_spec, CURRICULUM
+from src.curriculum.curriculum_spec import get_curriculum_spec, CURRICULUM
 
 
 class CurriculumHelper:
