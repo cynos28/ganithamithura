@@ -2,7 +2,7 @@
 
 ## A Multi-Sensory Learning Solution for Overcoming Early Mathematical Difficulties
 
-An innovative educational platform that combines AI, Augmented Reality, and adaptive learning to help primary school students (Grades 1–5) master fundamental mathematical concepts through engaging, hands-on experiences.
+An innovative educational platform that combines AI, Augmented Reality, and adaptive learning to help primary school students (Grades 1–4) master fundamental mathematical concepts through engaging, hands-on experiences.
 
 ---
 
