@@ -205,15 +205,28 @@ class AIMathTutor:
         }
 
     # ... Include parallel generation and cache methods ...
-    def _generate_complete_question_parallel(self) -> Dict:
+    def _generate_complete_question_parallel(self, resolve_image=False) -> Dict:
+        """
+        Generate question. 
+        If resolve_image=True, waits for image (BLOCKING) - good for background queue.
+        If resolve_image=False, returns future in 'image_future' - good for direct request (latency).
+        """
         question_data = self.generate_ai_question()
         if self.enable_images:
             try:
-                # Use synchronous call in thread for simplicity or reuse voice tutor method?
-                # For clean separation, we reimplement simpler version.
-                # Actually, reuse the generation executor.
+                # Submit to thread pool
                 future = self.generation_executor.submit(self._generate_question_image, question_data)
-                question_data['image_url'] = future.result(timeout=30)
+                
+                if resolve_image:
+                     # Block and resolve for Queue Worker
+                     try:
+                        question_data['image_url'] = future.result(timeout=30)
+                     except:
+                        question_data['image_url'] = None
+                else:
+                    # Attach Future for Immediate Response
+                    question_data['image_future'] = future
+                    question_data['image_url'] = None # Placeholder
             except:
                 question_data['image_url'] = None
         return question_data
@@ -222,7 +235,8 @@ class AIMathTutor:
         while self.queue_worker_running:
             try:
                 if self.question_queue.qsize() < self.queue_target_size:
-                    data = self._generate_complete_question_parallel()
+                    # Queue Worker MUST resolve images so cached items are instant
+                    data = self._generate_complete_question_parallel(resolve_image=True)
                     try: self.question_queue.put(data, block=False)
                     except: pass
                 else:
@@ -246,7 +260,8 @@ class AIMathTutor:
         try:
             return self.question_queue.get(block=False)
         except:
-            return self._generate_complete_question_parallel()
+             # Fallback (Cold Start): Don't block! Return future.
+            return self._generate_complete_question_parallel(resolve_image=False)
 
     def _extract_theme_from_question(self, text: str) -> Optional[str]:
         # Simple extraction
@@ -298,4 +313,27 @@ class AIMathTutor:
             return False
 
     def run_session(self, num_questions=5):
-        pass 
+        """
+        Main Game Loop for Text Tutor.
+        This was missing/pass previously.
+        """
+        print(f"Starting Text Tutor Session: {num_questions} questions.")
+        self.stats = {'total_questions': 0, 'correct_answers': 0, 'wrong_answers': 0}
+
+        for i in range(num_questions):
+            question_data = self.get_next_question()
+            
+            # Ask Question (subclasses override this to handle I/O)
+            result = self.ask_question(question_data)
+            
+            if result == 'quit':
+                break
+                
+            self.stats['total_questions'] += 1
+            if result:
+                self.stats['correct_answers'] += 1
+            else:
+                self.stats['wrong_answers'] += 1
+                
+        print("Session Complete")
+        print(f"Score: {self.stats['correct_answers']}/{self.stats['total_questions']}") 

@@ -74,7 +74,12 @@ class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
         """
         # 1. Send Expression (Visual)
         if 'expression' in question_data:
-             expression_text = f"{question_data['expression']} = ?"
+             # Fix double equals: Check if '=' exists
+             raw_expr = question_data['expression']
+             if "=" in raw_expr:
+                 expression_text = raw_expr
+             else:
+                 expression_text = f"{raw_expr} = ?"
              try:
                  if self.main_loop:
                      asyncio.run_coroutine_threadsafe(
@@ -173,24 +178,41 @@ class WebSocketTextWrapper(AIMathTutor):
         time.sleep(2.0) 
 
     def ask_question(self, question_data):
-        """Ask question flow for TEXT"""
-        # 1. Send Image
-        if self.enable_images and 'image_url' in question_data:
-            self._display_image(question_data['image_url'])
+        """Ask question flow for TEXT - Enforce Image THEN Text Sequence"""
+        
+        # 1. Handle Image (Wait & Send FIRST)
+        image_url = None
+        if self.enable_images:
+            if 'image_url' in question_data and question_data['image_url']:
+                image_url = question_data['image_url']
+            elif 'image_future' in question_data and question_data['image_future']:
+                # Wait for future (Blocking here is INTENTIONAL to ensure sequence)
+                try:
+                    image_url = question_data['image_future'].result(timeout=15)
+                except Exception:
+                    image_url = None
+        
+        if image_url:
+            self._display_image(image_url)
 
         # 2. Send Expression
-        expression_text = f"{question_data['expression']} = ?"
-        try:
-             if self.main_loop:
-                 asyncio.run_coroutine_threadsafe(
-                    self.websocket.send_json({"type": "expression", "text": expression_text}), 
-                    self.main_loop
-                ).result()
-        except: pass
+        if 'expression' in question_data:
+            # Fix double equals: Check if '=' exists
+            raw_expr = question_data['expression']
+            if "=" in raw_expr:
+                expression_text = raw_expr
+            else:
+                expression_text = f"{raw_expr} = ?"
+            try:
+                 if self.main_loop:
+                     asyncio.run_coroutine_threadsafe(
+                        self.websocket.send_json({"type": "expression", "text": expression_text}), 
+                        self.main_loop
+                    ).result()
+            except: pass
 
-        # 3. Show Question Text
+        # 3. Show Question Text (Triggers UI Reveal on Frontend)
         self.speak_with_display(question_data['question_text'])
-        # No sleep needed for reading time in async flow, user reads at own pace
 
         # 4. Get Input
         user_input = self.get_user_input()
@@ -202,7 +224,7 @@ class WebSocketTextWrapper(AIMathTutor):
         try:
             user_answer = float(user_input)
         except ValueError:
-            self.speak_with_display("Please enter a number.")
+            self.send_feedback("Please enter a number.", False) # Use feedback for consistency
             return False
 
         correct_answer = float(question_data['answer'])
