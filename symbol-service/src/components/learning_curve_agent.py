@@ -175,7 +175,7 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
         )
         
         response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             stop=["Observation:"]
@@ -230,7 +230,7 @@ class LearningCurveAgent(SimpleVoiceMathTutor):
                     final_prompt += f"\n\nPREVIOUS GENERATION WAS REJECTED. YOU USED NUMBERS > {max_num}. PLEASE RESPECT THE LIMIT."
 
                 response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4o-mini",
                     messages=[{"role": "user", "content": final_prompt}],
                     temperature=0.7 
                 )

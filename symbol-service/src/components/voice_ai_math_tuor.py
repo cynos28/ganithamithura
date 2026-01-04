@@ -278,7 +278,7 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         return False
 
-    def run_session(self):
+    def run_session(self, max_questions: int = None):
         """Main tutoring session."""
         print("\n" + "="*60)
         print("🎓 SIMPLE VOICE MATH TUTOR")
@@ -292,6 +292,11 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         try:
             while True:
+                # Check limit
+                if max_questions and self.stats['total_questions'] >= max_questions:
+                    print(f"✅ Reached limit of {max_questions} questions.")
+                    break
+
                 # Generate AI question based on student profile
                 question_data = AIQuestionGenerator.generate_question(
                     self.student_profile.grade,

@@ -94,8 +94,25 @@ class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
              except Exception: pass
 
         # 3. Delegate to Original Logic for Voice Interaction
-        return super().ask_question(question_data)
+        result = super().ask_question(question_data)
 
+        # 4. Send Feedback Signal for Frontend Counter
+        # The SimpleVoiceMathTutor already spoke the logic feedback ("Excellent", etc.) via speak().
+        # We send this message primarily to trigger the frontend counter increment.
+        try:
+            if self.main_loop:
+                 asyncio.run_coroutine_threadsafe(
+                    self.websocket.send_json({
+                        "type": "feedback", 
+                        "text": "Correct!" if result is True else "Practice makes perfect!",
+                        "isCorrect": result is True
+                    }), 
+                    self.main_loop
+                ).result()
+        except Exception: pass
+
+        return result
+    
     def set_loop(self, loop):
         self.main_loop = loop
     
@@ -259,7 +276,7 @@ async def websocket_tutor_voice(websocket: WebSocket, grade: int, level: int, su
     agent.set_loop(asyncio.get_running_loop())
     
     # Run
-    agent_thread = threading.Thread(target=agent.run_session, daemon=True)
+    agent_thread = threading.Thread(target=agent.run_session, args=(5,), daemon=True)
     agent_thread.start()
 
     try:

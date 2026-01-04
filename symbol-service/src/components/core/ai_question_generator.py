@@ -24,7 +24,7 @@ from src.prompts.ai_question_prompts import get_ai_question_generation_prompt
 class AIQuestionGenerator:
     """Generate math questions using OpenAI based on curriculum specs on-demand."""
 
-    MODEL = "gpt-3.5-turbo"
+    MODEL = "gpt-4o-mini"
     TEMPERATURE = 0.7
     MAX_TOKENS = 200
     _client = None
@@ -269,9 +269,14 @@ class AIQuestionGenerator:
             if recent_expr == expression:
                 return True
 
-            # Check if same answer with same operation pattern - too similar
+            # Check if same answer with same operation pattern - allow it if expression is different
+            # For low levels, answer space is small (e.g. sums to 5). We shouldn't block 2+3 just because 1+4 was used.
+            # Only block if it's the EXACT same answer AND same pattern consecutively
             if answer is not None and answer == recent_ans and pattern == recent_pattern and pattern:
-                return True
+                # If it's consecutive (index 0), then maybe block. But for now, let's relax it.
+                # Actually, let's just rely on exact expression match.
+                pass 
+
 
             # Count consecutive same operations
             if pattern == recent_pattern and pattern and len(pattern) == 1:
