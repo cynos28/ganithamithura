@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -6,11 +6,6 @@ import json
 import random
 from pathlib import Path
 from datetime import datetime
-import base64
-import cv2
-import numpy as np
-from object_detection_service import get_detection_service
-from digit_recognition_service import get_recognition_service
 
 app = FastAPI(
     title="Ganitha Mithura - Number Service API",
@@ -35,42 +30,13 @@ ACTIVITIES_FILE = DATA_DIR / "activities_level1.json"
 
 class Activity(BaseModel):
     id: str
-    type: str  # video, trace, show, say, read
+    type: str  # trace, read, say, object_detection, video
     number: int
     title: str
     description: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     level: int
     order: int
-    questions: Optional[List[Dict[str, Any]]] = None  # Array of questions with difficulty levels
-
-
-class Question(BaseModel):
-    """Individual question within an activity"""
-    id: str
-    difficulty: str  # easy, medium, hard
-    points: int
-    question: Optional[str] = None
-    instruction: Optional[str] = None
-    correct_answer: Optional[Any] = None
-    options: Optional[List[str]] = None
-    answer: Optional[str] = None
-    image: Optional[str] = None
-    template_image: Optional[str] = None
-    help_image: Optional[str] = None
-    pronounce: Optional[str] = None
-    alternatives: Optional[List[str]] = None
-    max_objects: Optional[int] = None
-    type: Optional[str] = None  # For read activity: word_to_digit, digit_to_word, mixed
-
-
-class NumberActivities(BaseModel):
-    """Activities for a single number"""
-    video: Optional[Dict[str, Any]] = None
-    trace: Optional[Dict[str, Any]] = None
-    show: Optional[Dict[str, Any]] = None
-    say: Optional[Dict[str, Any]] = None
-    read: Optional[Dict[str, Any]] = None
 
 
 class ScoreSubmission(BaseModel):
@@ -81,29 +47,14 @@ class ScoreSubmission(BaseModel):
     additional_data: Optional[Dict[str, Any]] = None
 
 
-class ObjectDetectionRequest(BaseModel):
-    image_base64: str
-    target_object: Optional[str] = None
-    expected_count: Optional[int] = None
-    confidence_threshold: float = 0.5
-
-
-class ObjectDetectionResponse(BaseModel):
-    total_count: int
-    target_count: Optional[int] = None
-    target_object: Optional[str] = None
-    detections: List[Dict[str, Any]]
-    class_counts: Dict[str, int]
-    validation: Optional[Dict[str, Any]] = None
-
-
 # ==================== Helper Functions ====================
 
-def load_activities_data() -> Dict[str, Any]:
-    """Load activities from new JSON structure"""
+def load_activities() -> List[Activity]:
+    """Load activities from JSON file"""
     try:
         with open(ACTIVITIES_FILE, 'r') as f:
-            return json.load(f)
+            data = json.load(f)
+            return [Activity(**activity) for activity in data['activities']]
     except FileNotFoundError:
         raise HTTPException(
             status_code=500,
@@ -116,72 +67,6 @@ def load_activities_data() -> Dict[str, Any]:
         )
 
 
-def convert_to_activity_format(level: int, number: int, activity_type: str, 
-                               activity_data: Dict[str, Any], order: int) -> Activity:
-    """Convert new JSON format to Activity model"""
-    activity_id = f"level{level}_num{number}_{activity_type}"
-    
-    # Extract questions array if present
-    questions = activity_data.get('questions', [])
-    
-    # For video, there are no questions
-    if activity_type == 'video':
-        metadata = {
-            'url': activity_data.get('url'),
-            'duration': activity_data.get('duration'),
-            'title': activity_data.get('title')
-        }
-    else:
-        # For other activities, include base metadata
-        metadata = {k: v for k, v in activity_data.items() if k != 'questions'}
-    
-    return Activity(
-        id=activity_id,
-        type=activity_type,
-        number=number,
-        title=f"{activity_type.capitalize()} Number {number}",
-        description=activity_data.get('instruction', ''),
-        metadata=metadata,
-        level=level,
-        order=order,
-        questions=questions if questions else None
-    )
-
-
-def get_activities_for_number_from_data(level: int, number: int) -> List[Activity]:
-    """Get activities for a specific number in proper sequence"""
-    data = load_activities_data()
-    
-    if data.get('level') != level:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Level {level} not found in data"
-        )
-    
-    number_str = str(number)
-    if number_str not in data.get('numbers', {}):
-        raise HTTPException(
-            status_code=404,
-            detail=f"Number {number} not found in Level {level}"
-        )
-    
-    number_data = data['numbers'][number_str]
-    activities = []
-    
-    # Define the sequence order
-    activity_sequence = ['video', 'trace', 'show', 'say', 'read']
-    
-    for order, activity_type in enumerate(activity_sequence, start=1):
-        if activity_type in number_data and number_data[activity_type]:
-            activity = convert_to_activity_format(
-                level, number, activity_type, 
-                number_data[activity_type], order
-            )
-            activities.append(activity)
-    
-    return activities
-
-
 # ==================== Endpoints ====================
 
 @app.get("/")
@@ -190,7 +75,8 @@ async def root():
     return {
         "service": "Ganitha Mithura - Number Service",
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
+        "phase": "Phase 1 - 50% MVP"
     }
 
 
@@ -203,67 +89,12 @@ async def health_check():
     }
 
 
-@app.get("/activities/level/{level}/number/{number}")
-async def get_activities_for_level_number(level: int, number: int, difficulty: Optional[str] = None):
-    """
-    GET /activities/level/{level}/number/{number}?difficulty=easy
-    
-    Returns all activities for a specific number within a level.
-    Activities are returned in the correct sequence: video -> trace -> show -> say -> read
-    
-    Query Parameters:
-    - difficulty: Filter questions by difficulty (easy, medium, hard)
-                 If 'easy', returns only easy questions for tutorial
-                 If omitted, returns all questions
-    
-    Phase 1: Only level 1 (numbers 1-10) is implemented
-    """
-    if level != 1:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Level {level} not yet implemented. Only Level 1 is available in Phase 1."
-        )
-    
-    if number < 1 or number > 10:
-        raise HTTPException(
-            status_code=400,
-            detail="Number must be between 1 and 10 for Level 1"
-        )
-    
-    try:
-        activities = get_activities_for_number_from_data(level, number)
-        
-        # Filter questions by difficulty if specified
-        if difficulty:
-            for activity in activities:
-                if activity.questions:
-                    activity.questions = [
-                        q for q in activity.questions 
-                        if q.get('difficulty') == difficulty
-                    ]
-        
-        return {
-            "level": level,
-            "number": number,
-            "difficulty_filter": difficulty,
-            "count": len(activities),
-            "activities": [activity.dict() for activity in activities]
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching activities: {str(e)}"
-        )
-
-
 @app.get("/levels/{level}/activities")
 async def get_activities_for_level(level: int):
     """
     GET /levels/{level}/activities
     
-    Returns all activities for a specific level (all numbers combined).
+    Returns all activities for a specific level.
     Phase 1: Only level 1 is implemented (numbers 1-10)
     """
     if level != 1:
@@ -272,24 +103,16 @@ async def get_activities_for_level(level: int):
             detail=f"Level {level} not yet implemented. Only Level 1 is available in Phase 1."
         )
     
-    try:
-        all_activities = []
-        
-        # Get activities for all numbers in the level (1-10)
-        for number in range(1, 11):
-            activities = get_activities_for_number_from_data(level, number)
-            all_activities.extend(activities)
-        
-        return {
-            "level": level,
-            "count": len(all_activities),
-            "activities": [activity.dict() for activity in all_activities]
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching activities: {str(e)}"
-        )
+    activities = load_activities()
+    
+    # Filter by level
+    level_activities = [a for a in activities if a.level == level]
+    
+    return {
+        "level": level,
+        "count": len(level_activities),
+        "activities": [a.dict() for a in level_activities]
+    }
 
 
 @app.post("/activity/score")
@@ -319,34 +142,28 @@ async def get_beginner_test():
     Activities are randomly selected and shuffled each time.
     Excludes video lessons.
     """
-    try:
-        all_activities = []
-        
-        # Get all activities from level 1
-        for number in range(1, 11):
-            activities = get_activities_for_number_from_data(1, number)
-            # Exclude videos
-            all_activities.extend([a for a in activities if a.type != 'video'])
-        
-        if len(all_activities) < 5:
-            raise HTTPException(
-                status_code=500,
-                detail="Not enough activities available for test"
-            )
-        
-        # Randomly select 5 activities
-        test_activities = random.sample(all_activities, 5)
-        
-        return {
-            "test_type": "beginner",
-            "count": len(test_activities),
-            "activities": [activity.dict() for activity in test_activities]
-        }
-    except Exception as e:
+    activities = load_activities()
+    
+    # Filter Level 1 activities, exclude videos
+    testable_activities = [
+        a for a in activities 
+        if a.level == 1 and a.type != 'video'
+    ]
+    
+    if len(testable_activities) < 5:
         raise HTTPException(
             status_code=500,
-            detail=f"Error generating test: {str(e)}"
+            detail="Not enough activities available for test"
         )
+    
+    # Randomly select 5 activities
+    test_activities = random.sample(testable_activities, 5)
+    
+    return {
+        "test_type": "beginner",
+        "count": len(test_activities),
+        "activities": [a.dict() for a in test_activities]
+    }
 
 
 @app.get("/activities/number/{number}")
@@ -356,274 +173,36 @@ async def get_activities_for_number(number: int, level: int = 1):
     
     Returns all activities for a specific number within a level.
     Useful for learning flow.
-    Legacy endpoint - use /activities/level/{level}/number/{number} instead
     """
-    return await get_activities_for_level_number(level, number)
-
-
-# ==================== Object Detection Endpoints ====================
-
-@app.post("/detect/objects")
-async def detect_objects(request: ObjectDetectionRequest):
-    """
-    POST /detect/objects
-    
-    Detect and count objects in an image using YOLO.
-    
-    Request body:
-    - image_base64: Base64 encoded image
-    - target_object: Specific object to count (optional)
-    - expected_count: Expected count for validation (optional)
-    - confidence_threshold: Detection confidence threshold (default: 0.5)
-    
-    Returns:
-    - Detection results with counts and bounding boxes
-    - Validation result if expected_count provided
-    """
-    try:
-        detection_service = get_detection_service()
-        
-        # Perform detection
-        result = detection_service.detect_from_base64(
-            base64_image=request.image_base64,
-            target_object=request.target_object,
-            confidence_threshold=request.confidence_threshold
+    if level != 1:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Level {level} not yet implemented"
         )
-        
-        # Validate if expected count provided
-        if request.expected_count is not None:
-            detected_count = result['target_count'] if request.target_object else result['total_count']
-            validation = detection_service.validate_count(
-                detected_count=detected_count,
-                expected_count=request.expected_count,
-                tolerance=0
-            )
-            result['validation'] = validation
-        
-        return result
-        
-    except ValueError as e:
+    
+    if number < 1 or number > 10:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid image data: {str(e)}"
+            detail="Number must be between 1 and 10 for Level 1"
         )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during object detection: {str(e)}"
-        )
-
-
-@app.post("/detect/objects/upload")
-async def detect_objects_upload(file: UploadFile = File(...), target_object: Optional[str] = None, expected_count: Optional[int] = None):
-    """
-    POST /detect/objects/upload
     
-    Detect objects from uploaded image file.
+    activities = load_activities()
     
-    Form data:
-    - file: Image file (jpg, png)
-    - target_object: Specific object to count (optional)
-    - expected_count: Expected count for validation (optional)
-    """
-    try:
-        # Read image file
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise ValueError("Failed to decode image file")
-        
-        detection_service = get_detection_service()
-        
-        # Perform detection
-        result = detection_service.detect_objects(
-            image=image,
-            target_object=target_object
-        )
-        
-        # Validate if expected count provided
-        if expected_count is not None:
-            detected_count = result['target_count'] if target_object else result['total_count']
-            validation = detection_service.validate_count(
-                detected_count=detected_count,
-                expected_count=expected_count,
-                tolerance=0
-            )
-            result['validation'] = validation
-        
-        return result
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid image file: {str(e)}"
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during object detection: {str(e)}"
-        )
-
-
-@app.get("/detect/available-classes")
-async def get_available_classes():
-    """
-    GET /detect/available-classes
+    # Filter by level and number
+    number_activities = [
+        a for a in activities 
+        if a.level == level and a.number == number
+    ]
     
-    Get list of all object classes that can be detected by the model.
-    """
-    try:
-        detection_service = get_detection_service()
-        classes = detection_service.get_available_classes()
-        return {
-            "count": len(classes),
-            "classes": classes
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving classes: {str(e)}"
-        )
-
-
-# ==================== Digit Recognition Endpoints ====================
-
-class DigitRecognitionRequest(BaseModel):
-    image: str  # Base64 encoded image
-    expected_digit: Optional[int] = None  # For validation
-    confidence_threshold: Optional[float] = 0.7
-
-
-@app.post("/recognize/digit")
-async def recognize_digit(request: DigitRecognitionRequest):
-    """
-    POST /recognize/digit
+    # Sort by order
+    number_activities.sort(key=lambda x: x.order)
     
-    Recognize handwritten digit from image using ML model.
-    
-    Request body:
-    {
-        "image": "base64_encoded_image_string",
-        "expected_digit": 5,  // Optional: for validation
-        "confidence_threshold": 0.7  // Optional: minimum confidence
+    return {
+        "level": level,
+        "number": number,
+        "count": len(number_activities),
+        "activities": [a.dict() for a in number_activities]
     }
-    
-    Returns:
-    {
-        "predicted_digit": 5,
-        "confidence": 0.95,
-        "probabilities": [0.01, 0.02, ...],
-        "top_3_predictions": [{"digit": 5, "confidence": 0.95}, ...],
-        "is_correct": true,  // If expected_digit provided
-        "feedback": "Perfect! You drew 5 correctly!"
-    }
-    """
-    try:
-        recognition_service = get_recognition_service()
-        
-        # Recognize digit
-        if request.expected_digit is not None:
-            # Validation mode
-            result = recognition_service.validate_digit(
-                image=None,  # Will be processed from base64
-                expected_digit=request.expected_digit,
-                confidence_threshold=request.confidence_threshold
-            )
-            # Process base64 separately
-            recognition_result = recognition_service.recognize_from_base64(request.image)
-            
-            if 'error' in recognition_result:
-                raise HTTPException(status_code=400, detail=recognition_result['error'])
-            
-            # Combine results
-            is_correct = (
-                recognition_result['predicted_digit'] == request.expected_digit and
-                recognition_result['confidence'] >= request.confidence_threshold
-            )
-            
-            if is_correct:
-                feedback = f"Perfect! You drew {request.expected_digit} correctly!"
-            elif recognition_result['predicted_digit'] == request.expected_digit:
-                feedback = f"Good try! Your {request.expected_digit} needs a bit more clarity."
-            else:
-                feedback = f"That looks like {recognition_result['predicted_digit']}. Try drawing {request.expected_digit} again."
-            
-            return {
-                **recognition_result,
-                'is_correct': is_correct,
-                'expected': request.expected_digit,
-                'feedback': feedback
-            }
-        else:
-            # Recognition only mode
-            result = recognition_service.recognize_from_base64(request.image)
-            
-            if 'error' in result:
-                raise HTTPException(status_code=400, detail=result['error'])
-            
-            return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during digit recognition: {str(e)}"
-        )
-
-
-@app.post("/recognize/digit/upload")
-async def recognize_digit_upload(
-    file: UploadFile = File(...),
-    expected_digit: Optional[int] = None,
-    confidence_threshold: float = 0.7
-):
-    """
-    POST /recognize/digit/upload
-    
-    Recognize handwritten digit from uploaded image file.
-    
-    Form data:
-    - file: Image file (PNG, JPG, etc.)
-    - expected_digit: Optional expected digit for validation
-    - confidence_threshold: Minimum confidence threshold (default: 0.7)
-    """
-    try:
-        # Read image file
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise ValueError("Could not decode image file")
-        
-        recognition_service = get_recognition_service()
-        
-        if expected_digit is not None:
-            # Validation mode
-            result = recognition_service.validate_digit(
-                image=image,
-                expected_digit=expected_digit,
-                confidence_threshold=confidence_threshold
-            )
-        else:
-            # Recognition only mode
-            result = recognition_service.recognize_digit(image)
-        
-        return result
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid image file: {str(e)}"
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during digit recognition: {str(e)}"
-        )
 
 
 # TODO: Phase 2 - Additional endpoints
