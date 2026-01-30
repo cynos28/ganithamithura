@@ -20,11 +20,23 @@ async def detect_shape(request: Request, image_file: UploadFile = File(None)):
 
 @router.get("/shapes/")
 async def get_shapes():
+    """Get all shapes from database"""
     return await shapes_controller.get_shapes()
 
-@router.get("/shapes/{shape_type}")
+@router.get("/shapes/type/{shape_type}")
 async def get_shapes_by_type(shape_type: str):
+    """Get shapes by type (2d or 3d)"""
     return await shapes_controller.get_shapes_by_type(shape_type)
+
+@router.get("/shapes/id/{shape_id}")
+async def get_shape_by_id(shape_id: str):
+    """Get a specific shape by its ID"""
+    return await shapes_controller.get_shape_by_id(shape_id)
+
+@router.get("/shapes/name/{shape_name}")
+async def get_shape_by_name(shape_name: str):
+    """Get a specific shape by its name"""
+    return await shapes_controller.get_shape_by_name(shape_name)
 
 @router.get("/images/{image_id}")
 async def get_image_by_id(image_id: str):
