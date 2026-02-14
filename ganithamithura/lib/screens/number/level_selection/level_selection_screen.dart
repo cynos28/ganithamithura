@@ -7,6 +7,7 @@ import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/widgets/common/buttons_and_cards.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/learning_flow_manager.dart';
+import 'package:ganithamithura/services/local_storage/storage_service.dart';
 
 /// LevelSelectionScreen - Display 5 levels with only Level 1 enabled
 class LevelSelectionScreen extends StatefulWidget {
@@ -27,7 +28,15 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
 
   Future<void> _initializeLevels() async {
-    // TODO: Phase 2 - Load level progress from storage
+    final storageService = StorageService.instance;
+    
+    // Load unlock status from storage (set by progress test)
+    final level1Unlocked = await storageService.isLevelUnlocked(1);
+    final level2Unlocked = await storageService.isLevelUnlocked(2);
+    final level3Unlocked = await storageService.isLevelUnlocked(3);
+    final level4Unlocked = await storageService.isLevelUnlocked(4);
+    final level5Unlocked = await storageService.isLevelUnlocked(5);
+    
     setState(() {
       _levels = [
         LearningLevel(
@@ -36,7 +45,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           description: 'Numbers 1-10',
           minNumber: 1,
           maxNumber: 10,
-          isUnlocked: true,
+          isUnlocked: level1Unlocked,
           totalActivities: 50, // 10 numbers × 5 activities
           completedActivities: 0,
         ),
@@ -46,7 +55,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           description: 'Numbers 11-20',
           minNumber: 11,
           maxNumber: 20,
-          isUnlocked: false,
+          isUnlocked: level2Unlocked,
         ),
         LearningLevel(
           levelNumber: 3,
@@ -54,7 +63,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           description: 'Numbers 21-50',
           minNumber: 21,
           maxNumber: 50,
-          isUnlocked: false,
+          isUnlocked: level3Unlocked,
         ),
         LearningLevel(
           levelNumber: 4,
@@ -62,7 +71,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           description: 'Numbers 51-100',
           minNumber: 51,
           maxNumber: 100,
-          isUnlocked: false,
+          isUnlocked: level4Unlocked,
         ),
         LearningLevel(
           levelNumber: 5,
@@ -70,7 +79,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           description: 'Advanced Numbers',
           minNumber: 100,
           maxNumber: 1000,
-          isUnlocked: false,
+          isUnlocked: level5Unlocked,
         ),
       ];
       _isLoading = false;

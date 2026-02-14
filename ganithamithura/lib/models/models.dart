@@ -350,12 +350,14 @@ class Progress {
 
 /// Test Result Model
 class TestResult {
-  final String testType; // 'beginner', 'intermediate', 'advanced'
+  final String testType; // 'beginner', 'intermediate', 'advanced', 'progress'
   final int totalQuestions;
   final int correctAnswers;
   final DateTime completedAt;
   final List<String> activityIds;
   final Map<String, bool> activityResults; // activityId -> wasCorrect
+  final String? difficultyLevel; // For progress test: beginner/intermediate/advanced
+  final List<int>? unlockedLevels; // Levels unlocked by this test
 
   TestResult({
     required this.testType,
@@ -364,6 +366,8 @@ class TestResult {
     required this.completedAt,
     required this.activityIds,
     required this.activityResults,
+    this.difficultyLevel,
+    this.unlockedLevels,
   });
 
   double get percentage =>
@@ -379,6 +383,10 @@ class TestResult {
       completedAt: DateTime.parse(json['completedAt'] as String),
       activityIds: List<String>.from(json['activityIds'] as List),
       activityResults: Map<String, bool>.from(json['activityResults'] as Map),
+      difficultyLevel: json['difficultyLevel'] as String?,
+      unlockedLevels: json['unlockedLevels'] != null
+          ? List<int>.from(json['unlockedLevels'] as List)
+          : null,
     );
   }
 
@@ -390,6 +398,180 @@ class TestResult {
       'completedAt': completedAt.toIso8601String(),
       'activityIds': activityIds,
       'activityResults': activityResults,
+      'difficultyLevel': difficultyLevel,
+      'unlockedLevels': unlockedLevels,
     };
   }
+}
+
+/// Progress Test Question - Represents a single question in the progress placement test
+class ProgressTestQuestion {
+  final String id;
+  final String type; // matching, drag_drop_order, drag_drop_count, image_counting, pattern_fill, trace, say, select
+  final String difficulty;
+  final int points;
+  final String question;
+  final String? instruction;
+  
+  // For select/MCQ type
+  final List<String>? options;
+  final String? correctAnswer;
+  
+  // For matching type
+  final List<String>? leftItems;
+  final List<String>? rightItems;
+  final Map<String, String>? correctPairs;
+  
+  // For drag_drop_order type
+  final List<String>? items;
+  final List<String>? correctOrder;
+  
+  // For drag_drop_count type
+  final int? availableCount;
+  final int? correctCount;
+  
+  // For image_counting and object-based types
+  final String? objectName;
+  final String? objectEmoji;
+  final String? objectImage;
+  final int? objectCount;
+  
+  // For pattern_fill type
+  final List<String>? sequence;
+  final int? blankPosition;
+  final List<String>? displaySequence;
+  
+  // For trace type
+  final int? expectedNumber;
+  final String? word;
+  
+  // For say type
+  final List<String>? alternatives;
+
+  ProgressTestQuestion({
+    required this.id,
+    required this.type,
+    required this.difficulty,
+    required this.points,
+    required this.question,
+    this.instruction,
+    this.options,
+    this.correctAnswer,
+    this.leftItems,
+    this.rightItems,
+    this.correctPairs,
+    this.items,
+    this.correctOrder,
+    this.availableCount,
+    this.correctCount,
+    this.objectName,
+    this.objectEmoji,
+    this.objectImage,
+    this.objectCount,
+    this.sequence,
+    this.blankPosition,
+    this.displaySequence,
+    this.expectedNumber,
+    this.word,
+    this.alternatives,
+  });
+
+  factory ProgressTestQuestion.fromJson(Map<String, dynamic> json) {
+    return ProgressTestQuestion(
+      id: json['id'] as String,
+      type: json['type'] as String,
+      difficulty: json['difficulty'] as String,
+      points: json['points'] as int,
+      question: json['question'] as String,
+      instruction: json['instruction'] as String?,
+      options: json['options'] != null ? List<String>.from(json['options']) : null,
+      correctAnswer: json['correct_answer'] as String?,
+      leftItems: json['left_items'] != null ? List<String>.from(json['left_items']) : null,
+      rightItems: json['right_items'] != null ? List<String>.from(json['right_items']) : null,
+      correctPairs: json['correct_pairs'] != null ? Map<String, String>.from(json['correct_pairs']) : null,
+      items: json['items'] != null ? List<String>.from(json['items']) : null,
+      correctOrder: json['correct_order'] != null ? List<String>.from(json['correct_order']) : null,
+      availableCount: json['available_count'] as int?,
+      correctCount: json['correct_count'] as int?,
+      objectName: json['object_name'] as String?,
+      objectEmoji: json['object_emoji'] as String?,
+      objectImage: json['object_image'] as String?,
+      objectCount: json['object_count'] as int?,
+      sequence: json['sequence'] != null ? List<String>.from(json['sequence']) : null,
+      blankPosition: json['blank_position'] as int?,
+      displaySequence: json['display_sequence'] != null ? List<String>.from(json['display_sequence']) : null,
+      expectedNumber: json['expected_number'] as int?,
+      word: json['word'] as String?,
+      alternatives: json['alternatives'] != null ? List<String>.from(json['alternatives']) : null,
+    );
+  }
+}
+
+/// Progress Test Response from API
+class ProgressTestResponse {
+  final String testType;
+  final int totalQuestions;
+  final List<ProgressTestQuestion> questions;
+  final Map<String, dynamic> scoring;
+  final int? passingScore;
+  final String? nextUnlock;
+
+  ProgressTestResponse({
+    required this.testType,
+    required this.totalQuestions,
+    required this.questions,
+    required this.scoring,
+    this.passingScore,
+    this.nextUnlock,
+  });
+
+  factory ProgressTestResponse.fromJson(Map<String, dynamic> json) {
+    final scoring = json['scoring'] as Map<String, dynamic>;
+    return ProgressTestResponse(
+      testType: json['test_type'] as String,
+      totalQuestions: json['total_questions'] as int,
+      questions: (json['questions'] as List)
+          .map((q) => ProgressTestQuestion.fromJson(q))
+          .toList(),
+      scoring: scoring,
+      passingScore: scoring['passing_score'] as int?,
+      nextUnlock: scoring['next_unlock'] as String?,
+    );
+  }
+}
+
+/// Progress Test Evaluation Response
+class ProgressTestEvaluation {
+  final int score;
+  final int total;
+  final double percentage;
+  final String difficultyLevel;
+  final List<int> unlockedLevels;
+  final String message;
+  final String? testType;
+
+  ProgressTestEvaluation({
+    required this.score,
+    required this.total,
+    required this.percentage,
+    required this.difficultyLevel,
+    required this.unlockedLevels,
+    required this.message,
+    this.testType,
+  });
+
+  factory ProgressTestEvaluation.fromJson(Map<String, dynamic> json) {
+    return ProgressTestEvaluation(
+      score: json['score'] as int,
+      total: json['total'] as int,
+      percentage: (json['percentage'] as num).toDouble(),
+      difficultyLevel: json['difficulty_level'] as String,
+      unlockedLevels: List<int>.from(json['unlocked_levels'] as List),
+      message: json['message'] as String,
+      testType: json['test_type'] as String?,
+    );
+  }
+
+  /// Whether this test result means the user passed and should unlock the next level
+  bool get passed => unlockedLevels.length > 1 || difficultyLevel != 'beginner';
 }

@@ -108,69 +108,80 @@ class NumApiService {
 
   // ==================== Test Endpoints ====================
 
-  /// GET /test/beginner - Get beginner test activities (5 random)
-  Future<List<Activity>> getBeginnerTestActivities() async {
+  /// GET /test/{testType} - Unified method to fetch test questions
+  /// testType can be: 'progress' (placement), 'beginner', 'intermediate', 'advanced'
+  Future<ProgressTestResponse> getTestQuestions(String testType) async {
     try {
-      final url = Uri.parse('$numBaseUrl/test/beginner');
+      final url = Uri.parse('$numBaseUrl/test/$testType');
       final response = await http
           .get(url, headers: _getHeaders())
           .timeout(Duration(seconds: AppConstants.apiTimeout));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        final activitiesList = jsonData['activities'] as List;
-        return activitiesList.map((json) => Activity.fromJson(json)).toList();
+        return ProgressTestResponse.fromJson(jsonData);
       } else {
         throw Exception(
-          'Failed to load test activities: ${response.statusCode}',
+          'Failed to load $testType test: ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Error fetching test activities: $e');
+      throw Exception('Error fetching $testType test: $e');
     }
   }
 
-  /// GET /test/intermediate - Get intermediate test (7 activities + additional questions)
-  Future<TestResponse> getIntermediateTestActivities() async {
+  /// Convenience: GET /test/progress - Placement quiz
+  Future<ProgressTestResponse> getProgressTestQuestions() async {
+    return getTestQuestions('progress');
+  }
+
+  /// POST /test/evaluate - Submit test results for evaluation
+  /// testType: 'placement', 'beginner', 'intermediate', 'advanced'
+  Future<ProgressTestEvaluation> evaluateTest({
+    required String testType,
+    required int score,
+    required int totalQuestions,
+    required List<Map<String, dynamic>> answers,
+  }) async {
     try {
-      final url = Uri.parse('$numBaseUrl/test/intermediate');
+      final url = Uri.parse('$numBaseUrl/test/evaluate');
+      final body = {
+        'test_type': testType,
+        'score': score,
+        'total_questions': totalQuestions,
+        'answers': answers,
+      };
+
       final response = await http
-          .get(url, headers: _getHeaders())
+          .post(url, headers: _getHeaders(), body: jsonEncode(body))
           .timeout(Duration(seconds: AppConstants.apiTimeout));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        return TestResponse.fromJson(jsonData);
+        return ProgressTestEvaluation.fromJson(jsonData);
       } else {
         throw Exception(
-          'Failed to load intermediate test: ${response.statusCode}',
+          'Failed to evaluate test: ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Error fetching intermediate test: $e');
+      throw Exception('Error evaluating test: $e');
     }
   }
 
-  /// GET /test/advanced - Get advanced test (10 activities + additional questions)
-  Future<TestResponse> getAdvancedTestActivities() async {
-    try {
-      final url = Uri.parse('$numBaseUrl/test/advanced');
-      final response = await http
-          .get(url, headers: _getHeaders())
-          .timeout(Duration(seconds: AppConstants.apiTimeout));
-
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        return TestResponse.fromJson(jsonData);
-      } else {
-        throw Exception('Failed to load advanced test: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching advanced test: $e');
-    }
+  /// Legacy compatibility wrapper
+  Future<ProgressTestEvaluation> evaluateProgressTest({
+    required int score,
+    required int totalQuestions,
+    required List<Map<String, dynamic>> answers,
+  }) async {
+    return evaluateTest(
+      testType: 'placement',
+      score: score,
+      totalQuestions: totalQuestions,
+      answers: answers,
+    );
   }
-
-  // ==================== Progress Endpoints ====================
 
   /// Sync progress to backend (future implementation)
   Future<void> syncProgress(List<Progress> progressList) async {

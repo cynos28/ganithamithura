@@ -317,42 +317,40 @@ async def get_beginner_test():
     """
     GET /test/beginner
     
-    Returns 5 random activities for beginner test from Level 1.
-    Activities are randomly selected and shuffled each time.
-    Excludes video lessons.
+    Returns 8 easy questions from JSON activity data in unified ProgressTestQuestion format.
+    Same question types as learning sessions (trace, show/count, say, read/select).
+    Passing score (60%+) unlocks intermediate.
     """
     try:
-        all_activities = []
+        questions = []
         
-        # Get all activities from level 1
-        for number in range(1, 11):
-            activities = get_activities_for_number_from_data(1, number)
-            # Exclude videos
-            all_activities.extend([a for a in activities if a.type != 'video'])
+        # Get 2 easy questions from each JSON activity type
+        for activity_type in ['trace', 'show', 'say', 'read']:
+            json_qs = get_activity_questions_from_json(activity_type, difficulty='easy', count=2)
+            for q in json_qs:
+                questions.append(convert_json_to_test_question(q, activity_type, q['number']))
         
-        if len(all_activities) < 5:
-            raise HTTPException(
-                status_code=500,
-                detail="Not enough activities available for test"
-            )
+        # Fallback: generate if not enough from JSON
+        while len(questions) < 8:
+            questions.append(generate_select_answer_question())
         
-        # Randomly select 5 activities - use 'easy' difficulty questions
-        test_activities = random.sample(all_activities, 5)
-        
-        # Filter to only easy questions for beginner
-        for activity in test_activities:
-            if activity.questions:
-                activity.questions = [q for q in activity.questions if q.get('difficulty') == 'easy']
+        random.shuffle(questions)
         
         return {
             "test_type": "beginner",
-            "count": len(test_activities),
-            "activities": [activity.dict() for activity in test_activities]
+            "total_questions": min(len(questions), 8),
+            "questions": questions[:8],
+            "passing_score": 5,
+            "next_unlock": "intermediate",
+            "scoring": {
+                "pass": {"min_score": 5, "unlocks": ["beginner", "intermediate"]},
+                "fail": {"min_score": 0, "max_score": 4, "unlocks": ["beginner"]},
+            }
         }
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error generating test: {str(e)}"
+            detail=f"Error generating beginner test: {str(e)}"
         )
 
 
@@ -361,44 +359,83 @@ async def get_intermediate_test():
     """
     GET /test/intermediate
     
-    Returns 7 random activities for intermediate test.
-    Includes all beginner question types plus:
-    - Sequencing (what comes before/after)
-    - Comparison (which is bigger/smaller)
-    - Missing numbers (1, __, 3)
-    Uses 'medium' difficulty questions.
+    Returns 10 medium-difficulty questions in interactive format.
+    Uses medium JSON questions with transformed structures + new types:
+    - show → drag_drop_count (drag N objects into box instead of just selecting)
+    - say → say with image (show image with objects, say the count)
+    - read → matching (match numbers to words instead of MCQ)
+    - trace → trace with fewer guides
+    Plus: pattern_fill, drag_drop_order, sequencing, comparison
+    Passing (60%+) unlocks advanced.
     """
     try:
-        all_activities = []
+        questions = []
         
-        # Get all activities from level 1
-        for number in range(1, 11):
-            activities = get_activities_for_number_from_data(1, number)
-            # Exclude videos
-            all_activities.extend([a for a in activities if a.type != 'video'])
+        # Medium difficulty trace from JSON
+        trace_qs = get_activity_questions_from_json('trace', difficulty='medium', count=1)
+        for q in trace_qs:
+            questions.append(convert_json_to_test_question(q, 'trace', q['number']))
         
-        if len(all_activities) < 7:
-            raise HTTPException(
-                status_code=500,
-                detail="Not enough activities available for intermediate test"
-            )
+        # Medium show → transform to drag_drop_count (interactive counting)
+        show_qs = get_activity_questions_from_json('show', difficulty='medium', count=2)
+        for q in show_qs:
+            count = q.get('correct_answer', q['number'])
+            obj = random.choice(COUNTING_OBJECTS)
+            questions.append({
+                "id": f"dragdrop_count_{q['number']}_{random.randint(100,999)}",
+                "type": "drag_drop_count",
+                "difficulty": "medium",
+                "points": 15,
+                "question": f"Drag exactly {count} {obj['name']} into the box",
+                "instruction": f"Pick {count} {obj['name']}",
+                "object_name": obj["name"],
+                "object_emoji": obj["emoji"],
+                "object_image": obj["image"].replace("{n}", str(count)),
+                "available_count": count + random.randint(2, 4),
+                "correct_count": count,
+            })
         
-        # Randomly select 7 activities
-        test_activities = random.sample(all_activities, 7)
+        # Medium say → show image with objects, say the count
+        say_qs = get_activity_questions_from_json('say', difficulty='medium', count=1)
+        for q in say_qs:
+            questions.append(convert_json_to_test_question(q, 'say', q['number']))
         
-        # Filter to medium difficulty (includes more challenging variations)
-        for activity in test_activities:
-            if activity.questions:
-                activity.questions = [q for q in activity.questions if q.get('difficulty') in ['easy', 'medium']]
+        # Medium read → transform to matching (match numbers to words)
+        questions.append(generate_matching_question())
         
-        # Add intermediate-specific questions (sequencing, comparison)
-        intermediate_questions = generate_intermediate_questions()
+        # New interactive types
+        questions.append(generate_drag_drop_ordering_question())
+        questions.append(generate_pattern_fill_question())
+        questions.append(generate_image_counting_question())
+        
+        # Object detection question (camera-based counting)
+        questions.append(generate_object_detection_question(difficulty='medium'))
+        
+        # Sequencing & comparison questions (medium difficulty)
+        intermediate_qs = generate_intermediate_questions()
+        for iq in intermediate_qs[:2]:
+            questions.append({
+                "id": iq.get('id', f"int_{random.randint(100,999)}"),
+                "type": "select",
+                "difficulty": "medium",
+                "points": iq.get('points', 15),
+                "question": iq['question'],
+                "options": iq.get('options', []),
+                "correct_answer": iq.get('correct_answer', ''),
+            })
+        
+        random.shuffle(questions)
         
         return {
             "test_type": "intermediate",
-            "count": len(test_activities),
-            "activities": [activity.dict() for activity in test_activities],
-            "additional_questions": intermediate_questions
+            "total_questions": min(len(questions), 10),
+            "questions": questions[:10],
+            "passing_score": 6,
+            "next_unlock": "advanced",
+            "scoring": {
+                "pass": {"min_score": 6, "unlocks": ["beginner", "intermediate", "advanced"]},
+                "fail": {"min_score": 0, "max_score": 5, "unlocks": ["beginner", "intermediate"]},
+            }
         }
     except Exception as e:
         raise HTTPException(
@@ -412,43 +449,49 @@ async def get_advanced_test():
     """
     GET /test/advanced
     
-    Returns 10 activities for advanced test.
-    Includes all question types plus:
-    - Pattern recognition (2, 4, 6, ?)
-    - Simple word problems
-    - Estimation challenges
-    - Place value questions
-    Uses 'hard' difficulty questions.
+    Returns 10 hard-difficulty questions with all question types.
+    Uses hard JSON questions + word problems, estimation, complex patterns.
     """
     try:
-        all_activities = []
+        questions = []
         
-        # Get all activities from level 1
-        for number in range(1, 11):
-            activities = get_activities_for_number_from_data(1, number)
-            # Exclude videos
-            all_activities.extend([a for a in activities if a.type != 'video'])
+        # Hard difficulty questions from JSON
+        for activity_type in ['trace', 'show', 'say', 'read']:
+            json_qs = get_activity_questions_from_json(activity_type, difficulty='hard', count=1)
+            for q in json_qs:
+                questions.append(convert_json_to_test_question(q, activity_type, q['number']))
         
-        if len(all_activities) < 10:
-            raise HTTPException(
-                status_code=500,
-                detail="Not enough activities available for advanced test"
-            )
+        # New interactive types (harder variants)
+        questions.append(generate_matching_question())
+        questions.append(generate_drag_drop_ordering_question())
+        questions.append(generate_drag_drop_counting_question())
+        questions.append(generate_pattern_fill_question())
         
-        # Randomly select 10 activities
-        test_activities = random.sample(all_activities, 10)
+        # Object detection question (camera-based counting, harder)
+        questions.append(generate_object_detection_question(difficulty='hard'))
         
-        # Include all difficulty levels for maximum challenge
-        # (questions are already loaded with all difficulties)
+        # Word problems and estimation from advanced generator
+        advanced_qs = generate_advanced_questions()
+        for aq in advanced_qs[:2]:
+            questions.append({
+                "id": aq.get('id', f"adv_{random.randint(100,999)}"),
+                "type": "select",
+                "difficulty": "hard",
+                "points": aq.get('points', 20),
+                "question": aq['question'],
+                "options": aq.get('options', []),
+                "correct_answer": aq.get('correct_answer', ''),
+            })
         
-        # Add advanced-specific questions (patterns, word problems)
-        advanced_questions = generate_advanced_questions()
+        random.shuffle(questions)
         
         return {
             "test_type": "advanced",
-            "count": len(test_activities),
-            "activities": [activity.dict() for activity in test_activities],
-            "additional_questions": advanced_questions
+            "total_questions": min(len(questions), 10),
+            "questions": questions[:10],
+            "scoring": {
+                "pass": {"min_score": 7, "unlocks": ["beginner", "intermediate", "advanced"]},
+            }
         }
     except Exception as e:
         raise HTTPException(
@@ -575,6 +618,554 @@ def generate_advanced_questions() -> List[Dict[str, Any]]:
     return questions[:5]  # Return 5 advanced questions
 
 
+# ==================== Progress Test Endpoint ====================
+
+# Number-word mappings for matching/drag-drop questions
+NUMBER_WORDS = {
+    1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+    6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten"
+}
+
+# Object images for counting questions
+COUNTING_OBJECTS = [
+    {"name": "apples", "emoji": "🍎", "image": "assets/images/apple_{n}.png"},
+    {"name": "stars", "emoji": "⭐", "image": "assets/images/star_{n}.png"},
+    {"name": "bananas", "emoji": "🍌", "image": "assets/images/banana_{n}.png"},
+    {"name": "balls", "emoji": "🏀", "image": "assets/images/ball_{n}.png"},
+    {"name": "flowers", "emoji": "🌸", "image": "assets/images/flower_{n}.png"},
+    {"name": "birds", "emoji": "🐦", "image": "assets/images/bird_{n}.png"},
+    {"name": "fish", "emoji": "🐟", "image": "assets/images/fish_{n}.png"},
+    {"name": "butterflies", "emoji": "🦋", "image": "assets/images/butterfly_{n}.png"},
+]
+
+# Objects suitable for real-world camera detection
+DETECTABLE_OBJECTS = [
+    "bottle", "cup", "book", "chair", "pen", "phone", "shoe", "bag",
+    "spoon", "fork", "plate", "remote", "mouse", "keyboard", "clock",
+]
+
+
+def generate_object_detection_question(difficulty: str = "medium") -> Dict[str, Any]:
+    """Generate a camera-based object detection question.
+    
+    The child needs to point the camera at real-world objects and 
+    the YOLO model will detect and count them.
+    """
+    if difficulty == "medium":
+        target_count = random.randint(1, 3)
+    else:  # hard
+        target_count = random.randint(2, 5)
+
+    # Sometimes use 'any' object (just count anything), sometimes specific
+    use_specific = random.choice([True, False])
+    
+    if use_specific:
+        target_object = random.choice(DETECTABLE_OBJECTS)
+        question_text = f"Find and photograph {target_count} {target_object}{'s' if target_count > 1 else ''} around you"
+        instruction_text = f"Point your camera at {target_count} {target_object}{'s' if target_count > 1 else ''} and capture"
+    else:
+        target_object = "any"
+        question_text = f"Find and photograph {target_count} object{'s' if target_count > 1 else ''} around you"
+        instruction_text = f"Point your camera at {target_count} object{'s' if target_count > 1 else ''} and capture"
+
+    return {
+        "id": f"object_detection_{target_object}_{target_count}_{random.randint(100,999)}",
+        "type": "object_detection",
+        "difficulty": difficulty,
+        "points": 20 if difficulty == "hard" else 15,
+        "question": question_text,
+        "instruction": instruction_text,
+        "object_name": target_object,
+        "object_count": target_count,
+        "expected_number": target_count,
+    }
+
+
+def generate_matching_question() -> Dict[str, Any]:
+    """Generate a matching question: match numbers to their words"""
+    count = random.choice([3, 4, 5])
+    numbers = random.sample(range(1, 11), count)
+    
+    # Create pairs: number -> word
+    pairs = [{"number": str(n), "word": NUMBER_WORDS[n]} for n in numbers]
+    
+    # Shuffled words for the right side
+    shuffled_words = [p["word"] for p in pairs]
+    random.shuffle(shuffled_words)
+    
+    return {
+        "id": f"match_{'_'.join(map(str, numbers))}_{random.randint(100,999)}",
+        "type": "matching",
+        "difficulty": "medium",
+        "points": 15,
+        "question": "Match each number with its word",
+        "instruction": "Draw lines to match the numbers on the left with the words on the right",
+        "left_items": [str(n) for n in numbers],
+        "right_items": shuffled_words,
+        "correct_pairs": {str(n): NUMBER_WORDS[n] for n in numbers},
+    }
+
+
+def generate_drag_drop_ordering_question() -> Dict[str, Any]:
+    """Generate a drag-and-drop ordering question"""
+    start = random.randint(1, 6)
+    count = random.choice([4, 5])
+    correct_order = list(range(start, start + count))
+    shuffled = correct_order.copy()
+    random.shuffle(shuffled)
+    
+    # Ensure shuffled is actually different from correct
+    while shuffled == correct_order:
+        random.shuffle(shuffled)
+    
+    variant = random.choice(["ascending", "descending"])
+    if variant == "descending":
+        correct_order = list(reversed(correct_order))
+    
+    return {
+        "id": f"dragdrop_order_{start}_{count}_{random.randint(100,999)}",
+        "type": "drag_drop_order",
+        "difficulty": "medium",
+        "points": 15,
+        "question": f"Drag the numbers to arrange them from {'smallest to biggest' if variant == 'ascending' else 'biggest to smallest'}",
+        "instruction": f"Put these numbers in order ({variant})",
+        "items": [str(n) for n in shuffled],
+        "correct_order": [str(n) for n in correct_order],
+    }
+
+
+def generate_drag_drop_counting_question() -> Dict[str, Any]:
+    """Generate a drag-and-drop counting question: drag correct count of objects"""
+    target_count = random.randint(2, 8)
+    obj = random.choice(COUNTING_OBJECTS)
+    available_count = target_count + random.randint(2, 4)
+    
+    return {
+        "id": f"dragdrop_count_{obj['name']}_{target_count}_{random.randint(100,999)}",
+        "type": "drag_drop_count",
+        "difficulty": "medium",
+        "points": 15,
+        "question": f"Drag exactly {target_count} {obj['name']} into the box",
+        "instruction": f"Pick {target_count} {obj['name']}",
+        "object_name": obj["name"],
+        "object_emoji": obj["emoji"],
+        "object_image": obj["image"].replace("{n}", str(target_count)),
+        "available_count": available_count,
+        "correct_count": target_count,
+    }
+
+
+def generate_image_counting_question() -> Dict[str, Any]:
+    """Generate question: show image with N objects, ask user to identify the count"""
+    count = random.randint(1, 10)
+    obj = random.choice(COUNTING_OBJECTS)
+    
+    # Generate wrong options
+    options = list(set([count, max(1, count - 1), count + 1, max(1, count - 2)]))
+    while len(options) < 4:
+        options.append(count + len(options))
+    options = [str(o) for o in sorted(options[:4])]
+    
+    question_variants = [
+        f"How many {obj['name']} do you see in the picture?",
+        f"Count the {obj['name']}. How many are there?",
+        f"Look at the picture. How many {obj['name']} can you count?",
+    ]
+    
+    return {
+        "id": f"img_count_{obj['name']}_{count}_{random.randint(100,999)}",
+        "type": "image_counting",
+        "difficulty": "easy",
+        "points": 10,
+        "question": random.choice(question_variants),
+        "instruction": f"Count the {obj['name']} in the image",
+        "object_name": obj["name"],
+        "object_emoji": obj["emoji"],
+        "object_image": obj["image"].replace("{n}", str(count)),
+        "object_count": count,
+        "options": options,
+        "correct_answer": str(count),
+    }
+
+
+def generate_pattern_fill_question() -> Dict[str, Any]:
+    """Generate a number pattern with a blank to fill"""
+    pattern_templates = [
+        # (start, step, length, description)
+        (1, 1, 5, "counting by 1"),
+        (2, 2, 5, "counting by 2"),
+        (1, 3, 4, "counting by 3"),
+        (5, 5, 4, "counting by 5"),
+        (10, -1, 5, "counting down by 1"),
+        (10, -2, 4, "counting down by 2"),
+        (1, 1, 6, "counting by 1"),
+        (3, 2, 5, "odd numbers from 3"),
+    ]
+    
+    template = random.choice(pattern_templates)
+    start, step, length, desc = template
+    
+    sequence = [start + i * step for i in range(length)]
+    blank_pos = random.randint(1, length - 2)  # Don't blank first or last
+    
+    correct_answer = sequence[blank_pos]
+    display = [str(n) if i != blank_pos else "___" for i, n in enumerate(sequence)]
+    
+    options = list(set([correct_answer, correct_answer + step, correct_answer - step, correct_answer + 1]))
+    options = [str(o) for o in sorted(options[:4])]
+    
+    return {
+        "id": f"pattern_fill_{start}_{step}_{blank_pos}_{random.randint(100,999)}",
+        "type": "pattern_fill",
+        "difficulty": "medium",
+        "points": 15,
+        "question": f"Fill in the blank: {', '.join(display)}",
+        "instruction": "Find the missing number in the pattern",
+        "sequence": [str(n) for n in sequence],
+        "blank_position": blank_pos,
+        "display_sequence": display,
+        "options": options,
+        "correct_answer": str(correct_answer),
+    }
+
+
+def generate_tracing_question() -> Dict[str, Any]:
+    """Generate a tracing/drawing question for the progress test"""
+    number = random.randint(1, 10)
+    
+    return {
+        "id": f"trace_test_{number}_{random.randint(100,999)}",
+        "type": "trace",
+        "difficulty": "easy",
+        "points": 10,
+        "question": f"Draw the number {number}",
+        "instruction": f"Write the number {number} in the box below",
+        "expected_number": number,
+        "word": NUMBER_WORDS[number],
+    }
+
+
+def generate_say_question() -> Dict[str, Any]:
+    """Generate a say/speak question for the progress test"""
+    number = random.randint(1, 10)
+    obj = random.choice(COUNTING_OBJECTS)
+    
+    return {
+        "id": f"say_test_{number}_{random.randint(100,999)}",
+        "type": "say",
+        "difficulty": "easy",
+        "points": 10,
+        "question": f"How many {obj['name']} do you see? Say the number!",
+        "instruction": "Say the number out loud",
+        "object_name": obj["name"],
+        "object_emoji": obj["emoji"],
+        "object_image": obj["image"].replace("{n}", str(number)),
+        "object_count": number,
+        "correct_answer": str(number),
+        "alternatives": [str(number), NUMBER_WORDS[number].lower()],
+    }
+
+
+def generate_select_answer_question() -> Dict[str, Any]:
+    """Generate a multiple-choice select question"""
+    variant = random.choice(["number_to_word", "word_to_number", "count_objects"])
+    
+    if variant == "number_to_word":
+        number = random.randint(1, 10)
+        correct = NUMBER_WORDS[number]
+        wrong = random.sample([w for n, w in NUMBER_WORDS.items() if n != number], 3)
+        options = [correct] + wrong
+        random.shuffle(options)
+        return {
+            "id": f"select_n2w_{number}_{random.randint(100,999)}",
+            "type": "select",
+            "difficulty": "easy",
+            "points": 10,
+            "question": f"What is the word for the number {number}?",
+            "options": options,
+            "correct_answer": correct,
+        }
+    elif variant == "word_to_number":
+        number = random.randint(1, 10)
+        word = NUMBER_WORDS[number]
+        wrong = random.sample([str(n) for n in range(1, 11) if n != number], 3)
+        options = [str(number)] + wrong
+        random.shuffle(options)
+        return {
+            "id": f"select_w2n_{number}_{random.randint(100,999)}",
+            "type": "select",
+            "difficulty": "easy",
+            "points": 10,
+            "question": f"Which number is '{word}'?",
+            "options": options,
+            "correct_answer": str(number),
+        }
+    else:
+        count = random.randint(1, 10)
+        obj = random.choice(COUNTING_OBJECTS)
+        wrong = random.sample([str(n) for n in range(1, 11) if n != count], 3)
+        options = [str(count)] + wrong
+        random.shuffle(options)
+        return {
+            "id": f"select_count_{count}_{random.randint(100,999)}",
+            "type": "select",
+            "difficulty": "easy",
+            "points": 10,
+            "question": f"How many {obj['name']} are shown?",
+            "object_name": obj["name"],
+            "object_emoji": obj["emoji"],
+            "object_image": obj["image"].replace("{n}", str(count)),
+            "object_count": count,
+            "options": options,
+            "correct_answer": str(count),
+        }
+
+
+class ProgressTestSubmission(BaseModel):
+    score: int
+    total_questions: int
+    test_type: str = "placement"  # placement, beginner, intermediate, advanced
+    answers: List[Dict[str, Any]]
+
+
+def get_activity_questions_from_json(activity_type: str, difficulty: str = None, count: int = 1) -> List[Dict[str, Any]]:
+    """Extract questions from existing JSON activity data"""
+    questions = []
+    
+    try:
+        # Load both levels
+        level1_data = load_activities_data(1)
+        level2_data = load_activities_data(2)
+        
+        # Collect all numbers from both levels
+        all_numbers = {}
+        all_numbers.update(level1_data.get('numbers', {}))
+        all_numbers.update(level2_data.get('numbers', {}))
+        
+        # Extract questions of the specified type
+        available_questions = []
+        for number_str, number_data in all_numbers.items():
+            if activity_type in number_data and number_data[activity_type]:
+                activity_questions = number_data[activity_type].get('questions', [])
+                for q in activity_questions:
+                    if difficulty is None or q.get('difficulty') == difficulty:
+                        # Add number context to the question
+                        q_copy = q.copy()
+                        q_copy['number'] = int(number_str)
+                        q_copy['type'] = activity_type
+                        available_questions.append(q_copy)
+        
+        # Randomly select the requested count
+        if available_questions:
+            selected = random.sample(
+                available_questions, 
+                min(count, len(available_questions))
+            )
+            questions.extend(selected)
+    
+    except Exception as e:
+        print(f"Error loading {activity_type} questions: {e}")
+    
+    return questions
+
+
+def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> Dict[str, Any]:
+    """Convert a raw JSON activity question to unified ProgressTestQuestion format.
+    
+    Maps each activity type (trace, show, say, read) to the widget-compatible format
+    used by the Flutter question_widgets.dart.
+    """
+    if activity_type == 'trace':
+        return {
+            "id": q.get('id', f"trace_{number}_{q.get('difficulty', 'easy')}"),
+            "type": "trace",
+            "difficulty": q.get('difficulty', 'easy'),
+            "points": q.get('points', 10),
+            "question": f"Draw the number {number}",
+            "instruction": q.get('instruction', f"Write the number {number}"),
+            "expected_number": number,
+            "word": NUMBER_WORDS.get(number, str(number)),
+            "template_image": q.get('template_image'),
+        }
+    
+    elif activity_type == 'show':
+        count = q.get('correct_answer', number)
+        options = sorted(list(set([
+            str(count), str(max(1, count - 1)), 
+            str(count + 1), str(max(1, count - 2))
+        ])))[:4]
+        return {
+            "id": q.get('id', f"show_{number}_{q.get('difficulty', 'easy')}"),
+            "type": "image_counting",
+            "difficulty": q.get('difficulty', 'easy'),
+            "points": q.get('points', 10),
+            "question": q.get('question', f"How many objects do you see?"),
+            "instruction": "Count the objects",
+            "help_image": q.get('help_image'),
+            "object_count": count,
+            "options": options,
+            "correct_answer": str(count),
+        }
+    
+    elif activity_type == 'say':
+        return {
+            "id": q.get('id', f"say_{number}_{q.get('difficulty', 'easy')}"),
+            "type": "say",
+            "difficulty": q.get('difficulty', 'easy'),
+            "points": q.get('points', 10),
+            "question": q.get('question', f"Say the number!"),
+            "instruction": "Say the number out loud",
+            "object_image": q.get('image'),
+            "object_count": q.get('correct_answer', number),
+            "correct_answer": str(q.get('correct_answer', number)),
+            "alternatives": q.get('alternatives', [str(number), NUMBER_WORDS.get(number, '').lower()]),
+            "pronounce": q.get('pronounce'),
+        }
+    
+    elif activity_type == 'read':
+        return {
+            "id": q.get('id', f"read_{number}_{q.get('difficulty', 'easy')}"),
+            "type": "select",
+            "difficulty": q.get('difficulty', 'easy'),
+            "points": q.get('points', 10),
+            "question": q.get('question', ''),
+            "options": q.get('options', []),
+            "correct_answer": q.get('answer', ''),
+        }
+    
+    # Fallback
+    return {
+        "id": f"unknown_{number}_{random.randint(100,999)}",
+        "type": "select",
+        "difficulty": q.get('difficulty', 'easy'),
+        "points": q.get('points', 10),
+        "question": f"What number is this: {number}?",
+        "options": [str(number)],
+        "correct_answer": str(number),
+    }
+
+
+@app.get("/test/progress")
+async def get_progress_test():
+    """
+    GET /test/progress
+    
+    Small placement quiz (5 questions) to determine starting difficulty level.
+    Uses easy questions from JSON activity data - one from each activity type.
+    
+    Based on score:
+    - 0-2 correct: Beginner only
+    - 3-4 correct: Beginner + Intermediate unlocked
+    - 5 correct: All levels unlocked
+    """
+    try:
+        questions = []
+        
+        # Get 1 easy question from each JSON activity type
+        for activity_type in ['trace', 'show', 'say', 'read']:
+            json_qs = get_activity_questions_from_json(activity_type, difficulty='easy', count=1)
+            for q in json_qs:
+                questions.append(convert_json_to_test_question(q, activity_type, q['number']))
+        
+        # Add 1 select question for variety
+        questions.append(generate_select_answer_question())
+        
+        random.shuffle(questions)
+        
+        return {
+            "test_type": "placement",
+            "total_questions": len(questions),
+            "questions": questions,
+            "scoring": {
+                "beginner": {"min_score": 0, "max_score": 2, "unlocks": ["beginner"]},
+                "intermediate": {"min_score": 3, "max_score": 4, "unlocks": ["beginner", "intermediate"]},
+                "advanced": {"min_score": 5, "max_score": 5, "unlocks": ["beginner", "intermediate", "advanced"]},
+            }
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating placement quiz: {str(e)}"
+        )
+
+
+@app.post("/test/evaluate")
+async def evaluate_test(submission: ProgressTestSubmission):
+    """
+    POST /test/evaluate
+    
+    Generic test evaluation. Handles placement quiz, beginner, intermediate, and advanced tests.
+    Returns unlocked levels based on test type and score.
+    """
+    score = submission.score
+    total = submission.total_questions
+    test_type = submission.test_type
+    percentage = (score / total) * 100 if total > 0 else 0
+    
+    if test_type == "placement":
+        if score >= 5:
+            difficulty_level = "advanced"
+            unlocked_levels = [1, 2, 3]
+            message = "Excellent! All difficulty levels are unlocked!"
+        elif score >= 3:
+            difficulty_level = "intermediate"
+            unlocked_levels = [1, 2]
+            message = "Good job! Beginner and Intermediate are unlocked!"
+        else:
+            difficulty_level = "beginner"
+            unlocked_levels = [1]
+            message = "Let's start from the basics! Beginner level is ready."
+    
+    elif test_type == "beginner":
+        if score >= 5:  # 5 out of 8 = 62.5%
+            difficulty_level = "intermediate"
+            unlocked_levels = [1, 2]
+            message = "Great work! You've unlocked Intermediate level!"
+        else:
+            difficulty_level = "beginner"
+            unlocked_levels = [1]
+            message = "Keep practicing! Try again to unlock Intermediate."
+    
+    elif test_type == "intermediate":
+        if score >= 6:  # 6 out of 10 = 60%
+            difficulty_level = "advanced"
+            unlocked_levels = [1, 2, 3]
+            message = "Amazing! You've unlocked Advanced level!"
+        else:
+            difficulty_level = "intermediate"
+            unlocked_levels = [1, 2]
+            message = "Good effort! Practice more to unlock Advanced."
+    
+    elif test_type == "advanced":
+        difficulty_level = "advanced"
+        unlocked_levels = [1, 2, 3]
+        if score >= 7:
+            message = "Outstanding! You've mastered all levels!"
+        else:
+            message = "Great attempt! Keep practicing the advanced topics."
+    
+    else:
+        difficulty_level = "beginner"
+        unlocked_levels = [1]
+        message = "Test completed."
+    
+    return {
+        "score": score,
+        "total": total,
+        "percentage": round(percentage, 1),
+        "difficulty_level": difficulty_level,
+        "unlocked_levels": unlocked_levels,
+        "message": message,
+        "test_type": test_type,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+# Keep legacy endpoint for backward compatibility
+@app.post("/test/progress/evaluate")
+async def evaluate_progress_test(submission: ProgressTestSubmission):
+    """Legacy endpoint - redirects to unified evaluate"""
+    return await evaluate_test(submission)
 
 
 # Legacy endpoint removed - use /activities/level/{level}/number/{number} instead
