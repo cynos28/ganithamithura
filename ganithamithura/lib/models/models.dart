@@ -11,7 +11,7 @@ class Activity {
   final int level;
   final int order; // Order within the number sequence
   final List<ActivityQuestion>? questions; // Array of questions with difficulty
-  
+
   Activity({
     required this.id,
     required this.type,
@@ -23,7 +23,7 @@ class Activity {
     required this.order,
     this.questions,
   });
-  
+
   factory Activity.fromJson(Map<String, dynamic> json) {
     List<ActivityQuestion>? questionsList;
     if (json['questions'] != null) {
@@ -31,7 +31,7 @@ class Activity {
           .map((q) => ActivityQuestion.fromJson(q))
           .toList();
     }
-    
+
     return Activity(
       id: json['id'] as String,
       type: json['type'] as String,
@@ -44,7 +44,7 @@ class Activity {
       questions: questionsList,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -58,13 +58,13 @@ class Activity {
       'questions': questions?.map((q) => q.toJson()).toList(),
     };
   }
-  
+
   // Get questions by difficulty
   List<ActivityQuestion> getQuestionsByDifficulty(String difficulty) {
     if (questions == null) return [];
     return questions!.where((q) => q.difficulty == difficulty).toList();
   }
-  
+
   // Get easy question for tutorial
   ActivityQuestion? getEasyQuestion() {
     if (questions == null || questions!.isEmpty) return null;
@@ -74,18 +74,19 @@ class Activity {
       return questions!.first;
     }
   }
-  
+
   // Get non-easy questions for progress test
   List<ActivityQuestion> getTestQuestions() {
     if (questions == null) return [];
     return questions!.where((q) => q.difficulty != 'easy').toList();
   }
-  
+
   bool get isVideoLesson => type == AppConstants.activityTypeVideo;
   bool get isTraceActivity => type == AppConstants.activityTypeTrace;
   bool get isReadActivity => type == AppConstants.activityTypeRead;
   bool get isSayActivity => type == AppConstants.activityTypeSay;
-  bool get isObjectDetection => type == AppConstants.activityTypeObjectDetection || type == 'show';
+  bool get isObjectDetection =>
+      type == AppConstants.activityTypeObjectDetection || type == 'show';
 }
 
 /// Activity Question Model - Represents a single question within an activity
@@ -105,7 +106,7 @@ class ActivityQuestion {
   final List<String>? alternatives;
   final int? maxObjects;
   final String? type; // For read activity
-  
+
   ActivityQuestion({
     required this.id,
     required this.difficulty,
@@ -123,7 +124,7 @@ class ActivityQuestion {
     this.maxObjects,
     this.type,
   });
-  
+
   factory ActivityQuestion.fromJson(Map<String, dynamic> json) {
     return ActivityQuestion(
       id: json['id'] as String,
@@ -132,22 +133,22 @@ class ActivityQuestion {
       question: json['question'] as String?,
       instruction: json['instruction'] as String?,
       correctAnswer: json['correct_answer'],
-      options: json['options'] != null 
-          ? List<String>.from(json['options']) 
+      options: json['options'] != null
+          ? List<String>.from(json['options'])
           : null,
       answer: json['answer'] as String?,
       image: json['image'] as String?,
       templateImage: json['template_image'] as String?,
       helpImage: json['help_image'] as String?,
       pronounce: json['pronounce'] as String?,
-      alternatives: json['alternatives'] != null 
-          ? List<String>.from(json['alternatives']) 
+      alternatives: json['alternatives'] != null
+          ? List<String>.from(json['alternatives'])
           : null,
       maxObjects: json['max_objects'] as int?,
       type: json['type'] as String?,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -179,7 +180,7 @@ class LearningLevel {
   final bool isUnlocked;
   final int totalActivities;
   final int completedActivities;
-  
+
   LearningLevel({
     required this.levelNumber,
     required this.title,
@@ -190,13 +191,13 @@ class LearningLevel {
     this.totalActivities = 0,
     this.completedActivities = 0,
   });
-  
-  double get progress => totalActivities > 0 
-      ? completedActivities / totalActivities 
-      : 0.0;
-  
-  bool get isCompleted => completedActivities == totalActivities && totalActivities > 0;
-  
+
+  double get progress =>
+      totalActivities > 0 ? completedActivities / totalActivities : 0.0;
+
+  bool get isCompleted =>
+      completedActivities == totalActivities && totalActivities > 0;
+
   factory LearningLevel.fromJson(Map<String, dynamic> json) {
     return LearningLevel(
       levelNumber: json['levelNumber'] as int,
@@ -209,7 +210,7 @@ class LearningLevel {
       completedActivities: json['completedActivities'] as int? ?? 0,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'levelNumber': levelNumber,
@@ -224,7 +225,55 @@ class LearningLevel {
   }
 }
 
-/// Progress Model - Tracks user's progress
+/// Question Progress Model - Tracks individual question attempts within an activity
+class QuestionProgress {
+  final String questionId;
+  final int attempts;
+  final int bestScore;
+  final DateTime lastAttemptAt;
+  final bool isCompleted;
+
+  QuestionProgress({
+    required this.questionId,
+    this.attempts = 0,
+    this.bestScore = 0,
+    required this.lastAttemptAt,
+    this.isCompleted = false,
+  });
+
+  factory QuestionProgress.fromJson(Map<String, dynamic> json) {
+    return QuestionProgress(
+      questionId: json['questionId'] as String,
+      attempts: json['attempts'] as int? ?? 0,
+      bestScore: json['bestScore'] as int? ?? 0,
+      lastAttemptAt: DateTime.parse(json['lastAttemptAt'] as String),
+      isCompleted: json['isCompleted'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'questionId': questionId,
+      'attempts': attempts,
+      'bestScore': bestScore,
+      'lastAttemptAt': lastAttemptAt.toIso8601String(),
+      'isCompleted': isCompleted,
+    };
+  }
+
+  /// Create updated copy with new attempt
+  QuestionProgress copyWithAttempt({required int score}) {
+    return QuestionProgress(
+      questionId: questionId,
+      attempts: attempts + 1,
+      bestScore: score > bestScore ? score : bestScore,
+      lastAttemptAt: DateTime.now(),
+      isCompleted: isCompleted || score >= 70, // 70% threshold for completion
+    );
+  }
+}
+
+/// Progress Model - Tracks user's progress for an activity
 class Progress {
   final String activityId;
   final int score;
@@ -232,7 +281,10 @@ class Progress {
   final DateTime completedAt;
   final int attempts;
   final Map<String, dynamic>? additionalData;
-  
+  final Map<String, QuestionProgress>?
+  questionProgress; // Question-level tracking
+  final int? resumeIndex; // For session resumption
+
   Progress({
     required this.activityId,
     required this.score,
@@ -240,9 +292,17 @@ class Progress {
     required this.completedAt,
     this.attempts = 1,
     this.additionalData,
+    this.questionProgress,
+    this.resumeIndex,
   });
-  
+
   factory Progress.fromJson(Map<String, dynamic> json) {
+    Map<String, QuestionProgress>? questionProgressMap;
+    if (json['questionProgress'] != null) {
+      questionProgressMap = (json['questionProgress'] as Map<String, dynamic>)
+          .map((key, value) => MapEntry(key, QuestionProgress.fromJson(value)));
+    }
+
     return Progress(
       activityId: json['activityId'] as String,
       score: json['score'] as int,
@@ -250,9 +310,11 @@ class Progress {
       completedAt: DateTime.parse(json['completedAt'] as String),
       attempts: json['attempts'] as int? ?? 1,
       additionalData: json['additionalData'] as Map<String, dynamic>?,
+      questionProgress: questionProgressMap,
+      resumeIndex: json['resumeIndex'] as int?,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'activityId': activityId,
@@ -261,7 +323,28 @@ class Progress {
       'completedAt': completedAt.toIso8601String(),
       'attempts': attempts,
       'additionalData': additionalData,
+      'questionProgress': questionProgress?.map(
+        (key, value) => MapEntry(key, value.toJson()),
+      ),
+      'resumeIndex': resumeIndex,
     };
+  }
+
+  /// Calculate total score from question progress
+  int get totalQuestionScore {
+    if (questionProgress == null || questionProgress!.isEmpty) return score;
+    return questionProgress!.values.fold(0, (sum, qp) => sum + qp.bestScore);
+  }
+
+  /// Get completion percentage based on questions
+  double get completionPercentage {
+    if (questionProgress == null || questionProgress!.isEmpty) {
+      return isCompleted ? 100.0 : 0.0;
+    }
+    final completed = questionProgress!.values
+        .where((qp) => qp.isCompleted)
+        .length;
+    return (completed / questionProgress!.length) * 100;
   }
 }
 
@@ -273,7 +356,7 @@ class TestResult {
   final DateTime completedAt;
   final List<String> activityIds;
   final Map<String, bool> activityResults; // activityId -> wasCorrect
-  
+
   TestResult({
     required this.testType,
     required this.totalQuestions,
@@ -282,13 +365,12 @@ class TestResult {
     required this.activityIds,
     required this.activityResults,
   });
-  
-  double get percentage => totalQuestions > 0 
-      ? (correctAnswers / totalQuestions) * 100 
-      : 0.0;
-  
+
+  double get percentage =>
+      totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0.0;
+
   bool get isPassed => percentage >= 70.0;
-  
+
   factory TestResult.fromJson(Map<String, dynamic> json) {
     return TestResult(
       testType: json['testType'] as String,
@@ -299,7 +381,7 @@ class TestResult {
       activityResults: Map<String, bool>.from(json['activityResults'] as Map),
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'testType': testType,

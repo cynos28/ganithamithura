@@ -29,7 +29,18 @@ app.add_middleware(
 
 # Data file path
 DATA_DIR = Path(__file__).parent / "data"
-ACTIVITIES_FILE = DATA_DIR / "activities_level1.json"
+
+# Level configurations - defines valid number ranges per level
+LEVEL_CONFIGS = {
+    1: {"min": 1, "max": 10, "file": "activities_level1.json"},
+    2: {"min": 11, "max": 20, "file": "activities_level2.json"},
+    3: {"min": 21, "max": 50, "file": "activities_level3.json"},
+    4: {"min": 51, "max": 100, "file": "activities_level4.json"},
+    5: {"min": 101, "max": 1000, "file": "activities_level5.json"},
+}
+
+# Cache for loaded activity data
+activities_cache: Dict[int, Dict[str, Any]] = {}
 
 # ==================== Models ====================
 
@@ -43,34 +54,6 @@ class Activity(BaseModel):
     level: int
     order: int
     questions: Optional[List[Dict[str, Any]]] = None  # Array of questions with difficulty levels
-
-
-class Question(BaseModel):
-    """Individual question within an activity"""
-    id: str
-    difficulty: str  # easy, medium, hard
-    points: int
-    question: Optional[str] = None
-    instruction: Optional[str] = None
-    correct_answer: Optional[Any] = None
-    options: Optional[List[str]] = None
-    answer: Optional[str] = None
-    image: Optional[str] = None
-    template_image: Optional[str] = None
-    help_image: Optional[str] = None
-    pronounce: Optional[str] = None
-    alternatives: Optional[List[str]] = None
-    max_objects: Optional[int] = None
-    type: Optional[str] = None  # For read activity: word_to_digit, digit_to_word, mixed
-
-
-class NumberActivities(BaseModel):
-    """Activities for a single number"""
-    video: Optional[Dict[str, Any]] = None
-    trace: Optional[Dict[str, Any]] = None
-    show: Optional[Dict[str, Any]] = None
-    say: Optional[Dict[str, Any]] = None
-    read: Optional[Dict[str, Any]] = None
 
 
 class ScoreSubmission(BaseModel):
@@ -99,15 +82,33 @@ class ObjectDetectionResponse(BaseModel):
 
 # ==================== Helper Functions ====================
 
-def load_activities_data() -> Dict[str, Any]:
-    """Load activities from new JSON structure"""
+def get_level_file_path(level: int) -> Path:
+    """Get the activities file path for a given level"""
+    if level not in LEVEL_CONFIGS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid level: {level}. Valid levels are 1-5."
+        )
+    return DATA_DIR / LEVEL_CONFIGS[level]["file"]
+
+
+def load_activities_data(level: int = 1) -> Dict[str, Any]:
+    """Load activities for a specific level (with caching)"""
+    # Check cache first
+    if level in activities_cache:
+        return activities_cache[level]
+    
+    file_path = get_level_file_path(level)
+    
     try:
-        with open(ACTIVITIES_FILE, 'r') as f:
-            return json.load(f)
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            activities_cache[level] = data  # Cache for future use
+            return data
     except FileNotFoundError:
         raise HTTPException(
             status_code=500,
-            detail=f"Activities file not found: {ACTIVITIES_FILE}"
+            detail=f"Activities file not found: {file_path}"
         )
     except Exception as e:
         raise HTTPException(
@@ -150,7 +151,7 @@ def convert_to_activity_format(level: int, number: int, activity_type: str,
 
 def get_activities_for_number_from_data(level: int, number: int) -> List[Activity]:
     """Get activities for a specific number in proper sequence"""
-    data = load_activities_data()
+    data = load_activities_data(level)  # Pass level for dynamic file loading
     
     if data.get('level') != level:
         raise HTTPException(
@@ -218,16 +219,17 @@ async def get_activities_for_level_number(level: int, number: int, difficulty: O
     
     Phase 1: Only level 1 (numbers 1-10) is implemented
     """
-    if level != 1:
+    if level not in LEVEL_CONFIGS:
         raise HTTPException(
             status_code=404,
-            detail=f"Level {level} not yet implemented. Only Level 1 is available in Phase 1."
+            detail=f"Level {level} not yet implemented. Valid levels are 1-2."
         )
     
-    if number < 1 or number > 10:
+    level_config = LEVEL_CONFIGS[level]
+    if number < level_config["min"] or number > level_config["max"]:
         raise HTTPException(
             status_code=400,
-            detail="Number must be between 1 and 10 for Level 1"
+            detail=f"Number must be between {level_config['min']} and {level_config['max']} for Level {level}"
         )
     
     try:
@@ -266,10 +268,10 @@ async def get_activities_for_level(level: int):
     Returns all activities for a specific level (all numbers combined).
     Phase 1: Only level 1 is implemented (numbers 1-10)
     """
-    if level != 1:
+    if level not in [1, 2]:
         raise HTTPException(
             status_code=404,
-            detail=f"Level {level} not yet implemented. Only Level 1 is available in Phase 1."
+            detail=f"Level {level} not yet implemented. Valid levels are 1-2."
         )
     
     try:
@@ -334,8 +336,13 @@ async def get_beginner_test():
                 detail="Not enough activities available for test"
             )
         
-        # Randomly select 5 activities
+        # Randomly select 5 activities - use 'easy' difficulty questions
         test_activities = random.sample(all_activities, 5)
+        
+        # Filter to only easy questions for beginner
+        for activity in test_activities:
+            if activity.questions:
+                activity.questions = [q for q in activity.questions if q.get('difficulty') == 'easy']
         
         return {
             "test_type": "beginner",
@@ -349,16 +356,228 @@ async def get_beginner_test():
         )
 
 
-@app.get("/activities/number/{number}")
-async def get_activities_for_number(number: int, level: int = 1):
+@app.get("/test/intermediate")
+async def get_intermediate_test():
     """
-    GET /activities/number/{number}
+    GET /test/intermediate
     
-    Returns all activities for a specific number within a level.
-    Useful for learning flow.
-    Legacy endpoint - use /activities/level/{level}/number/{number} instead
+    Returns 7 random activities for intermediate test.
+    Includes all beginner question types plus:
+    - Sequencing (what comes before/after)
+    - Comparison (which is bigger/smaller)
+    - Missing numbers (1, __, 3)
+    Uses 'medium' difficulty questions.
     """
-    return await get_activities_for_level_number(level, number)
+    try:
+        all_activities = []
+        
+        # Get all activities from level 1
+        for number in range(1, 11):
+            activities = get_activities_for_number_from_data(1, number)
+            # Exclude videos
+            all_activities.extend([a for a in activities if a.type != 'video'])
+        
+        if len(all_activities) < 7:
+            raise HTTPException(
+                status_code=500,
+                detail="Not enough activities available for intermediate test"
+            )
+        
+        # Randomly select 7 activities
+        test_activities = random.sample(all_activities, 7)
+        
+        # Filter to medium difficulty (includes more challenging variations)
+        for activity in test_activities:
+            if activity.questions:
+                activity.questions = [q for q in activity.questions if q.get('difficulty') in ['easy', 'medium']]
+        
+        # Add intermediate-specific questions (sequencing, comparison)
+        intermediate_questions = generate_intermediate_questions()
+        
+        return {
+            "test_type": "intermediate",
+            "count": len(test_activities),
+            "activities": [activity.dict() for activity in test_activities],
+            "additional_questions": intermediate_questions
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating intermediate test: {str(e)}"
+        )
+
+
+@app.get("/test/advanced")
+async def get_advanced_test():
+    """
+    GET /test/advanced
+    
+    Returns 10 activities for advanced test.
+    Includes all question types plus:
+    - Pattern recognition (2, 4, 6, ?)
+    - Simple word problems
+    - Estimation challenges
+    - Place value questions
+    Uses 'hard' difficulty questions.
+    """
+    try:
+        all_activities = []
+        
+        # Get all activities from level 1
+        for number in range(1, 11):
+            activities = get_activities_for_number_from_data(1, number)
+            # Exclude videos
+            all_activities.extend([a for a in activities if a.type != 'video'])
+        
+        if len(all_activities) < 10:
+            raise HTTPException(
+                status_code=500,
+                detail="Not enough activities available for advanced test"
+            )
+        
+        # Randomly select 10 activities
+        test_activities = random.sample(all_activities, 10)
+        
+        # Include all difficulty levels for maximum challenge
+        # (questions are already loaded with all difficulties)
+        
+        # Add advanced-specific questions (patterns, word problems)
+        advanced_questions = generate_advanced_questions()
+        
+        return {
+            "test_type": "advanced",
+            "count": len(test_activities),
+            "activities": [activity.dict() for activity in test_activities],
+            "additional_questions": advanced_questions
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating advanced test: {str(e)}"
+        )
+
+
+def generate_intermediate_questions() -> List[Dict[str, Any]]:
+    """Generate intermediate-level questions: sequencing, comparison, missing numbers"""
+    questions = []
+    
+    # Sequencing questions
+    for num in random.sample(range(2, 10), 3):
+        questions.append({
+            "id": f"seq_before_{num}",
+            "type": "sequencing",
+            "difficulty": "medium",
+            "points": 15,
+            "question": f"What number comes before {num}?",
+            "options": [str(num-2), str(num-1), str(num), str(num+1)],
+            "correct_answer": str(num-1)
+        })
+        questions.append({
+            "id": f"seq_after_{num}",
+            "type": "sequencing", 
+            "difficulty": "medium",
+            "points": 15,
+            "question": f"What number comes after {num}?",
+            "options": [str(num-1), str(num), str(num+1), str(num+2)],
+            "correct_answer": str(num+1)
+        })
+    
+    # Comparison questions
+    for _ in range(3):
+        a, b = random.sample(range(1, 11), 2)
+        questions.append({
+            "id": f"compare_{a}_{b}",
+            "type": "comparison",
+            "difficulty": "medium", 
+            "points": 15,
+            "question": f"Which number is bigger: {a} or {b}?",
+            "options": [str(a), str(b)],
+            "correct_answer": str(max(a, b))
+        })
+    
+    # Missing number questions
+    for start in random.sample(range(1, 8), 2):
+        missing_pos = random.choice([0, 1, 2])
+        sequence = [start + i for i in range(3)]
+        display = [str(n) if i != missing_pos else "?" for i, n in enumerate(sequence)]
+        questions.append({
+            "id": f"missing_{start}_{missing_pos}",
+            "type": "missing_number",
+            "difficulty": "medium",
+            "points": 15,
+            "question": f"Fill in the missing number: {', '.join(display)}",
+            "options": [str(sequence[missing_pos]-1), str(sequence[missing_pos]), str(sequence[missing_pos]+1)],
+            "correct_answer": str(sequence[missing_pos])
+        })
+    
+    random.shuffle(questions)
+    return questions[:5]  # Return 5 intermediate questions
+
+
+def generate_advanced_questions() -> List[Dict[str, Any]]:
+    """Generate advanced-level questions: patterns, word problems, estimation"""
+    questions = []
+    
+    # Pattern recognition
+    patterns = [
+        ([2, 4, 6], 8, "2, 4, 6, ?"),
+        ([1, 3, 5], 7, "1, 3, 5, ?"),
+        ([5, 4, 3], 2, "5, 4, 3, ?"),
+        ([1, 2, 1], 2, "1, 2, 1, ?"),
+        ([10, 8, 6], 4, "10, 8, 6, ?"),
+    ]
+    for seq, answer, display in random.sample(patterns, 3):
+        questions.append({
+            "id": f"pattern_{'_'.join(map(str, seq))}",
+            "type": "pattern",
+            "difficulty": "hard",
+            "points": 20,
+            "question": f"What comes next? {display}",
+            "options": [str(answer-1), str(answer), str(answer+1), str(answer+2)],
+            "correct_answer": str(answer)
+        })
+    
+    # Simple word problems
+    word_problems = [
+        ("I have 5 apples. I give 2 to my friend. How many do I have left?", "3"),
+        ("There are 3 birds on a tree. 2 more birds come. How many birds now?", "5"),
+        ("I see 4 cats and 2 dogs. How many animals in total?", "6"),
+        ("Mom has 7 cookies. She eats 3. How many cookies are left?", "4"),
+    ]
+    for problem, answer in random.sample(word_problems, 2):
+        options = [str(int(answer)-1), answer, str(int(answer)+1), str(int(answer)+2)]
+        random.shuffle(options)
+        questions.append({
+            "id": f"word_problem_{answer}",
+            "type": "word_problem",
+            "difficulty": "hard",
+            "points": 20,
+            "question": problem,
+            "options": options,
+            "correct_answer": answer
+        })
+    
+    # Estimation questions
+    for num in random.sample([23, 47, 68, 85], 2):
+        lower = (num // 10) * 10
+        upper = lower + 10
+        questions.append({
+            "id": f"estimation_{num}",
+            "type": "estimation",
+            "difficulty": "hard",
+            "points": 20,
+            "question": f"Is {num} closer to {lower} or {upper}?",
+            "options": [str(lower), str(upper)],
+            "correct_answer": str(lower if num - lower < upper - num else upper)
+        })
+    
+    random.shuffle(questions)
+    return questions[:5]  # Return 5 advanced questions
+
+
+
+
+# Legacy endpoint removed - use /activities/level/{level}/number/{number} instead
 
 
 # ==================== Object Detection Endpoints ====================
@@ -414,78 +633,7 @@ async def detect_objects(request: ObjectDetectionRequest):
         )
 
 
-@app.post("/detect/objects/upload")
-async def detect_objects_upload(file: UploadFile = File(...), target_object: Optional[str] = None, expected_count: Optional[int] = None):
-    """
-    POST /detect/objects/upload
-    
-    Detect objects from uploaded image file.
-    
-    Form data:
-    - file: Image file (jpg, png)
-    - target_object: Specific object to count (optional)
-    - expected_count: Expected count for validation (optional)
-    """
-    try:
-        # Read image file
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise ValueError("Failed to decode image file")
-        
-        detection_service = get_detection_service()
-        
-        # Perform detection
-        result = detection_service.detect_objects(
-            image=image,
-            target_object=target_object
-        )
-        
-        # Validate if expected count provided
-        if expected_count is not None:
-            detected_count = result['target_count'] if target_object else result['total_count']
-            validation = detection_service.validate_count(
-                detected_count=detected_count,
-                expected_count=expected_count,
-                tolerance=0
-            )
-            result['validation'] = validation
-        
-        return result
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid image file: {str(e)}"
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during object detection: {str(e)}"
-        )
-
-
-@app.get("/detect/available-classes")
-async def get_available_classes():
-    """
-    GET /detect/available-classes
-    
-    Get list of all object classes that can be detected by the model.
-    """
-    try:
-        detection_service = get_detection_service()
-        classes = detection_service.get_available_classes()
-        return {
-            "count": len(classes),
-            "classes": classes
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving classes: {str(e)}"
-        )
+# Removed unused endpoints: /detect/objects/upload, /detect/available-classes
 
 
 # ==================== Digit Recognition Endpoints ====================
@@ -574,61 +722,9 @@ async def recognize_digit(request: DigitRecognitionRequest):
         )
 
 
-@app.post("/recognize/digit/upload")
-async def recognize_digit_upload(
-    file: UploadFile = File(...),
-    expected_digit: Optional[int] = None,
-    confidence_threshold: float = 0.7
-):
-    """
-    POST /recognize/digit/upload
-    
-    Recognize handwritten digit from uploaded image file.
-    
-    Form data:
-    - file: Image file (PNG, JPG, etc.)
-    - expected_digit: Optional expected digit for validation
-    - confidence_threshold: Minimum confidence threshold (default: 0.7)
-    """
-    try:
-        # Read image file
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if image is None:
-            raise ValueError("Could not decode image file")
-        
-        recognition_service = get_recognition_service()
-        
-        if expected_digit is not None:
-            # Validation mode
-            result = recognition_service.validate_digit(
-                image=image,
-                expected_digit=expected_digit,
-                confidence_threshold=confidence_threshold
-            )
-        else:
-            # Recognition only mode
-            result = recognition_service.recognize_digit(image)
-        
-        return result
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid image file: {str(e)}"
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error during digit recognition: {str(e)}"
-        )
-
+# Removed unused endpoint: /recognize/digit/upload
 
 # TODO: Phase 2 - Additional endpoints
-# @app.get("/test/intermediate")
-# @app.get("/test/advanced")
 # @app.post("/progress/sync")
 # @app.get("/user/{user_id}/progress")
 # @app.post("/user/{user_id}/activity/{activity_id}/complete")

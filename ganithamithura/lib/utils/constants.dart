@@ -5,7 +5,7 @@ class AppConstants {
   // API Configuration
   static const String baseUrl = 'http://localhost:8000';
   static const String numBaseUrl =
-      'https://uncoddled-neomi-continuingly.ngrok-free.dev';
+      'https://macular-patrimonially-olinda.ngrok-free.dev';
 
   // Activity Types
   static const String activityTypeTrace = 'trace';
@@ -28,9 +28,54 @@ class AppConstants {
   static const int level1MinNumber = 1;
   static const int level1MaxNumber = 10;
 
-  // TODO: Phase 2 - Define levels 2-5 number ranges
-  // static const int level2MinNumber = 11;
-  // static const int level2MaxNumber = 20;
+  // Static level configurations for all 5 levels
+  static final Map<int, LevelConfig> levelConfigs = {
+    1: LevelConfig(
+      level: 1,
+      minNumber: 1,
+      maxNumber: 10,
+      hasTrace: true,
+      hasShow: true,
+      hasVideo: true,
+    ),
+    2: LevelConfig(
+      level: 2,
+      minNumber: 11,
+      maxNumber: 20,
+      hasTrace: true,
+      hasShow: true,
+      hasVideo: true,
+    ),
+    3: LevelConfig(
+      level: 3,
+      minNumber: 21,
+      maxNumber: 50,
+      hasTrace: false,
+      hasShow: true,
+      hasVideo: false,
+    ),
+    4: LevelConfig(
+      level: 4,
+      minNumber: 51,
+      maxNumber: 100,
+      hasTrace: false,
+      hasShow: true,
+      hasVideo: false,
+    ),
+    5: LevelConfig(
+      level: 5,
+      minNumber: 101,
+      maxNumber: 1000,
+      hasTrace: false,
+      hasShow: false,
+      hasVideo: false,
+    ),
+  };
+
+  /// Get config for a specific level, returns level 1 config if not found
+  static LevelConfig getLevelConfig(int level) {
+    return levelConfigs[level] ?? levelConfigs[1]!;
+  }
 
   // Timeouts
   static const int videoLoadTimeout = 30; // seconds
@@ -47,12 +92,55 @@ class AppConstants {
   static const Duration longAnimationDuration = Duration(milliseconds: 1000);
 }
 
+/// Level configuration defining number ranges and activity availability
+class LevelConfig {
+  final int level;
+  final int minNumber;
+  final int maxNumber;
+  final bool hasTrace; // Whether trace activity is available
+  final bool hasShow; // Whether show (object detection) activity is available
+  final bool hasVideo; // Whether video lessons are available
+
+  const LevelConfig({
+    required this.level,
+    required this.minNumber,
+    required this.maxNumber,
+    this.hasTrace = true,
+    this.hasShow = true,
+    this.hasVideo = true,
+  });
+
+  /// Total numbers in this level
+  int get numberCount => maxNumber - minNumber + 1;
+
+  /// Get list of activities available for this level
+  List<String> get availableActivities {
+    final activities = <String>[];
+    if (hasVideo) activities.add(AppConstants.activityTypeVideo);
+    if (hasTrace) activities.add(AppConstants.activityTypeTrace);
+    if (hasShow) activities.add(AppConstants.activityTypeObjectDetection);
+    activities.add(AppConstants.activityTypeSay);
+    activities.add(AppConstants.activityTypeRead);
+    return activities;
+  }
+
+  /// Check if a number is in this level's range
+  bool containsNumber(int number) => number >= minNumber && number <= maxNumber;
+}
+
 class StorageKeys {
   static const String completedActivities = 'completed_activities';
   static const String testScores = 'test_scores';
   static const String currentLevel = 'current_level';
   static const String progressData = 'progress_data';
   static const String lastActivityDate = 'last_activity_date';
+
+  // Learning session tracking
+  static const String currentLearningLevel = 'current_learning_level';
+  static const String currentLearningNumber = 'current_learning_number';
+  static const String currentActivityType = 'current_activity_type';
+  static const String lastCompletedActivityType =
+      'last_completed_activity_type';
 }
 
 class NumberWords {

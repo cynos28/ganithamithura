@@ -11,12 +11,9 @@ import 'package:ganithamithura/services/local_storage/storage_service.dart';
 /// TestScreen - Beginner progress test
 class TestScreen extends StatefulWidget {
   final String testType; // 'beginner', 'intermediate', 'advanced'
-  
-  const TestScreen({
-    super.key,
-    required this.testType,
-  });
-  
+
+  const TestScreen({super.key, required this.testType});
+
   @override
   State<TestScreen> createState() => _TestScreenState();
 }
@@ -24,67 +21,98 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   final _apiService = NumApiService.instance;
   final _storageService = StorageService.instance;
-  
+
   bool _isLoading = true;
   bool _testStarted = false;
   List<Activity> _testActivities = [];
+  List<AdditionalQuestion> _additionalQuestions =
+      []; // For intermediate/advanced tests
   int _currentActivityIndex = 0;
-  Map<String, bool> _results = {}; // activityId -> wasCorrect
-  
+  int _currentAdditionalQuestionIndex =
+      0; // Track progress in additional questions
+  bool _showingAdditionalQuestions = false;
+  Map<String, bool> _results = {}; // activityId/questionId -> wasCorrect
+
   @override
   void initState() {
     super.initState();
     _loadTestActivities();
   }
-  
+
   Future<void> _loadTestActivities() async {
     try {
       List<Activity> activities;
-      
+      List<AdditionalQuestion>? additionalQuestions;
+
       if (widget.testType == 'beginner') {
-        // Fetch from backend with timeout
-        activities = await _apiService
-            .getBeginnerTestActivities()
+        // Beginner test - simple activity fetch
+        activities = await _apiService.getBeginnerTestActivities().timeout(
+          Duration(seconds: AppConstants.apiTimeout),
+          onTimeout: () {
+            throw Exception(
+              'Request timed out. Please check your internet connection.',
+            );
+          },
+        );
+      } else if (widget.testType == 'intermediate') {
+        // Intermediate test - activities + additional questions
+        final response = await _apiService
+            .getIntermediateTestActivities()
             .timeout(
               Duration(seconds: AppConstants.apiTimeout),
               onTimeout: () {
-                throw Exception('Request timed out. Please check your internet connection.');
+                throw Exception('Request timed out.');
               },
             );
+        activities = response.activities;
+        additionalQuestions = response.additionalQuestions;
+        _additionalQuestions = additionalQuestions ?? [];
+      } else if (widget.testType == 'advanced') {
+        // Advanced test - activities + additional questions
+        final response = await _apiService.getAdvancedTestActivities().timeout(
+          Duration(seconds: AppConstants.apiTimeout),
+          onTimeout: () {
+            throw Exception('Request timed out.');
+          },
+        );
+        activities = response.activities;
+        additionalQuestions = response.additionalQuestions;
+        _additionalQuestions = additionalQuestions ?? [];
       } else {
-        // TODO: Phase 2 - Implement other test types
-        throw Exception('Test type not yet implemented');
+        throw Exception('Unknown test type: ${widget.testType}');
       }
-      
+
       if (!mounted) return;
-      
+
       if (activities.isEmpty) {
         setState(() {
           _isLoading = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('No test activities available. Please try again later.'),
+            content: const Text(
+              'No test activities available. Please try again later.',
+            ),
             backgroundColor: Color(AppColors.warningColor),
           ),
         );
         return;
       }
-      
+
       setState(() {
         _testActivities = activities;
         _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
-      
+
       final errorMessage = UIHelpers.getErrorMessage(e);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Column(
@@ -104,7 +132,7 @@ class _TestScreenState extends State<TestScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      
+
       // Navigate back after error
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
@@ -113,29 +141,27 @@ class _TestScreenState extends State<TestScreen> {
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Color(AppColors.backgroundColor),
-        body: const Center(
-          child: LoadingOverlay(message: 'Loading test...'),
-        ),
+        body: const Center(child: LoadingOverlay(message: 'Loading test...')),
       );
     }
-    
+
     if (!_testStarted) {
       return _buildTestIntro();
     }
-    
+
     if (_currentActivityIndex >= _testActivities.length) {
       return _buildTestResults();
     }
-    
+
     return _buildTestActivity();
   }
-  
+
   Widget _buildTestIntro() {
     return Scaffold(
       backgroundColor: Color(AppColors.backgroundColor),
@@ -150,11 +176,7 @@ class _TestScreenState extends State<TestScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.quiz,
-                size: 100,
-                color: Color(AppColors.successColor),
-              ),
+              Icon(Icons.quiz, size: 100, color: Color(AppColors.successColor)),
               const SizedBox(height: 24),
               Text(
                 '${_getTestTitle()} Test',
@@ -167,21 +189,21 @@ class _TestScreenState extends State<TestScreen> {
               const SizedBox(height: 16),
               Text(
                 'Test your knowledge with ${_testActivities.length} activities',
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.black54,
-                ),
+                style: const TextStyle(fontSize: 18, color: Colors.black54),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              
+
               Card(
                 elevation: AppConstants.cardElevation,
                 child: Padding(
                   padding: const EdgeInsets.all(AppConstants.standardPadding),
                   child: Column(
                     children: [
-                      _buildInfoRow(Icons.numbers, 'Questions: ${_testActivities.length}'),
+                      _buildInfoRow(
+                        Icons.numbers,
+                        'Questions: ${_testActivities.length}',
+                      ),
                       const SizedBox(height: 12),
                       _buildInfoRow(Icons.timer, 'No time limit'),
                       const SizedBox(height: 12),
@@ -190,9 +212,9 @@ class _TestScreenState extends State<TestScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               ActionButton(
                 text: 'Start Test',
                 icon: Icons.play_arrow,
@@ -209,29 +231,28 @@ class _TestScreenState extends State<TestScreen> {
       ),
     );
   }
-  
+
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(icon, color: Color(AppColors.successColor)),
         const SizedBox(width: 12),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 16),
-        ),
+        Text(text, style: const TextStyle(fontSize: 16)),
       ],
     );
   }
-  
+
   Widget _buildTestActivity() {
     final activity = _testActivities[_currentActivityIndex];
-    
+
     // For test mode, we'll use simplified versions
     // In production, you'd render actual activity screens
     return Scaffold(
       backgroundColor: Color(AppColors.backgroundColor),
       appBar: AppBar(
-        title: Text('Question ${_currentActivityIndex + 1}/${_testActivities.length}'),
+        title: Text(
+          'Question ${_currentActivityIndex + 1}/${_testActivities.length}',
+        ),
         backgroundColor: Color(AppColors.successColor),
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
@@ -248,7 +269,7 @@ class _TestScreenState extends State<TestScreen> {
                 color: Color(AppColors.successColor),
               ),
               const SizedBox(height: 24),
-              
+
               // Activity info
               Expanded(
                 child: Center(
@@ -281,7 +302,7 @@ class _TestScreenState extends State<TestScreen> {
                   ),
                 ),
               ),
-              
+
               // Mock answer buttons
               Row(
                 children: [
@@ -320,7 +341,7 @@ class _TestScreenState extends State<TestScreen> {
       ),
     );
   }
-  
+
   IconData _getActivityIcon(String type) {
     switch (type) {
       case AppConstants.activityTypeTrace:
@@ -335,18 +356,18 @@ class _TestScreenState extends State<TestScreen> {
         return Icons.assignment;
     }
   }
-  
+
   void _submitAnswer(String activityId, bool isCorrect) {
     setState(() {
       _results[activityId] = isCorrect;
       _currentActivityIndex++;
     });
   }
-  
+
   Widget _buildTestResults() {
     final correctCount = _results.values.where((v) => v).length;
     final totalCount = _testActivities.length;
-    
+
     final testResult = TestResult(
       testType: widget.testType,
       totalQuestions: totalCount,
@@ -355,10 +376,10 @@ class _TestScreenState extends State<TestScreen> {
       activityIds: _testActivities.map((a) => a.id).toList(),
       activityResults: _results,
     );
-    
+
     // Save result
     _storageService.saveTestResult(testResult);
-    
+
     return Scaffold(
       backgroundColor: Color(AppColors.backgroundColor),
       appBar: AppBar(
@@ -378,9 +399,9 @@ class _TestScreenState extends State<TestScreen> {
                 total: totalCount,
                 title: 'Your Test Score',
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               if (testResult.isPassed) ...[
                 Icon(
                   Icons.celebration,
@@ -399,10 +420,7 @@ class _TestScreenState extends State<TestScreen> {
                 const SizedBox(height: 8),
                 const Text(
                   'You passed the test!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
                 ),
               ] else ...[
                 Icon(
@@ -422,15 +440,12 @@ class _TestScreenState extends State<TestScreen> {
                 const SizedBox(height: 8),
                 const Text(
                   'Try again to improve your score',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.black54),
                 ),
               ],
-              
+
               const SizedBox(height: 48),
-              
+
               ActionButton(
                 text: 'Retake Test',
                 icon: Icons.refresh,
@@ -443,9 +458,9 @@ class _TestScreenState extends State<TestScreen> {
                   _loadTestActivities();
                 },
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               ActionButton(
                 text: 'Back to Home',
                 icon: Icons.home,
@@ -460,7 +475,7 @@ class _TestScreenState extends State<TestScreen> {
       ),
     );
   }
-  
+
   String _getTestTitle() {
     switch (widget.testType) {
       case 'beginner':

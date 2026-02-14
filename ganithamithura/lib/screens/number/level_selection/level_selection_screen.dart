@@ -11,7 +11,7 @@ import 'package:ganithamithura/services/learning_flow_manager.dart';
 /// LevelSelectionScreen - Display 5 levels with only Level 1 enabled
 class LevelSelectionScreen extends StatefulWidget {
   const LevelSelectionScreen({super.key});
-  
+
   @override
   State<LevelSelectionScreen> createState() => _LevelSelectionScreenState();
 }
@@ -19,13 +19,13 @@ class LevelSelectionScreen extends StatefulWidget {
 class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   late List<LearningLevel> _levels;
   bool _isLoading = true;
-  
+
   @override
   void initState() {
     super.initState();
     _initializeLevels();
   }
-  
+
   Future<void> _initializeLevels() async {
     // TODO: Phase 2 - Load level progress from storage
     setState(() {
@@ -76,7 +76,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       _isLoading = false;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,14 +114,14 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
             ),
     );
   }
-  
+
   void _startLevel(LearningLevel level) async {
     try {
       // Show loading with a small delay to ensure overlay is ready
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       if (!mounted) return;
-      
+
       Get.dialog(
         Material(
           color: Colors.transparent,
@@ -133,56 +133,71 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         ),
         barrierDismissible: false,
       );
-      
+
       // Additional delay to ensure dialog is fully rendered
       await Future.delayed(const Duration(milliseconds: 200));
-      
+
       if (!mounted) {
         Get.back();
         return;
       }
-      
+
       // Fetch activities for this level with timeout
       final activities = await NumApiService.instance
           .getActivitiesForLevel(level.levelNumber)
           .timeout(
             Duration(seconds: AppConstants.apiTimeout),
             onTimeout: () {
-              throw Exception('Request timed out. Please check your internet connection.');
+              throw Exception(
+                'Request timed out. Please check your internet connection.',
+              );
             },
           );
-      
+
       if (!mounted) {
         Get.back();
         return;
       }
-      
+
       if (activities.isEmpty) {
         Get.back();
         await Future.delayed(const Duration(milliseconds: 100));
         await UIHelpers.showSafeSnackbar(
           title: 'No Activities',
-          message: 'No activities found for this level. Please try again later.',
+          message:
+              'No activities found for this level. Please try again later.',
           backgroundColor: Color(AppColors.warningColor),
         );
         return;
       }
-      
+
       Get.back(); // Close loading
-      
-      // Use LearningFlowManager to start learning from first number
+
+      // Use LearningFlowManager to start/resume learning
       final learningFlowManager = LearningFlowManager.instance;
       await Future.delayed(const Duration(milliseconds: 100));
-      
-      await learningFlowManager.startLearningFromNumber(
-        level: level.levelNumber,
-        startNumber: level.minNumber,
-        levelData: level,
-      );
-      
+
+      // Check if there's a saved session for this level
+      final savedSession = learningFlowManager.getSavedSession();
+
+      if (savedSession != null && savedSession.level == level.levelNumber) {
+        // Resume from saved position (skips completed activities like video)
+        debugPrint(
+          '📥 Resuming from saved session: Number ${savedSession.number}',
+        );
+        await learningFlowManager.resumeLearning(levelData: level);
+      } else {
+        // Start fresh from the first number
+        debugPrint('🆕 Starting fresh from number ${level.minNumber}');
+        await learningFlowManager.startLearningFromNumber(
+          level: level.levelNumber,
+          startNumber: level.minNumber,
+          levelData: level,
+        );
+      }
     } catch (e) {
       debugPrint('Error in _startLevel: $e');
-      
+
       // Safely close dialog if it's open
       try {
         if (mounted && Get.isDialogOpen == true) {
@@ -191,14 +206,14 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       } catch (_) {
         // Dialog might not be open, ignore
       }
-      
+
       // Wait before showing snackbar
       await Future.delayed(const Duration(milliseconds: 200));
-      
+
       if (!mounted) return;
-      
+
       final errorMessage = UIHelpers.getErrorMessage(e);
-      
+
       // Use ScaffoldMessenger as fallback for more reliability
       try {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -216,10 +231,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  errorMessage,
-                  style: const TextStyle(color: Colors.white),
-                ),
+                Text(errorMessage, style: const TextStyle(color: Colors.white)),
               ],
             ),
             backgroundColor: Color(AppColors.errorColor),
