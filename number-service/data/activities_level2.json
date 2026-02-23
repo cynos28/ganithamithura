@@ -1,743 +1,785 @@
 {
-    "level": 2,
-    "description": "Numbers 11-20 (Teen Numbers)",
-    "numbers": {
-        "11": {
-            "video": {
-                "url": "assets/videos/number_11.mp4",
-                "duration": 35,
-                "title": "Learn Number 11"
-            },
-            "trace": {
-                "word": "Eleven",
-                "dotted_image": "assets/numbers/trace_11.svg",
-                "instruction": "Trace the number 11",
-                "questions": [
-                    {
-                        "id": "trace_11_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace the number 11 following the dots",
-                        "template_image": "assets/numbers/trace_11.svg"
-                    },
-                    {
-                        "id": "trace_11_medium",
-                        "difficulty": "medium",
-                        "points": 15,
-                        "instruction": "Trace 11 with fewer guide dots",
-                        "template_image": "assets/numbers/trace_11_medium.svg"
-                    },
-                    {
-                        "id": "trace_11_hard",
-                        "difficulty": "hard",
-                        "points": 20,
-                        "instruction": "Write 11 without guides",
-                        "template_image": "assets/numbers/trace_11_blank.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Count and show the correct number of objects",
-                "questions": [
-                    {
-                        "id": "show_11_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Can you show me 11 apples?",
-                        "correct_answer": 11,
-                        "help_text": "Count carefully: 10 + 1 = 11",
-                        "max_objects": 15
-                    },
-                    {
-                        "id": "show_11_medium",
-                        "difficulty": "medium",
-                        "points": 15,
-                        "question": "Show me 11 blocks",
-                        "correct_answer": 11,
-                        "help_text": "Group by 10, then add 1 more",
-                        "max_objects": 20
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say the number out loud",
-                "questions": [
-                    {
-                        "id": "say_11_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say this number: 11",
-                        "correct_answer": 11,
-                        "pronounce": "eleven (i-LEV-en)",
-                        "alternatives": [
-                            "11",
-                            "eleven"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read and recognize the number",
-                "questions": [
-                    {
-                        "id": "read_11_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select the number: Eleven",
-                        "options": [
-                            "10",
-                            "11",
-                            "12",
-                            "1"
-                        ],
-                        "correct_answer": "11"
-                    },
-                    {
-                        "id": "read_11_medium",
-                        "difficulty": "medium",
-                        "points": 15,
-                        "question": "How many objects are shown?",
-                        "image": "assets/images/objects_11.png",
-                        "options": [
-                            "9",
-                            "10",
-                            "11",
-                            "12"
-                        ],
-                        "correct_answer": "11"
-                    }
-                ]
-            }
-        },
-        "12": {
-            "video": {
-                "url": "assets/videos/number_12.mp4",
-                "duration": 35,
-                "title": "Learn Number 12"
-            },
-            "trace": {
-                "word": "Twelve",
-                "dotted_image": "assets/numbers/trace_12.svg",
-                "instruction": "Trace the number 12",
-                "questions": [
-                    {
-                        "id": "trace_12_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace the number 12 following the dots",
-                        "template_image": "assets/numbers/trace_12.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Count and show objects",
-                "questions": [
-                    {
-                        "id": "show_12_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show me 12 items",
-                        "correct_answer": 12,
-                        "help_text": "10 + 2 = 12",
-                        "max_objects": 15
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say the number out loud",
-                "questions": [
-                    {
-                        "id": "say_12_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say this number: 12",
-                        "correct_answer": 12,
-                        "pronounce": "twelve (twelv)",
-                        "alternatives": [
-                            "12",
-                            "twelve"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read and recognize",
-                "questions": [
-                    {
-                        "id": "read_12_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Twelve",
-                        "options": [
-                            "11",
-                            "12",
-                            "21",
-                            "2"
-                        ],
-                        "correct_answer": "12"
-                    }
-                ]
-            }
-        },
-        "13": {
-            "video": {
-                "url": "assets/videos/number_13.mp4",
-                "duration": 35,
-                "title": "Learn Number 13"
-            },
-            "trace": {
-                "word": "Thirteen",
-                "dotted_image": "assets/numbers/trace_13.svg",
-                "instruction": "Trace 13",
-                "questions": [
-                    {
-                        "id": "trace_13_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 13",
-                        "template_image": "assets/numbers/trace_13.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_13_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 13 items",
-                        "correct_answer": 13,
-                        "max_objects": 20
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_13_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 13",
-                        "correct_answer": 13,
-                        "pronounce": "thirteen",
-                        "alternatives": [
-                            "13",
-                            "thirteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_13_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Thirteen",
-                        "options": [
-                            "13",
-                            "30",
-                            "31",
-                            "3"
-                        ],
-                        "correct_answer": "13"
-                    }
-                ]
-            }
-        },
-        "14": {
-            "video": {
-                "url": "assets/videos/number_14.mp4",
-                "duration": 35,
-                "title": "Learn Number 14"
-            },
-            "trace": {
-                "word": "Fourteen",
-                "dotted_image": "assets/numbers/trace_14.svg",
-                "instruction": "Trace 14",
-                "questions": [
-                    {
-                        "id": "trace_14_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 14",
-                        "template_image": "assets/numbers/trace_14.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_14_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 14 items",
-                        "correct_answer": 14,
-                        "max_objects": 20
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_14_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 14",
-                        "correct_answer": 14,
-                        "pronounce": "fourteen",
-                        "alternatives": [
-                            "14",
-                            "fourteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_14_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Fourteen",
-                        "options": [
-                            "14",
-                            "40",
-                            "41",
-                            "4"
-                        ],
-                        "correct_answer": "14"
-                    }
-                ]
-            }
-        },
-        "15": {
-            "video": {
-                "url": "assets/videos/number_15.mp4",
-                "duration": 35,
-                "title": "Learn Number 15"
-            },
-            "trace": {
-                "word": "Fifteen",
-                "dotted_image": "assets/numbers/trace_15.svg",
-                "instruction": "Trace 15",
-                "questions": [
-                    {
-                        "id": "trace_15_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 15",
-                        "template_image": "assets/numbers/trace_15.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_15_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 15 items",
-                        "correct_answer": 15,
-                        "max_objects": 20
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_15_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 15",
-                        "correct_answer": 15,
-                        "pronounce": "fifteen",
-                        "alternatives": [
-                            "15",
-                            "fifteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_15_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Fifteen",
-                        "options": [
-                            "15",
-                            "50",
-                            "51",
-                            "5"
-                        ],
-                        "correct_answer": "15"
-                    }
-                ]
-            }
-        },
-        "16": {
-            "video": {
-                "url": "assets/videos/number_16.mp4",
-                "duration": 35,
-                "title": "Learn Number 16"
-            },
-            "trace": {
-                "word": "Sixteen",
-                "dotted_image": "assets/numbers/trace_16.svg",
-                "instruction": "Trace 16",
-                "questions": [
-                    {
-                        "id": "trace_16_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 16",
-                        "template_image": "assets/numbers/trace_16.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_16_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 16 items",
-                        "correct_answer": 16,
-                        "max_objects": 20
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_16_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 16",
-                        "correct_answer": 16,
-                        "pronounce": "sixteen",
-                        "alternatives": [
-                            "16",
-                            "sixteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_16_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Sixteen",
-                        "options": [
-                            "16",
-                            "60",
-                            "61",
-                            "6"
-                        ],
-                        "correct_answer": "16"
-                    }
-                ]
-            }
-        },
-        "17": {
-            "video": {
-                "url": "assets/videos/number_17.mp4",
-                "duration": 35,
-                "title": "Learn Number 17"
-            },
-            "trace": {
-                "word": "Seventeen",
-                "dotted_image": "assets/numbers/trace_17.svg",
-                "instruction": "Trace 17",
-                "questions": [
-                    {
-                        "id": "trace_17_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 17",
-                        "template_image": "assets/numbers/trace_17.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_17_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 17 items",
-                        "correct_answer": 17,
-                        "max_objects": 25
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_17_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 17",
-                        "correct_answer": 17,
-                        "pronounce": "seventeen",
-                        "alternatives": [
-                            "17",
-                            "seventeen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_17_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Seventeen",
-                        "options": [
-                            "17",
-                            "70",
-                            "71",
-                            "7"
-                        ],
-                        "correct_answer": "17"
-                    }
-                ]
-            }
-        },
-        "18": {
-            "video": {
-                "url": "assets/videos/number_18.mp4",
-                "duration": 35,
-                "title": "Learn Number 18"
-            },
-            "trace": {
-                "word": "Eighteen",
-                "dotted_image": "assets/numbers/trace_18.svg",
-                "instruction": "Trace 18",
-                "questions": [
-                    {
-                        "id": "trace_18_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 18",
-                        "template_image": "assets/numbers/trace_18.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_18_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 18 items",
-                        "correct_answer": 18,
-                        "max_objects": 25
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_18_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 18",
-                        "correct_answer": 18,
-                        "pronounce": "eighteen",
-                        "alternatives": [
-                            "18",
-                            "eighteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_18_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Eighteen",
-                        "options": [
-                            "18",
-                            "80",
-                            "81",
-                            "8"
-                        ],
-                        "correct_answer": "18"
-                    }
-                ]
-            }
-        },
-        "19": {
-            "video": {
-                "url": "assets/videos/number_19.mp4",
-                "duration": 35,
-                "title": "Learn Number 19"
-            },
-            "trace": {
-                "word": "Nineteen",
-                "dotted_image": "assets/numbers/trace_19.svg",
-                "instruction": "Trace 19",
-                "questions": [
-                    {
-                        "id": "trace_19_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 19",
-                        "template_image": "assets/numbers/trace_19.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_19_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 19 items",
-                        "correct_answer": 19,
-                        "max_objects": 25
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_19_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 19",
-                        "correct_answer": 19,
-                        "pronounce": "nineteen",
-                        "alternatives": [
-                            "19",
-                            "nineteen"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_19_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Nineteen",
-                        "options": [
-                            "19",
-                            "90",
-                            "91",
-                            "9"
-                        ],
-                        "correct_answer": "19"
-                    }
-                ]
-            }
-        },
-        "20": {
-            "video": {
-                "url": "assets/videos/number_20.mp4",
-                "duration": 40,
-                "title": "Learn Number 20"
-            },
-            "trace": {
-                "word": "Twenty",
-                "dotted_image": "assets/numbers/trace_20.svg",
-                "instruction": "Trace 20",
-                "questions": [
-                    {
-                        "id": "trace_20_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "instruction": "Trace 20",
-                        "template_image": "assets/numbers/trace_20.svg"
-                    },
-                    {
-                        "id": "trace_20_medium",
-                        "difficulty": "medium",
-                        "points": 15,
-                        "instruction": "Trace 20 with fewer guides",
-                        "template_image": "assets/numbers/trace_20_medium.svg"
-                    }
-                ]
-            },
-            "show": {
-                "instruction": "Show objects",
-                "questions": [
-                    {
-                        "id": "show_20_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Show 20 items (2 groups of 10)",
-                        "correct_answer": 20,
-                        "max_objects": 25,
-                        "help_text": "10 + 10 = 20"
-                    }
-                ]
-            },
-            "say": {
-                "instruction": "Say it",
-                "questions": [
-                    {
-                        "id": "say_20_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Say: 20",
-                        "correct_answer": 20,
-                        "pronounce": "twenty",
-                        "alternatives": [
-                            "20",
-                            "twenty"
-                        ]
-                    }
-                ]
-            },
-            "read": {
-                "instruction": "Read",
-                "questions": [
-                    {
-                        "id": "read_20_easy",
-                        "difficulty": "easy",
-                        "points": 10,
-                        "question": "Select: Twenty",
-                        "options": [
-                            "20",
-                            "12",
-                            "2",
-                            "200"
-                        ],
-                        "correct_answer": "20"
-                    }
-                ]
-            }
-        }
+  "level": 2,
+  "description": "Numbers 11-20 (Teen Numbers)",
+  "numbers": {
+    "11": {
+      "video": {
+        "url": "assets/videos/number_11.mp4",
+        "duration": 35,
+        "title": "Learn Number 11"
+      },
+      "trace": {
+        "word": "Eleven",
+        "dotted_image": "assets/numbers/trace_11.svg",
+        "instruction": "Trace the number 11",
+        "questions": [
+          {
+            "id": "trace_11_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 11 following the dots",
+            "template_image": "assets/numbers/trace_11.svg"
+          },
+          {
+            "id": "trace_11_medium",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace 11 with fewer guide dots",
+            "template_image": "assets/numbers/trace_11_medium.svg"
+          },
+          {
+            "id": "trace_11_hard",
+            "difficulty": "hard",
+            "points": 20,
+            "instruction": "Write 11 without guides",
+            "template_image": "assets/numbers/trace_11_blank.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show the correct number of objects",
+        "questions": [
+          {
+            "id": "show_11_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Can you show me 11 apples?",
+            "correct_answer": 11,
+            "help_text": "Count carefully: 10 + 1 = 11",
+            "max_objects": 15,
+            "object_name": "apples",
+            "object_emoji": "🍎"
+          },
+          {
+            "id": "show_11_medium",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "Show me 11 blocks",
+            "correct_answer": 11,
+            "help_text": "Group by 10, then add 1 more",
+            "max_objects": 20,
+            "object_name": "blocks",
+            "object_emoji": "🟦"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_11_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say this number: 11",
+            "correct_answer": 11,
+            "pronounce": "eleven (i-LEV-en)",
+            "alternatives": [
+              "11",
+              "eleven"
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and recognize the number",
+        "questions": [
+          {
+            "id": "read_11_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select the number: Eleven",
+            "options": [
+              "10",
+              "11",
+              "12",
+              "1"
+            ],
+            "correct_answer": "11"
+          },
+          {
+            "id": "read_11_medium",
+            "difficulty": "medium",
+            "points": 15,
+            "question": "How many objects are shown?",
+            "image": "assets/images/objects_11.png",
+            "options": [
+              "9",
+              "10",
+              "11",
+              "12"
+            ],
+            "correct_answer": "11"
+          }
+        ]
+      }
+    },
+    "12": {
+      "video": {
+        "url": "assets/videos/number_12.mp4",
+        "duration": 35,
+        "title": "Learn Number 12"
+      },
+      "trace": {
+        "word": "Twelve",
+        "dotted_image": "assets/numbers/trace_12.svg",
+        "instruction": "Trace the number 12",
+        "questions": [
+          {
+            "id": "trace_12_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace the number 12 following the dots",
+            "template_image": "assets/numbers/trace_12.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Count and show objects",
+        "questions": [
+          {
+            "id": "show_12_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show me 12 items",
+            "correct_answer": 12,
+            "help_text": "10 + 2 = 12",
+            "max_objects": 15,
+            "object_name": "flowers",
+            "object_emoji": "🌸"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say the number out loud",
+        "questions": [
+          {
+            "id": "say_12_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say this number: 12",
+            "correct_answer": 12,
+            "pronounce": "twelve (twelv)",
+            "alternatives": [
+              "12",
+              "twelve"
+            ],
+            "object_name": "flowers",
+            "object_emoji": "🌸"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read and recognize",
+        "questions": [
+          {
+            "id": "read_12_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Twelve",
+            "options": [
+              "11",
+              "12",
+              "21",
+              "2"
+            ],
+            "correct_answer": "12"
+          }
+        ]
+      }
+    },
+    "13": {
+      "video": {
+        "url": "assets/videos/number_13.mp4",
+        "duration": 35,
+        "title": "Learn Number 13"
+      },
+      "trace": {
+        "word": "Thirteen",
+        "dotted_image": "assets/numbers/trace_13.svg",
+        "instruction": "Trace 13",
+        "questions": [
+          {
+            "id": "trace_13_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 13",
+            "template_image": "assets/numbers/trace_13.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_13_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 13 items",
+            "correct_answer": 13,
+            "max_objects": 20,
+            "object_name": "birds",
+            "object_emoji": "🐦"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_13_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 13",
+            "correct_answer": 13,
+            "pronounce": "thirteen",
+            "alternatives": [
+              "13",
+              "thirteen"
+            ],
+            "object_name": "birds",
+            "object_emoji": "🐦"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_13_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Thirteen",
+            "options": [
+              "13",
+              "30",
+              "31",
+              "3"
+            ],
+            "correct_answer": "13"
+          }
+        ]
+      }
+    },
+    "14": {
+      "video": {
+        "url": "assets/videos/number_14.mp4",
+        "duration": 35,
+        "title": "Learn Number 14"
+      },
+      "trace": {
+        "word": "Fourteen",
+        "dotted_image": "assets/numbers/trace_14.svg",
+        "instruction": "Trace 14",
+        "questions": [
+          {
+            "id": "trace_14_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 14",
+            "template_image": "assets/numbers/trace_14.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_14_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 14 items",
+            "correct_answer": 14,
+            "max_objects": 20,
+            "object_name": "fish",
+            "object_emoji": "🐟"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_14_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 14",
+            "correct_answer": 14,
+            "pronounce": "fourteen",
+            "alternatives": [
+              "14",
+              "fourteen"
+            ],
+            "object_name": "fish",
+            "object_emoji": "🐟"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_14_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Fourteen",
+            "options": [
+              "14",
+              "40",
+              "41",
+              "4"
+            ],
+            "correct_answer": "14"
+          }
+        ]
+      }
+    },
+    "15": {
+      "video": {
+        "url": "assets/videos/number_15.mp4",
+        "duration": 35,
+        "title": "Learn Number 15"
+      },
+      "trace": {
+        "word": "Fifteen",
+        "dotted_image": "assets/numbers/trace_15.svg",
+        "instruction": "Trace 15",
+        "questions": [
+          {
+            "id": "trace_15_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 15",
+            "template_image": "assets/numbers/trace_15.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_15_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 15 items",
+            "correct_answer": 15,
+            "max_objects": 20,
+            "object_name": "butterflies",
+            "object_emoji": "🦋"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_15_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 15",
+            "correct_answer": 15,
+            "pronounce": "fifteen",
+            "alternatives": [
+              "15",
+              "fifteen"
+            ],
+            "object_name": "butterflies",
+            "object_emoji": "🦋"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_15_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Fifteen",
+            "options": [
+              "15",
+              "50",
+              "51",
+              "5"
+            ],
+            "correct_answer": "15"
+          }
+        ]
+      }
+    },
+    "16": {
+      "video": {
+        "url": "assets/videos/number_16.mp4",
+        "duration": 35,
+        "title": "Learn Number 16"
+      },
+      "trace": {
+        "word": "Sixteen",
+        "dotted_image": "assets/numbers/trace_16.svg",
+        "instruction": "Trace 16",
+        "questions": [
+          {
+            "id": "trace_16_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 16",
+            "template_image": "assets/numbers/trace_16.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_16_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 16 items",
+            "correct_answer": 16,
+            "max_objects": 20,
+            "object_name": "apples",
+            "object_emoji": "🍎"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_16_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 16",
+            "correct_answer": 16,
+            "pronounce": "sixteen",
+            "alternatives": [
+              "16",
+              "sixteen"
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_16_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Sixteen",
+            "options": [
+              "16",
+              "60",
+              "61",
+              "6"
+            ],
+            "correct_answer": "16"
+          }
+        ]
+      }
+    },
+    "17": {
+      "video": {
+        "url": "assets/videos/number_17.mp4",
+        "duration": 35,
+        "title": "Learn Number 17"
+      },
+      "trace": {
+        "word": "Seventeen",
+        "dotted_image": "assets/numbers/trace_17.svg",
+        "instruction": "Trace 17",
+        "questions": [
+          {
+            "id": "trace_17_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 17",
+            "template_image": "assets/numbers/trace_17.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_17_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 17 items",
+            "correct_answer": 17,
+            "max_objects": 25,
+            "object_name": "stars",
+            "object_emoji": "⭐"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_17_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 17",
+            "correct_answer": 17,
+            "pronounce": "seventeen",
+            "alternatives": [
+              "17",
+              "seventeen"
+            ],
+            "object_name": "stars",
+            "object_emoji": "⭐"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_17_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Seventeen",
+            "options": [
+              "17",
+              "70",
+              "71",
+              "7"
+            ],
+            "correct_answer": "17"
+          }
+        ]
+      }
+    },
+    "18": {
+      "video": {
+        "url": "assets/videos/number_18.mp4",
+        "duration": 35,
+        "title": "Learn Number 18"
+      },
+      "trace": {
+        "word": "Eighteen",
+        "dotted_image": "assets/numbers/trace_18.svg",
+        "instruction": "Trace 18",
+        "questions": [
+          {
+            "id": "trace_18_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 18",
+            "template_image": "assets/numbers/trace_18.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_18_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 18 items",
+            "correct_answer": 18,
+            "max_objects": 25,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_18_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 18",
+            "correct_answer": 18,
+            "pronounce": "eighteen",
+            "alternatives": [
+              "18",
+              "eighteen"
+            ],
+            "object_name": "bananas",
+            "object_emoji": "🍌"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_18_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Eighteen",
+            "options": [
+              "18",
+              "80",
+              "81",
+              "8"
+            ],
+            "correct_answer": "18"
+          }
+        ]
+      }
+    },
+    "19": {
+      "video": {
+        "url": "assets/videos/number_19.mp4",
+        "duration": 35,
+        "title": "Learn Number 19"
+      },
+      "trace": {
+        "word": "Nineteen",
+        "dotted_image": "assets/numbers/trace_19.svg",
+        "instruction": "Trace 19",
+        "questions": [
+          {
+            "id": "trace_19_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 19",
+            "template_image": "assets/numbers/trace_19.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_19_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 19 items",
+            "correct_answer": 19,
+            "max_objects": 25,
+            "object_name": "balls",
+            "object_emoji": "🏀"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_19_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 19",
+            "correct_answer": 19,
+            "pronounce": "nineteen",
+            "alternatives": [
+              "19",
+              "nineteen"
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_19_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Nineteen",
+            "options": [
+              "19",
+              "90",
+              "91",
+              "9"
+            ],
+            "correct_answer": "19"
+          }
+        ]
+      }
+    },
+    "20": {
+      "video": {
+        "url": "assets/videos/number_20.mp4",
+        "duration": 40,
+        "title": "Learn Number 20"
+      },
+      "trace": {
+        "word": "Twenty",
+        "dotted_image": "assets/numbers/trace_20.svg",
+        "instruction": "Trace 20",
+        "questions": [
+          {
+            "id": "trace_20_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "instruction": "Trace 20",
+            "template_image": "assets/numbers/trace_20.svg"
+          },
+          {
+            "id": "trace_20_medium",
+            "difficulty": "medium",
+            "points": 15,
+            "instruction": "Trace 20 with fewer guides",
+            "template_image": "assets/numbers/trace_20_medium.svg"
+          }
+        ]
+      },
+      "show": {
+        "instruction": "Show objects",
+        "questions": [
+          {
+            "id": "show_20_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Show 20 items (2 groups of 10)",
+            "correct_answer": 20,
+            "max_objects": 25,
+            "help_text": "10 + 10 = 20",
+            "object_name": "flowers",
+            "object_emoji": "🌸"
+          }
+        ]
+      },
+      "say": {
+        "instruction": "Say it",
+        "questions": [
+          {
+            "id": "say_20_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Say: 20",
+            "correct_answer": 20,
+            "pronounce": "twenty",
+            "alternatives": [
+              "20",
+              "twenty"
+            ],
+            "object_name": "flowers",
+            "object_emoji": "🌸"
+          }
+        ]
+      },
+      "read": {
+        "instruction": "Read",
+        "questions": [
+          {
+            "id": "read_20_easy",
+            "difficulty": "easy",
+            "points": 10,
+            "question": "Select: Twenty",
+            "options": [
+              "20",
+              "12",
+              "2",
+              "200"
+            ],
+            "correct_answer": "20"
+          }
+        ]
+      }
     }
+  }
 }

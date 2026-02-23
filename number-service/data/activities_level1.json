@@ -45,7 +45,9 @@
             "question": "Can you show me 1 apple?",
             "correct_answer": 1,
             "help_image": "assets/images/apple_1.png",
-            "max_objects": 3
+            "max_objects": 3,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_1_medium_1",
@@ -54,7 +56,9 @@
             "question": "Show me 1 banana",
             "correct_answer": 1,
             "help_image": "assets/images/banana_1.png",
-            "max_objects": 5
+            "max_objects": 5,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_1_hard_1",
@@ -63,7 +67,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 1,
             "help_image": "assets/images/star_1.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -81,7 +87,9 @@
             "alternatives": [
               "1",
               "one"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_1_medium_1",
@@ -94,7 +102,9 @@
             "alternatives": [
               "1",
               "one"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_1_hard_1",
@@ -107,7 +117,9 @@
             "alternatives": [
               "1",
               "one"
-            ]
+            ],
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -200,7 +212,9 @@
             "question": "Can you show me 2 apples?",
             "correct_answer": 2,
             "help_image": "assets/images/apple_2.png",
-            "max_objects": 4
+            "max_objects": 4,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_2_medium_1",
@@ -209,7 +223,9 @@
             "question": "Show me 2 bananas",
             "correct_answer": 2,
             "help_image": "assets/images/banana_2.png",
-            "max_objects": 6
+            "max_objects": 6,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_2_hard_1",
@@ -218,7 +234,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 2,
             "help_image": "assets/images/star_2.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -236,7 +254,9 @@
             "alternatives": [
               "2",
               "two"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_2_medium_1",
@@ -249,7 +269,9 @@
             "alternatives": [
               "2",
               "two"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_2_hard_1",
@@ -262,7 +284,9 @@
             "alternatives": [
               "2",
               "two"
-            ]
+            ],
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           }
         ]
       },
@@ -355,7 +379,9 @@
             "question": "Can you show me 3 apples?",
             "correct_answer": 3,
             "help_image": "assets/images/apple_3.png",
-            "max_objects": 5
+            "max_objects": 5,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_3_medium_1",
@@ -364,7 +390,9 @@
             "question": "Show me 3 bananas",
             "correct_answer": 3,
             "help_image": "assets/images/banana_3.png",
-            "max_objects": 7
+            "max_objects": 7,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_3_hard_1",
@@ -373,7 +401,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 3,
             "help_image": "assets/images/star_3.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -391,7 +421,9 @@
             "alternatives": [
               "3",
               "three"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_3_medium_1",
@@ -404,7 +436,9 @@
             "alternatives": [
               "3",
               "three"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_3_hard_1",
@@ -417,7 +451,9 @@
             "alternatives": [
               "3",
               "three"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           }
         ]
       },
@@ -510,7 +546,9 @@
             "question": "Can you show me 4 apples?",
             "correct_answer": 4,
             "help_image": "assets/images/apple_4.png",
-            "max_objects": 6
+            "max_objects": 6,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_4_medium_1",
@@ -519,7 +557,9 @@
             "question": "Show me 4 bananas",
             "correct_answer": 4,
             "help_image": "assets/images/banana_4.png",
-            "max_objects": 8
+            "max_objects": 8,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_4_hard_1",
@@ -528,7 +568,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 4,
             "help_image": "assets/images/star_4.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -546,7 +588,9 @@
             "alternatives": [
               "4",
               "four"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_4_medium_1",
@@ -559,7 +603,9 @@
             "alternatives": [
               "4",
               "four"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_4_hard_1",
@@ -572,7 +618,9 @@
             "alternatives": [
               "4",
               "four"
-            ]
+            ],
+            "object_name": "flowers",
+            "object_emoji": "🌸"
           }
         ]
       },
@@ -665,7 +713,9 @@
             "question": "Can you show me 5 apples?",
             "correct_answer": 5,
             "help_image": "assets/images/apple_5.png",
-            "max_objects": 7
+            "max_objects": 7,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_5_medium_1",
@@ -674,7 +724,9 @@
             "question": "Show me 5 bananas",
             "correct_answer": 5,
             "help_image": "assets/images/banana_5.png",
-            "max_objects": 9
+            "max_objects": 9,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_5_hard_1",
@@ -683,7 +735,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 5,
             "help_image": "assets/images/star_5.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -701,7 +755,9 @@
             "alternatives": [
               "5",
               "five"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_5_medium_1",
@@ -714,7 +770,9 @@
             "alternatives": [
               "5",
               "five"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_5_hard_1",
@@ -727,7 +785,9 @@
             "alternatives": [
               "5",
               "five"
-            ]
+            ],
+            "object_name": "birds",
+            "object_emoji": "🐦"
           }
         ]
       },
@@ -820,7 +880,9 @@
             "question": "Can you show me 6 apples?",
             "correct_answer": 6,
             "help_image": "assets/images/apple_6.png",
-            "max_objects": 8
+            "max_objects": 8,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_6_medium_1",
@@ -829,7 +891,9 @@
             "question": "Show me 6 bananas",
             "correct_answer": 6,
             "help_image": "assets/images/banana_6.png",
-            "max_objects": 10
+            "max_objects": 10,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_6_hard_1",
@@ -838,7 +902,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 6,
             "help_image": "assets/images/star_6.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -856,7 +922,9 @@
             "alternatives": [
               "6",
               "six"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_6_medium_1",
@@ -869,7 +937,9 @@
             "alternatives": [
               "6",
               "six"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_6_hard_1",
@@ -882,7 +952,9 @@
             "alternatives": [
               "6",
               "six"
-            ]
+            ],
+            "object_name": "fish",
+            "object_emoji": "🐟"
           }
         ]
       },
@@ -898,7 +970,8 @@
             "options": [
               "5",
               "6",
-              "7"
+              "7",
+              "9"
             ],
             "answer": "6"
           },
@@ -975,7 +1048,9 @@
             "question": "Can you show me 7 apples?",
             "correct_answer": 7,
             "help_image": "assets/images/apple_7.png",
-            "max_objects": 9
+            "max_objects": 9,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_7_medium_1",
@@ -984,7 +1059,9 @@
             "question": "Show me 7 bananas",
             "correct_answer": 7,
             "help_image": "assets/images/banana_7.png",
-            "max_objects": 11
+            "max_objects": 11,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_7_hard_1",
@@ -993,7 +1070,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 7,
             "help_image": "assets/images/star_7.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -1007,11 +1086,13 @@
             "image": "assets/images/apple_7.png",
             "question": "Count the apples and say the number",
             "correct_answer": 7,
-            "pronounce": "seven (sev\u0259n)",
+            "pronounce": "seven (sevən)",
             "alternatives": [
               "7",
               "seven"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_7_medium_1",
@@ -1020,11 +1101,13 @@
             "image": "assets/images/ball_7.png",
             "question": "How many balls? Say it out loud",
             "correct_answer": 7,
-            "pronounce": "seven (sev\u0259n)",
+            "pronounce": "seven (sevən)",
             "alternatives": [
               "7",
               "seven"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_7_hard_1",
@@ -1033,11 +1116,13 @@
             "image": "assets/images/mixed_7.png",
             "question": "Count all objects and say the number",
             "correct_answer": 7,
-            "pronounce": "seven (sev\u0259n)",
+            "pronounce": "seven (sevən)",
             "alternatives": [
               "7",
               "seven"
-            ]
+            ],
+            "object_name": "butterflies",
+            "object_emoji": "🦋"
           }
         ]
       },
@@ -1130,7 +1215,9 @@
             "question": "Can you show me 8 apples?",
             "correct_answer": 8,
             "help_image": "assets/images/apple_8.png",
-            "max_objects": 10
+            "max_objects": 10,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_8_medium_1",
@@ -1139,7 +1226,9 @@
             "question": "Show me 8 bananas",
             "correct_answer": 8,
             "help_image": "assets/images/banana_8.png",
-            "max_objects": 12
+            "max_objects": 12,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_8_hard_1",
@@ -1148,7 +1237,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 8,
             "help_image": "assets/images/star_8.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -1166,7 +1257,9 @@
             "alternatives": [
               "8",
               "eight"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_8_medium_1",
@@ -1179,7 +1272,9 @@
             "alternatives": [
               "8",
               "eight"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_8_hard_1",
@@ -1192,7 +1287,9 @@
             "alternatives": [
               "8",
               "eight"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           }
         ]
       },
@@ -1285,7 +1382,9 @@
             "question": "Can you show me 9 apples?",
             "correct_answer": 9,
             "help_image": "assets/images/apple_9.png",
-            "max_objects": 10
+            "max_objects": 10,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_9_medium_1",
@@ -1294,7 +1393,9 @@
             "question": "Show me 9 bananas",
             "correct_answer": 9,
             "help_image": "assets/images/banana_9.png",
-            "max_objects": 12
+            "max_objects": 12,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_9_hard_1",
@@ -1303,7 +1404,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 9,
             "help_image": "assets/images/star_9.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -1321,7 +1424,9 @@
             "alternatives": [
               "9",
               "nine"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_9_medium_1",
@@ -1334,7 +1439,9 @@
             "alternatives": [
               "9",
               "nine"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_9_hard_1",
@@ -1347,7 +1454,9 @@
             "alternatives": [
               "9",
               "nine"
-            ]
+            ],
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -1440,7 +1549,9 @@
             "question": "Can you show me 10 apples?",
             "correct_answer": 10,
             "help_image": "assets/images/apple_10.png",
-            "max_objects": 10
+            "max_objects": 10,
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "show_10_medium_1",
@@ -1449,7 +1560,9 @@
             "question": "Show me 10 bananas",
             "correct_answer": 10,
             "help_image": "assets/images/banana_10.png",
-            "max_objects": 12
+            "max_objects": 12,
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           },
           {
             "id": "show_10_hard_1",
@@ -1458,7 +1571,9 @@
             "question": "How many stars do you see?",
             "correct_answer": 10,
             "help_image": "assets/images/star_10.png",
-            "max_objects": 15
+            "max_objects": 15,
+            "object_name": "stars",
+            "object_emoji": "⭐"
           }
         ]
       },
@@ -1476,7 +1591,9 @@
             "alternatives": [
               "10",
               "ten"
-            ]
+            ],
+            "object_name": "apples",
+            "object_emoji": "🍎"
           },
           {
             "id": "say_10_medium_1",
@@ -1489,7 +1606,9 @@
             "alternatives": [
               "10",
               "ten"
-            ]
+            ],
+            "object_name": "balls",
+            "object_emoji": "🏀"
           },
           {
             "id": "say_10_hard_1",
@@ -1502,7 +1621,9 @@
             "alternatives": [
               "10",
               "ten"
-            ]
+            ],
+            "object_name": "bananas",
+            "object_emoji": "🍌"
           }
         ]
       },

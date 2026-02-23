@@ -9,7 +9,7 @@ import 'package:ganithamithura/widgets/common/feedback_widgets.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/learning_flow_manager.dart';
-import 'package:ganithamithura/screens/number/object_detection/object_detection_activity_screen.dart';
+import 'package:ganithamithura/services/tts_service.dart';
 
 /// SayActivityScreen - Voice recognition activity
 class SayActivityScreen extends StatefulWidget {
@@ -55,7 +55,18 @@ class _SayActivityScreenState extends State<SayActivityScreen>
     // Delay initialization to ensure widget is fully built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initSpeech();
+      // Pronounce the number aloud so the student knows what to say
+      Future.delayed(const Duration(milliseconds: 800), () {
+        _pronounceNumber();
+      });
     });
+  }
+
+  /// Speak the number aloud using TTS so the student can hear the pronunciation
+  Future<void> _pronounceNumber() async {
+    final word = NumberWords.getWord(widget.currentNumber);
+    await TTSService.instance.speak(
+        'The number is ${widget.currentNumber}. Say: $word');
   }
 
   @override
@@ -131,15 +142,12 @@ class _SayActivityScreenState extends State<SayActivityScreen>
       _speechAvailable = await _speech.initialize(
         onError: (error) {
           debugPrint('Speech recognition error: $error');
+
+          // Always update the field — even if not mounted the mic button
+          // must not stay stuck in the green/listening state.
+          _isListening = false;
           if (!mounted) return;
-
-          setState(() {
-            _isListening = false;
-            // _recognizedText = 'one';//result.recognizedWords.toLowerCase();
-          });
-
-          // _checkResult();
-          // return;
+          setState(() {});
 
           // Store error to show in UI instead of immediate snackbar
           String title = 'Error';
@@ -166,12 +174,13 @@ class _SayActivityScreenState extends State<SayActivityScreen>
         },
         onStatus: (status) {
           debugPrint('Speech status: $status');
-          if (!mounted) return;
 
           if (status == 'done' || status == 'notListening') {
-            setState(() {
-              _isListening = false;
-            });
+            // Always update the field so the button reflects reality,
+            // even when mounted happens to be false at this instant.
+            _isListening = false;
+            if (!mounted) return;
+            setState(() {});
 
             // If we finished listening but didn't get any text, show hint
             if (status == 'done' && _recognizedText.isEmpty) {
@@ -243,7 +252,22 @@ class _SayActivityScreenState extends State<SayActivityScreen>
                       word: NumberWords.getWord(widget.currentNumber),
                     ),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 16),
+
+                    // Hear-it-again button so the student can re-listen to the pronunciation
+                    OutlinedButton.icon(
+                      onPressed: _pronounceNumber,
+                      icon: const Icon(Icons.volume_up),
+                      label: const Text('Hear it again'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Color(AppColors.numberColor),
+                        side: BorderSide(color: Color(AppColors.numberColor)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
 
                     // Microphone button
                     _buildMicrophoneButton(),
@@ -251,7 +275,7 @@ class _SayActivityScreenState extends State<SayActivityScreen>
                     const SizedBox(height: 32),
 
                     // Status text
-                    if (_isListening)
+                    if (_isListening || _speech.isListening)
                       const Text(
                         'Listening...',
                         style: TextStyle(fontSize: 18, color: Colors.black54),
@@ -382,12 +406,13 @@ class _SayActivityScreenState extends State<SayActivityScreen>
             if (_result != null)
               _result!
                   ? SuccessAnimation(
-                      message: 'Perfect pronunciation!',
+                      message: 'Great job! Perfect pronunciation!',
                       onComplete: _onSuccess,
                     )
                   : FailureAnimation(
-                      message: 'Try saying it again',
+                      message: 'Try again! Listen carefully and repeat.',
                       onRetry: _resetActivity,
+                      onGoBack: _goBackToLearning,
                     ),
           ],
         ),
@@ -396,6 +421,10 @@ class _SayActivityScreenState extends State<SayActivityScreen>
   }
 
   Widget _buildMicrophoneButton() {
+    // Use the plugin's own isListening as the authoritative source of truth.
+    // _isListening is only an optimistic flag; async native callbacks may
+    // arrive between frames and leave it stale.
+    final isActive = _isListening || _speech.isListening;
     return GestureDetector(
       onTap: _speechAvailable ? _toggleListening : null,
       child: AnimatedBuilder(
@@ -406,7 +435,7 @@ class _SayActivityScreenState extends State<SayActivityScreen>
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _isListening
+              color: isActive
                   ? Color(
                       AppColors.successColor,
                     ).withOpacity(0.2 + (_micAnimationController.value * 0.3))
@@ -414,7 +443,7 @@ class _SayActivityScreenState extends State<SayActivityScreen>
                   ? Color(AppColors.numberColor).withOpacity(0.2)
                   : Color(AppColors.disabledColor).withOpacity(0.2),
               border: Border.all(
-                color: _isListening
+                color: isActive
                     ? Color(AppColors.successColor)
                     : _speechAvailable
                     ? Color(AppColors.numberColor)
@@ -423,9 +452,9 @@ class _SayActivityScreenState extends State<SayActivityScreen>
               ),
             ),
             child: Icon(
-              _isListening ? Icons.mic : Icons.mic_none,
+              isActive ? Icons.mic : Icons.mic_none,
               size: 60,
-              color: _isListening
+              color: isActive
                   ? Color(AppColors.successColor)
                   : _speechAvailable
                   ? Color(AppColors.numberColor)
@@ -448,14 +477,15 @@ class _SayActivityScreenState extends State<SayActivityScreen>
         _recognizedText = '';
         _result = null;
       });
-
       await _speech.listen(
         onResult: _onSpeechResult,
         listenFor: const Duration(seconds: 10),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        listenMode: stt.ListenMode.confirmation,
+        pauseFor: const Duration(milliseconds: 2000),
+        listenOptions: stt.SpeechListenOptions(
+          partialResults: true,
+          cancelOnError: true,
+          listenMode: stt.ListenMode.confirmation,
+        ),
       );
 
       setState(() {
@@ -467,6 +497,7 @@ class _SayActivityScreenState extends State<SayActivityScreen>
   void _onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       _recognizedText = result.recognizedWords.toLowerCase();
+      _isListening = false;
     });
 
     if (result.finalResult) {
@@ -476,7 +507,15 @@ class _SayActivityScreenState extends State<SayActivityScreen>
 
   void _checkResult() {
     final targetWord = NumberWords.getWord(widget.currentNumber).toLowerCase();
-    final recognizedWord = _recognizedText.toLowerCase();
+
+    // Normalize: speech engines often return digits ("7") instead of words
+    // ("seven"). Convert digit strings to their word equivalent before comparing.
+    String recognizedWord = _recognizedText.toLowerCase().trim();
+    final asInt = int.tryParse(recognizedWord);
+    if (asInt != null) {
+      final asWord = NumberWords.getWord(asInt);
+      if (asWord.isNotEmpty) recognizedWord = asWord;
+    }
 
     // Check similarity
     final similarity = _calculateSimilarity(targetWord, recognizedWord);
@@ -588,6 +627,25 @@ class _SayActivityScreenState extends State<SayActivityScreen>
           ),
         );
       }
+    }
+  }
+
+  /// Navigate back to the first activity for this number (learning restart)
+  void _goBackToLearning() async {
+    setState(() {
+      _result = null;
+      _recognizedText = '';
+    });
+    final learningFlowManager = LearningFlowManager.instance;
+    try {
+      await learningFlowManager.startLearningFromNumber(
+        level: widget.level.levelNumber,
+        startNumber: widget.currentNumber,
+        levelData: widget.level,
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error going back to learning: $e');
     }
   }
 }

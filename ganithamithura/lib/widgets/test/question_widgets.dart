@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ganithamithura/models/models.dart';
 import 'package:ganithamithura/services/api/number_api_service.dart';
+import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/services/camera_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -960,7 +961,8 @@ class _DragDropCountWidgetState extends State<DragDropCountWidget> {
                 ),
               ),
               Text(
-                ' / Target: $targetCount',
+                '',
+                // ' / Target: $targetCount',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
@@ -1104,78 +1106,81 @@ class _PatternFillWidgetState extends State<PatternFillWidget> {
           ),
         const SizedBox(height: 16),
 
-        // Pattern display
+        // Pattern display (horizontally scrollable)
         Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
             color: const Color(0xFFF5F6FF),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 0; i < displaySeq.length; i++) ...[
-                if (i > 0)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(
-                      Icons.arrow_forward,
-                      size: 16,
-                      color: Colors.grey[400],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (int i = 0; i < displaySeq.length; i++) ...[
+                  if (i > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                        color: Colors.grey[400],
+                      ),
                     ),
-                  ),
-                if (displaySeq[i] == '___')
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: _selectedAnswer != null
-                          ? (_isCorrect!
-                              ? Colors.green.withOpacity(0.15)
-                              : Colors.red.withOpacity(0.15))
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
+                  if (displaySeq[i] == '___')
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
                         color: _selectedAnswer != null
-                            ? (_isCorrect! ? Colors.green : Colors.red)
-                            : const Color(0xFF6B7FFF),
-                        width: 2,
+                            ? (_isCorrect!
+                                ? Colors.green.withOpacity(0.15)
+                                : Colors.red.withOpacity(0.15))
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _selectedAnswer != null
+                              ? (_isCorrect! ? Colors.green : Colors.red)
+                              : const Color(0xFF6B7FFF),
+                          width: 2,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _selectedAnswer ?? '?',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _selectedAnswer != null
+                              ? (_isCorrect! ? Colors.green : Colors.red)
+                              : const Color(0xFF6B7FFF),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        displaySeq[i],
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _selectedAnswer ?? '?',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: _selectedAnswer != null
-                            ? (_isCorrect! ? Colors.green : Colors.red)
-                            : const Color(0xFF6B7FFF),
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      displaySeq[i],
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
 
@@ -1648,15 +1653,17 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
       await _speech.cancel();
       _speechAvailable = await _speech.initialize(
         onStatus: (status) {
-          // Reset listening state if the engine stops unexpectedly
+          // When the engine stops (e.g. pauseFor timeout), submit whatever was
+          // captured so far — otherwise single-word results get dropped.
           if (status == 'done' || status == 'notListening') {
             if (mounted && _isListening) {
-              setState(() => _isListening = false);
+              _stopListeningAndCheck();
             }
           }
         },
         onError: (error) {
           debugPrint('Speech error: ${error.errorMsg}');
+          _isListening = false;
           if (mounted) {
             setState(() {
               _isListening = false;
@@ -1692,19 +1699,27 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
 
     await _speech.listen(
       onResult: (result) {
-        setState(() {
-          _recognizedText = result.recognizedWords;
-        });
+        if (result.recognizedWords.isNotEmpty) {
+          setState(() {
+            _recognizedText = result.recognizedWords;
+          });
+        }
         if (result.finalResult) {
           _stopListeningAndCheck();
         }
       },
-      listenFor: const Duration(seconds: 5),
-      cancelOnError: true,
+      listenFor: const Duration(seconds: 10),
+      pauseFor: const Duration(milliseconds: 2000),
+      listenOptions: stt.SpeechListenOptions(
+        partialResults: true,
+        cancelOnError: true,
+        listenMode: stt.ListenMode.confirmation,
+      ),
     );
   }
 
   void _stopListeningAndCheck() async {
+    if (!_isListening) return; // guard against double-invocation
     await _speech.stop();
     setState(() {
       _isListening = false;
@@ -1718,7 +1733,15 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
   void _checkAnswer(String answer) {
     final alternatives = widget.question.alternatives ?? [];
     final correctAnswer = widget.question.correctAnswer ?? '';
-    
+
+    // Normalize: speech engines often return digits ("7") instead of words
+    // ("seven"). Convert digit strings to their word equivalent before comparing.
+    final asInt = int.tryParse(answer);
+    if (asInt != null) {
+      final asWord = NumberWords.getWord(asInt);
+      if (asWord.isNotEmpty) answer = asWord;
+    }
+
     final isCorrect = answer == correctAnswer ||
         alternatives.any(
             (alt) => alt.toLowerCase() == answer);

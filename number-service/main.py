@@ -101,7 +101,7 @@ def load_activities_data(level: int = 1) -> Dict[str, Any]:
     file_path = get_level_file_path(level)
     
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             activities_cache[level] = data  # Cache for future use
             return data
@@ -279,7 +279,7 @@ async def get_activities_for_level(level: int):
         
         # Get activities for all numbers in the level (1-10)
         for number in range(1, 11):
-            activities = get_activities_for_number_from_data(level, number)
+            activities = get_activities_for_number_from_data(level, number+(10*(level-1)))  # Adjust number range based on level
             all_activities.extend(activities)
         
         return {
@@ -1002,6 +1002,8 @@ def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> D
             "question": q.get('question', f"How many objects do you see?"),
             "instruction": "Count the objects",
             "help_image": q.get('help_image'),
+            "object_name": q.get('object_name'),
+            "object_emoji": q.get('object_emoji'),
             "object_count": count,
             "options": options,
             "correct_answer": str(count),
@@ -1016,6 +1018,8 @@ def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> D
             "question": q.get('question', f"Say the number!"),
             "instruction": "Say the number out loud",
             "object_image": q.get('image'),
+            "object_name": q.get('object_name'),
+            "object_emoji": q.get('object_emoji'),
             "object_count": q.get('correct_answer', number),
             "correct_answer": str(q.get('correct_answer', number)),
             "alternatives": q.get('alternatives', [str(number), NUMBER_WORDS.get(number, '').lower()]),
@@ -1231,7 +1235,7 @@ async def detect_objects(request: ObjectDetectionRequest):
 
 class DigitRecognitionRequest(BaseModel):
     image: str  # Base64 encoded image
-    expected_digit: Optional[int] = None  # For validation
+    expected_digit: Optional[int] = None  # For validation (supports multi-digit numbers)
     confidence_threshold: Optional[float] = 0.7
 
 
@@ -1240,12 +1244,13 @@ async def recognize_digit(request: DigitRecognitionRequest):
     """
     POST /recognize/digit
     
-    Recognize handwritten digit from image using ML model.
+    Recognize handwritten digit/number from image using ML model.
+    Automatically uses multi-digit recognition when expected_digit >= 10.
     
     Request body:
     {
         "image": "base64_encoded_image_string",
-        "expected_digit": 5,  // Optional: for validation
+        "expected_digit": 5,  // Optional: for validation (supports multi-digit)
         "confidence_threshold": 0.7  // Optional: minimum confidence
     }
     
@@ -1259,50 +1264,96 @@ async def recognize_digit(request: DigitRecognitionRequest):
         "feedback": "Perfect! You drew 5 correctly!"
     }
     """
-    try:
+    try:        
         recognition_service = get_recognition_service()
         
-        # Recognize digit
-        if request.expected_digit is not None:
-            # Validation mode
-            result = recognition_service.validate_digit(
-                image=None,  # Will be processed from base64
-                expected_digit=request.expected_digit,
-                confidence_threshold=request.confidence_threshold
-            )
-            # Process base64 separately
-            recognition_result = recognition_service.recognize_from_base64(request.image)
-            
-            if 'error' in recognition_result:
-                raise HTTPException(status_code=400, detail=recognition_result['error'])
-            
-            # Combine results
-            is_correct = (
-                recognition_result['predicted_digit'] == request.expected_digit and
-                recognition_result['confidence'] >= request.confidence_threshold
-            )
-            
-            if is_correct:
-                feedback = f"Perfect! You drew {request.expected_digit} correctly!"
-            elif recognition_result['predicted_digit'] == request.expected_digit:
-                feedback = f"Good try! Your {request.expected_digit} needs a bit more clarity."
+        # Determine if we need multi-digit recognition
+        use_multi_digit = (
+            request.expected_digit is not None and request.expected_digit >= 10
+        )
+        
+        if use_multi_digit:
+            # Multi-digit recognition path
+            if request.expected_digit is not None:
+                # Validation mode for multi-digit numbers
+                import base64 as b64
+                image_data = b64.b64decode(request.image)
+                nparr = np.frombuffer(image_data, np.uint8)
+                image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                if image is None:
+                    raise HTTPException(status_code=400, detail="Failed to decode image")
+                
+                validation_result = recognition_service.validate_number(
+                    image=image,
+                    expected_number=request.expected_digit,
+                    confidence_threshold=request.confidence_threshold
+                )
+                
+                if 'error' in validation_result and validation_result.get('predicted') == -1:
+                    raise HTTPException(status_code=400, detail=validation_result['error'])
+                
+                return {
+                    'predicted_digit': validation_result['predicted'],
+                    'confidence': validation_result['confidence'],
+                    'probabilities': [],
+                    'top_3_predictions': [],
+                    'is_correct': validation_result['is_correct'],
+                    'expected': validation_result['expected'],
+                    'feedback': validation_result['feedback'],
+                    'digit_results': validation_result.get('digit_results', []),
+                    'num_digits': validation_result.get('num_digits', 0)
+                }
             else:
-                feedback = f"That looks like {recognition_result['predicted_digit']}. Try drawing {request.expected_digit} again."
-            
-            return {
-                **recognition_result,
-                'is_correct': is_correct,
-                'expected': request.expected_digit,
-                'feedback': feedback
-            }
+                # Recognition only for multi-digit
+                result = recognition_service.recognize_number_from_base64(request.image)
+                
+                if 'error' in result and result.get('predicted_number') == -1:
+                    raise HTTPException(status_code=400, detail=result['error'])
+                
+                return {
+                    'predicted_digit': result['predicted_number'],
+                    'confidence': result['confidence'],
+                    'probabilities': [],
+                    'top_3_predictions': [],
+                    'digit_results': result.get('digit_results', []),
+                    'num_digits': result.get('num_digits', 0)
+                }
         else:
-            # Recognition only mode
-            result = recognition_service.recognize_from_base64(request.image)
-            
-            if 'error' in result:
-                raise HTTPException(status_code=400, detail=result['error'])
-            
-            return result
+            # Single digit recognition path (original behavior)
+            if request.expected_digit is not None:
+                # Validation mode
+                recognition_result = recognition_service.recognize_from_base64(request.image)
+                
+                if 'error' in recognition_result:
+                    raise HTTPException(status_code=400, detail=recognition_result['error'])
+                
+                is_correct = (
+                    recognition_result['predicted_digit'] == request.expected_digit and
+                    recognition_result['confidence'] >= request.confidence_threshold
+                )
+                
+                if is_correct:
+                    feedback = f"Perfect! You drew {request.expected_digit} correctly!"
+                elif recognition_result['predicted_digit'] == request.expected_digit:
+                    feedback = f"Good try! Your {request.expected_digit} needs a bit more clarity."
+                else:
+                    feedback = f"That looks like {recognition_result['predicted_digit']}. Try drawing {request.expected_digit} again."
+                
+                return {
+                    **recognition_result,
+                    'is_correct': is_correct,
+                    'expected': request.expected_digit,
+                    'feedback': feedback
+                }
+            else:
+                # Recognition only mode
+                result = recognition_service.recognize_from_base64(request.image)
+                
+                if 'error' in result:
+                    raise HTTPException(status_code=400, detail=result['error'])
+                
+                return result
         
     except HTTPException:
         raise
@@ -1310,6 +1361,65 @@ async def recognize_digit(request: DigitRecognitionRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Error during digit recognition: {str(e)}"
+        )
+
+
+@app.post("/recognize/number")
+async def recognize_number(request: DigitRecognitionRequest):
+    """
+    POST /recognize/number
+    
+    Recognize handwritten multi-digit number from image.
+    Segments the image into individual digits, recognizes each, and combines.
+    
+    Request body:
+    {
+        "image": "base64_encoded_image_string",
+        "expected_digit": 42,  // Optional: for validation
+        "confidence_threshold": 0.7
+    }
+    
+    Returns:
+    {
+        "predicted_number": 42,
+        "confidence": 0.92,
+        "digit_results": [...],
+        "num_digits": 2,
+        "is_correct": true,  // If expected_digit provided
+        "feedback": "..."
+    }
+    """
+    try:
+        recognition_service = get_recognition_service()
+        
+        if request.expected_digit is not None:
+            import base64 as b64
+            image_data = b64.b64decode(request.image)
+            nparr = np.frombuffer(image_data, np.uint8)
+            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            if image is None:
+                raise HTTPException(status_code=400, detail="Failed to decode image")
+            
+            result = recognition_service.validate_number(
+                image=image,
+                expected_number=request.expected_digit,
+                confidence_threshold=request.confidence_threshold
+            )
+        else:
+            result = recognition_service.recognize_number_from_base64(request.image)
+        
+        if 'error' in result and result.get('predicted_number', result.get('predicted', -1)) == -1:
+            raise HTTPException(status_code=400, detail=result['error'])
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error during number recognition: {str(e)}"
         )
 
 

@@ -466,7 +466,7 @@ class ValidationResult {
   }
 }
 
-/// Digit Recognition Result Model
+/// Digit Recognition Result Model (supports single and multi-digit numbers)
 class DigitRecognitionResult {
   final int predictedDigit;
   final double confidence;
@@ -475,6 +475,8 @@ class DigitRecognitionResult {
   final bool? isCorrect;
   final int? expected;
   final String? feedback;
+  final int? numDigits;
+  final List<Map<String, dynamic>>? digitResults;
 
   DigitRecognitionResult({
     required this.predictedDigit,
@@ -484,21 +486,36 @@ class DigitRecognitionResult {
     this.isCorrect,
     this.expected,
     this.feedback,
+    this.numDigits,
+    this.digitResults,
   });
+
+  /// Whether this was a multi-digit recognition result
+  bool get isMultiDigit => (numDigits ?? 1) > 1;
 
   factory DigitRecognitionResult.fromJson(Map<String, dynamic> json) {
     return DigitRecognitionResult(
       predictedDigit: json['predicted_digit'] as int,
       confidence: (json['confidence'] as num).toDouble(),
-      probabilities: (json['probabilities'] as List)
-          .map((e) => (e as num).toDouble())
-          .toList(),
-      top3Predictions: (json['top_3_predictions'] as List)
-          .map((e) => TopPrediction.fromJson(e))
-          .toList(),
+      probabilities: json['probabilities'] != null
+          ? (json['probabilities'] as List)
+              .map((e) => (e as num).toDouble())
+              .toList()
+          : [],
+      top3Predictions: json['top_3_predictions'] != null
+          ? (json['top_3_predictions'] as List)
+              .map((e) => TopPrediction.fromJson(e))
+              .toList()
+          : [],
       isCorrect: json['is_correct'] as bool?,
       expected: json['expected'] as int?,
       feedback: json['feedback'] as String?,
+      numDigits: json['num_digits'] as int?,
+      digitResults: json['digit_results'] != null
+          ? (json['digit_results'] as List)
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList()
+          : null,
     );
   }
 }

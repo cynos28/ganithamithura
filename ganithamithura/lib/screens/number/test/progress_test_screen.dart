@@ -883,6 +883,7 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
+      case 'show':
       case 'object_detection':
         return ObjectDetectionQuestionWidget(
           question: question,
@@ -1164,6 +1165,9 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
         return Colors.blue;
       case 'say':
         return Colors.green;
+      case 'show':
+      case 'object_detection':
+        return Colors.cyan;
       case 'select':
       default:
         return Colors.deepPurple;
@@ -1186,6 +1190,9 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
         return Icons.edit;
       case 'say':
         return Icons.mic;
+      case 'show':
+      case 'object_detection':
+        return Icons.camera_alt;
       case 'select':
       default:
         return Icons.check_circle_outline;
@@ -1208,6 +1215,9 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
         return 'Drawing';
       case 'say':
         return 'Speaking';
+      case 'show':
+      case 'object_detection':
+        return 'Show Objects';
       case 'select':
       default:
         return 'Select';

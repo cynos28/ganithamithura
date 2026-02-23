@@ -130,6 +130,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       await Future.delayed(const Duration(milliseconds: 100));
 
       if (!mounted) return;
+      debugPrint('Starting Level ${level.levelNumber} - Fetching activities...');
 
       Get.dialog(
         Material(

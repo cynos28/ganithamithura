@@ -43,6 +43,9 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
   // Canvas key for capturing image
   final GlobalKey _canvasKey = GlobalKey();
 
+  // Key for the number outline widget (used to restrict drawing area in learning mode)
+  final GlobalKey _outlineKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -112,12 +115,13 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
                   if (_result != null)
                     _result!
                         ? SuccessAnimation(
-                            message: _feedbackMessage ?? 'Perfect!',
+                            message: _feedbackMessage ?? 'Great job!',
                             onComplete: _onSuccess,
                           )
                         : FailureAnimation(
                             message: _feedbackMessage ?? 'Try again!',
                             onRetry: _clearDrawing,
+                            onGoBack: _goBackToLearning,
                           ),
                 ],
               ),
@@ -140,9 +144,9 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
   }
 
   Widget _buildDottedNumberOutline() {
-    // TODO: Phase 2 - Load actual dotted SVG/PNG assets
     // For now, show large number
     return Container(
+      key: _outlineKey,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         border: Border.all(
@@ -158,13 +162,32 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
     );
   }
 
+  /// Returns true if [globalPos] falls within the number outline widget bounds.
+  /// Drawing is always restricted to the outline box in TraceActivityScreen
+  /// (learning mode). The progress test uses TraceQuestionWidget instead.
+  bool _isWithinOutline(Offset globalPos) {
+    final renderBox =
+        _outlineKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return true; // Fallback: allow if not ready
+    final local = renderBox.globalToLocal(globalPos);
+    final size = renderBox.size;
+    return local.dx >= 0 &&
+        local.dy >= 0 &&
+        local.dx <= size.width &&
+        local.dy <= size.height;
+  }
+
   void _onPanStart(DragStartDetails details) {
+    // Only accept touch points that fall within the number outline area
+    if (!_isWithinOutline(details.globalPosition)) return;
     setState(() {
       _points.add(details.localPosition);
     });
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
+    // Only accept touch points that fall within the number outline area
+    if (!_isWithinOutline(details.globalPosition)) return;
     setState(() {
       _points.add(details.localPosition);
     });
@@ -365,6 +388,25 @@ class _TraceActivityScreenState extends State<TraceActivityScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// Navigate back to the first activity for this number (learning restart)
+  void _goBackToLearning() async {
+    setState(() {
+      _result = null;
+      _points.clear();
+    });
+    final learningFlowManager = LearningFlowManager.instance;
+    try {
+      await learningFlowManager.startLearningFromNumber(
+        level: widget.level.levelNumber,
+        startNumber: widget.currentNumber,
+        levelData: widget.level,
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error going back to learning: $e');
     }
   }
 }
