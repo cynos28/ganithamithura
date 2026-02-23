@@ -3,13 +3,14 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ganithamithura/utils/constants.dart';
 import 'package:ganithamithura/services/local_storage/storage_service.dart';
-import 'package:ganithamithura/screens/home/home_screen.dart';
+import 'package:ganithamithura/screens/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize storage service
-  await StorageService.instance.init();
+  // Initialize storage service asynchronously
+  // Don't block app launch - initialize in background
+  StorageService.instance.init();
   
   runApp(const GanithamithuraApp());
 }
@@ -31,7 +32,7 @@ class GanithamithuraApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
