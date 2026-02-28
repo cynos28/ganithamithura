@@ -5,9 +5,10 @@ import json
 import threading
 import logging
 import time
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from queue import Queue
 from pydantic import BaseModel
+from datetime import datetime
 
 # Add src to Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -16,7 +17,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # NOTE: User specified 'voice_ai_math_tuor.py' (sic)
 from src.components.voice_ai_math_tuor import SimpleVoiceMathTutor
 from src.components.ai_math_tutor import AIMathTutor
+from src.database.mongodb_connection import get_collection, get_database
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +27,21 @@ logger = logging.getLogger("SymbolTutorServer")
 
 load_dotenv()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-initialize MongoDB collections on startup
+    db = get_database()
+    if db is not None:
+        collections = db.list_collection_names()
+        if "user_profiles" not in collections:
+            db.create_collection("user_profiles")
+            logger.info("Initialized 'user_profiles' collection in MongoDB.")
+        if "sym_game_scores" not in collections:
+            db.create_collection("sym_game_scores")
+            logger.info("Initialized 'sym_game_scores' collection in MongoDB.")
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # --- VOICE WRAPPER ---
 class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
@@ -320,3 +337,54 @@ async def websocket_tutor_voice(websocket: WebSocket, grade: int, level: int, su
         # No queue worker to stop
     except Exception as e:
         logger.error(f"Error handling websocket: {e}")
+
+# --- RESTFUL API ENDPOINTS FOR GAMING ---
+
+class CharacterUpdate(BaseModel):
+    character_name: str
+
+class ScoreUpdate(BaseModel):
+    game_name: str
+    score: int
+    level: int = 1
+
+@app.post("/api/users/{user_id}/character")
+async def save_character(user_id: str, char_data: CharacterUpdate):
+    collection = get_collection("user_profiles")
+    if collection is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+        
+    collection.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "character_name": char_data.character_name, 
+            "updated_at": datetime.utcnow()
+        }},
+        upsert=True
+    )
+    return {"status": "success", "character_name": char_data.character_name}
+
+@app.get("/api/users/{user_id}/character")
+async def get_character(user_id: str):
+    collection = get_collection("user_profiles")
+    if collection is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+        
+    user = collection.find_one({"user_id": user_id})
+    char_name = user.get("character_name", "Cat") if user else "Cat"
+    return {"character_name": char_name}
+
+@app.post("/api/users/{user_id}/scores")
+async def save_score(user_id: str, score_data: ScoreUpdate):
+    collection = get_collection("sym_game_scores")
+    if collection is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+        
+    collection.insert_one({
+        "user_id": user_id,
+        "game_name": score_data.game_name,
+        "score": score_data.score,
+        "level": score_data.level,
+        "timestamp": datetime.utcnow()
+    })
+    return {"status": "success", "score": score_data.score}

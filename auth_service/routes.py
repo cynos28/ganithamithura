@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/api/auth/signup")
 async def signup(user_data: UserSignup, response: Response):
     db = await get_database()
-    users_collection = db["ganithamithura"]
+    users_collection = db["users"]
     
     # Check if user already exists
     existing_user = await users_collection.find_one({"email": user_data.email})
@@ -59,7 +59,7 @@ async def signup(user_data: UserSignup, response: Response):
 @router.post("/api/auth/signin")
 async def login(user_data: UserLogin, response: Response):
     db = await get_database()
-    users_collection = db["ganithamithura"]
+    users_collection = db["users"]
     
     # Check if user exists and verify password
     user = await users_collection.find_one({"email": user_data.email})

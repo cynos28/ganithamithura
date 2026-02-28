@@ -8,7 +8,7 @@ load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://nethmi:nethmi@itpm.nbiremo.mongodb.net/")
 
 client = AsyncIOMotorClient(MONGODB_URL)
-database = client["ganithmithura"]
+database = client["ganithamithura"]
 users_collection = database["users"]
 
 async def get_database():
