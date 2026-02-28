@@ -50,13 +50,15 @@ async def save_score(user_id: str, score_data: ScoreUpdate):
     if collection is None:
         raise HTTPException(status_code=500, detail="Database not connected")
         
-    collection.insert_one({
-        "user_id": user_id,
-        "game_name": score_data.game_name,
-        "score": score_data.score,
-        "level": score_data.level,
-        "timestamp": datetime.utcnow()
-    })
+    collection.update_one(
+        {"user_id": user_id, "game_name": score_data.game_name},
+        {
+            "$inc": {"score": score_data.score},
+            "$max": {"level": score_data.level},
+            "$set": {"timestamp": datetime.utcnow()}
+        },
+        upsert=True
+    )
     return {"status": "success", "score": score_data.score}
 
 @router.get("/api/game/leaderboard")
