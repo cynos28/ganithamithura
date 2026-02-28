@@ -18,6 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.components.voice_ai_math_tuor import SimpleVoiceMathTutor
 from src.components.ai_math_tutor import AIMathTutor
 from src.database.mongodb_connection import get_collection, get_database
+from src.gaming_routes import router as gaming_router
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
@@ -42,6 +43,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(gaming_router)
 
 # --- VOICE WRAPPER ---
 class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
@@ -339,52 +341,4 @@ async def websocket_tutor_voice(websocket: WebSocket, grade: int, level: int, su
         logger.error(f"Error handling websocket: {e}")
 
 # --- RESTFUL API ENDPOINTS FOR GAMING ---
-
-class CharacterUpdate(BaseModel):
-    character_name: str
-
-class ScoreUpdate(BaseModel):
-    game_name: str
-    score: int
-    level: int = 1
-
-@app.post("/api/users/{user_id}/character")
-async def save_character(user_id: str, char_data: CharacterUpdate):
-    collection = get_collection("user_profiles")
-    if collection is None:
-        raise HTTPException(status_code=500, detail="Database not connected")
-        
-    collection.update_one(
-        {"user_id": user_id},
-        {"$set": {
-            "character_name": char_data.character_name, 
-            "updated_at": datetime.utcnow()
-        }},
-        upsert=True
-    )
-    return {"status": "success", "character_name": char_data.character_name}
-
-@app.get("/api/users/{user_id}/character")
-async def get_character(user_id: str):
-    collection = get_collection("user_profiles")
-    if collection is None:
-        raise HTTPException(status_code=500, detail="Database not connected")
-        
-    user = collection.find_one({"user_id": user_id})
-    char_name = user.get("character_name", "Cat") if user else "Cat"
-    return {"character_name": char_name}
-
-@app.post("/api/users/{user_id}/scores")
-async def save_score(user_id: str, score_data: ScoreUpdate):
-    collection = get_collection("sym_game_scores")
-    if collection is None:
-        raise HTTPException(status_code=500, detail="Database not connected")
-        
-    collection.insert_one({
-        "user_id": user_id,
-        "game_name": score_data.game_name,
-        "score": score_data.score,
-        "level": score_data.level,
-        "timestamp": datetime.utcnow()
-    })
-    return {"status": "success", "score": score_data.score}
+# Moved to src.gaming_routes
