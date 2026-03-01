@@ -25,7 +25,7 @@ router = APIRouter()
 class PerformanceInput(BaseModel):
     """Input model for saving a session performance record."""
     grade: int = Field(ge=1, le=3, description="Student grade (1-3)")
-    session_type: str = Field(description="'typing' or 'telling'")
+    session_type: Optional[str] = Field(default="unknown", description="Optional session type")
     level: int = Field(ge=1, le=3, description="Performance level (1-3)")
     sublevel: str = Field(default="Starter", description="Starter/Explorer/Solver/Champion")
     total_questions: int = Field(ge=1, description="Total questions in session")
@@ -37,7 +37,7 @@ class PerformanceRecord(BaseModel):
     """Output model for a performance record."""
     user_id: str
     grade: int
-    session_type: str
+    session_type: Optional[str] = "unknown"
     level: int
     sublevel: str
     total_questions: int
@@ -95,10 +95,6 @@ async def save_performance(user_id: str, data: PerformanceInput):
     if collection is None:
         raise HTTPException(status_code=500, detail="Database not connected")
     
-    # Validate session_type
-    if data.session_type not in ["typing", "telling"]:
-        raise HTTPException(status_code=400, detail="session_type must be 'typing' or 'telling'")
-    
     # Validate sublevel
     valid_sublevels = ["Starter", "Explorer", "Solver", "Champion"]
     if data.sublevel not in valid_sublevels:
@@ -108,15 +104,25 @@ async def save_performance(user_id: str, data: PerformanceInput):
     if data.correct_answers > data.total_questions:
         raise HTTPException(status_code=400, detail="correct_answers cannot exceed total_questions")
     
-    # Calculate derived fields
+    # Calculate derived fields for current session
     wrong_answers = data.total_questions - data.correct_answers
-    score_percentage = (data.correct_answers / data.total_questions) * 100 if data.total_questions > 0 else 0
+    current_score_percentage = (data.correct_answers / data.total_questions) * 100 if data.total_questions > 0 else 0
     avg_time = data.avg_time_per_question if data.avg_time_per_question else 15.0  # Default 15s
     
-    # Run ML prediction
+    # Calculate CUMULATIVE historical score
+    previous_records = list(collection.find({"user_id": user_id}))
+    historical_total_questions = sum(r.get("total_questions", 0) for r in previous_records)
+    historical_correct_answers = sum(r.get("correct_answers", 0) for r in previous_records)
+    
+    cumulative_total_questions = historical_total_questions + data.total_questions
+    cumulative_correct_answers = historical_correct_answers + data.correct_answers
+    
+    cumulative_score_percentage = (cumulative_correct_answers / cumulative_total_questions) * 100 if cumulative_total_questions > 0 else 0
+    
+    # Run ML prediction using Cumulative Score
     prediction = _run_prediction(
         user_id=user_id,
-        avg_score=score_percentage,
+        avg_score=cumulative_score_percentage,
         avg_time=avg_time,
         grade=data.grade
     )
@@ -136,7 +142,9 @@ async def save_performance(user_id: str, data: PerformanceInput):
         "total_questions": data.total_questions,
         "correct_answers": data.correct_answers,
         "wrong_answers": wrong_answers,
-        "score_percentage": round(score_percentage, 1),
+        "score_percentage": round(current_score_percentage, 1),
+        "cumulative_score_percentage": round(cumulative_score_percentage, 1),
+        "cumulative_total_questions": cumulative_total_questions,
         "avg_time_per_question": avg_time,
         "predicted_level": predicted_level,
         "predicted_sublevel": predicted_sublevel,
@@ -148,14 +156,15 @@ async def save_performance(user_id: str, data: PerformanceInput):
     # Insert into MongoDB
     result = collection.insert_one(performance_doc)
     
-    logger.info(f"Saved performance for user {user_id}: {score_percentage:.0f}% "
-                f"({data.session_type}, Grade {data.grade}, Level {data.level})")
+    logger.info(f"Saved performance for user {user_id}. Current: {current_score_percentage:.0f}%, "
+                f"Cumulative: {cumulative_score_percentage:.0f}% (Level {data.level})")
     
     return {
         "status": "success",
         "performance": {
             "user_id": user_id,
-            "score_percentage": round(score_percentage, 1),
+            "score_percentage": round(current_score_percentage, 1),
+            "cumulative_score_percentage": round(cumulative_score_percentage, 1),
             "correct_answers": data.correct_answers,
             "total_questions": data.total_questions,
             "predicted_level": predicted_level,
