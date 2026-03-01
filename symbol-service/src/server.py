@@ -19,6 +19,7 @@ from src.components.voice_ai_math_tuor import SimpleVoiceMathTutor
 from src.components.ai_math_tutor import AIMathTutor
 from src.database.mongodb_connection import get_collection, get_database
 from src.gaming_routes import router as gaming_router
+from src.performance_routes import router as performance_router
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
@@ -40,10 +41,14 @@ async def lifespan(app: FastAPI):
         if "sym_game_scores" not in collections:
             db.create_collection("sym_game_scores")
             logger.info("Initialized 'sym_game_scores' collection in MongoDB.")
+        if "sym_performance" not in collections:
+            db.create_collection("sym_performance")
+            logger.info("Initialized 'sym_performance' collection in MongoDB.")
     yield
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(gaming_router)
+app.include_router(performance_router)
 
 # --- VOICE WRAPPER ---
 class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
