@@ -251,6 +251,34 @@ async def get_performance_summary(user_id: str):
     if summary.get("avg_score"):
         summary["avg_score"] = round(summary["avg_score"], 1)
     
+    # Calculate strict sequential unlocked_level and sublevel
+    unlocked_level = 1
+    unlocked_sublevel_index = 0
+    sublevels = ["Starter", "Explorer", "Solver", "Champion"]
+    
+    user_history = list(collection.find({"user_id": user_id}).sort("timestamp", 1))
+    for r in user_history:
+        played_lvl = r.get("level", 1)
+        played_sublvl = r.get("sublevel", "Starter")
+        score = r.get("score_percentage", 0)
+        
+        try:
+            played_idx = sublevels.index(played_sublvl)
+        except ValueError:
+            played_idx = 0
+            
+        # Only advance if they beat their highest currently unlocked challenge
+        if played_lvl == unlocked_level and played_idx == unlocked_sublevel_index and score >= 50:
+            if unlocked_sublevel_index < 3:
+                # Advance one sublevel
+                unlocked_sublevel_index += 1
+            else:
+                # Beat Champion, so advance to next level's Starter
+                unlocked_level = min(3, unlocked_level + 1)
+                unlocked_sublevel_index = 0
+                
+    final_sublevel = sublevels[unlocked_sublevel_index]
+    
     # Get latest record for prediction info
     latest = collection.find_one(
         {"user_id": user_id},
@@ -263,8 +291,10 @@ async def get_performance_summary(user_id: str):
         if isinstance(latest.get("timestamp"), datetime):
             latest["timestamp"] = latest["timestamp"].isoformat()
         latest_prediction = {
-            "predicted_level": latest.get("predicted_level"),
-            "predicted_sublevel": latest.get("predicted_sublevel"),
+            "predicted_level": unlocked_level,          # Strict unlocked progression for Flutter
+            "predicted_sublevel": final_sublevel,       # Strict unlocked sublevel
+            "raw_predicted_level": latest.get("predicted_level"),
+            "raw_predicted_sublevel": latest.get("predicted_sublevel"),
             "confidence": latest.get("confidence"),
             "recommendation": latest.get("recommendation"),
             "last_session_type": latest.get("session_type"),
