@@ -56,6 +56,25 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8001
 
 The server will start on `http://0.0.0.0:8001`.
 
+## Connecting the Flutter App
+
+To allow the Flutter App running on a physical device to connect to this backend, you must configure the central IP address in the frontend codebase.
+
+1. **Find your computer's local IP address**
+   - **macOS**: Open Terminal and run: `ifconfig | grep "inet " | grep -v 127.0.0.1` (Look for the `192.168.x.x` or `10.x.x.x` address)
+   - **Windows**: Open Command Prompt and run: `ipconfig` (Look for "IPv4 Address")
+
+2. **Update the Flutter App**
+   - Open the `gmfrontend/lib/services/api/io_config.dart` file in the Flutter project.
+   - Change the `symIp` constant to your local IP address:
+     ```dart
+     static const String symIp = '192.168.8.x'; // Replace with your IP
+     ```
+
+3. **Restart the Flutter App**
+   - Note: A hot reload (`r`) will not work because the IP is cached on startup. You must **Hot Restart** (`R`) or completely stop and run `flutter run` again.
+   - **Important**: Your computer and your mobile device MUST be connected to the exact same Wi-Fi network.
+
 ## API Endpoints
 
 ### `POST /api/auth/signup`
