@@ -22,12 +22,12 @@ from typing import Optional, Dict
 from dotenv import load_dotenv
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')) # Not needed if running from server root
 
-from core.base_math_tutor import BaseMathTutor
-from core.ai_question_generator import AIQuestionGenerator
-from core.number_extractor import NumberExtractor
-from config.voice_microphone_config import VoiceConfig, MicrophoneConfig
+from src.components.core.base_math_tutor import BaseMathTutor
+from src.components.core.ai_question_generator import AIQuestionGenerator
+from src.components.core.number_extractor import NumberExtractor
+from src.config.voice_microphone_config import VoiceConfig, MicrophoneConfig
 
 # Load environment variables
 load_dotenv()
@@ -278,7 +278,7 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         return False
 
-    def run_session(self):
+    def run_session(self, max_questions: int = None):
         """Main tutoring session."""
         print("\n" + "="*60)
         print("🎓 SIMPLE VOICE MATH TUTOR")
@@ -292,6 +292,11 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
         try:
             while True:
+                # Check limit
+                if max_questions and self.stats['total_questions'] >= max_questions:
+                    print(f"✅ Reached limit of {max_questions} questions.")
+                    break
+
                 # Generate AI question based on student profile
                 question_data = AIQuestionGenerator.generate_question(
                     self.student_profile.grade,
