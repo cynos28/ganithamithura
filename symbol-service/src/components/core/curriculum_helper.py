@@ -14,9 +14,10 @@ import sys
 from typing import Dict, Optional
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+# Add parent directory to path for imports
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from curriculum.curriculum_spec import get_curriculum_spec, CURRICULUM
+from src.curriculum.curriculum_spec import get_curriculum_spec, CURRICULUM
 
 
 class CurriculumHelper:
@@ -45,10 +46,18 @@ class CurriculumHelper:
             if not spec:
                 return {}
 
-            # Convert spec to legacy format
+            # Convert spec to legacy format with unexpected keys preserved for prompts
             converted = {
                 'focus': spec.get('focus', ''),
+                'what_is_taught': spec.get('what_is_taught', ''),
+                'students_should_understand': spec.get('students_should_understand', []),
+                'what_should_teach': spec.get('what_should_teach', ''),
                 'operations': spec.get('operations', ['addition']),
+                # Narrative Spec Passthrough
+                'narrative_intro': spec.get('narrative_intro'),
+                'story_1_guide': spec.get('story_1_guide'),
+                'story_2_guide': spec.get('story_2_guide'),
+                'conclusion_guide': spec.get('conclusion_guide'),
             }
 
             # Map operand fields
@@ -58,6 +67,9 @@ class CurriculumHelper:
             # Map result fields
             converted['result_min'] = spec.get('result_min', 0)
             converted['result_max'] = spec.get('result_max', spec.get('product_max', 20))
+            
+            # Map legacy addends_max for backward compat in validations
+            converted['addends_max'] = converted['operand_max']
 
             return converted
         except Exception as e:

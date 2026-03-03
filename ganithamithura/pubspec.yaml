@@ -32,8 +32,9 @@ dependencies:
   video_player: ^2.8.2
   chewie: ^1.7.5
   
-  # Speech Recognition
+  # Speech Recognition & TTS
   speech_to_text: 7.3.0
+  flutter_tts: ^4.2.0
   permission_handler: ^11.1.0
   
   # Camera
@@ -65,6 +66,3 @@ flutter:
   assets:
     - assets/images/
     - assets/videos/
-    - assets/animations/
-    - assets/numbers/
-    - assets/data/

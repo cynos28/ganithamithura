@@ -44,12 +44,15 @@ class MongoDBConnection:
                 connection_string = self._get_connection_string()
                 database_name = self._get_database_name()
 
+                import certifi
+
                 self._client = MongoClient(
                     connection_string,
                     serverSelectionTimeoutMS=5000,  # 5 second timeout
                     connectTimeoutMS=5000,
                     maxPoolSize=50,
-                    minPoolSize=5
+                    minPoolSize=5,
+                    tlsCAFile=certifi.where() # Resolves MacOS/Python TLSV1_ALERT_INTERNAL_ERROR
                 )
 
                 # Test the connection

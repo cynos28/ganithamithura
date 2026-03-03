@@ -17,9 +17,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional, Tuple
 
 # Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..')) # Not trustworthy depending on runner
 
-from prompts.math_question_prompts import get_question_generation_prompt, get_system_prompt
+from src.prompts.math_question_prompts import get_question_generation_prompt, get_system_prompt
 
 
 class StudentProfile:

@@ -11,6 +11,42 @@ import 'package:ganithamithura/services/api/number_api_service.dart';
 import 'package:ganithamithura/services/learning_flow_manager.dart';
 import 'package:ganithamithura/services/camera_service.dart';
 
+// ---------------------------------------------------------------------------
+// Learning-mode object map: use practical, affordable, YOLO-detectable items
+// instead of apples. Objects rotate so each number has a different item.
+// YOLO COCO class names are used as keys for the detection model.
+// ---------------------------------------------------------------------------
+const Map<int, _LearningObject> _kLearningObjects = {
+  1: _LearningObject(yoloClass: 'cup',          display: 'cup',           plural: 'cups'),
+  2: _LearningObject(yoloClass: 'bottle',       display: 'bottle',        plural: 'bottles'),
+  3: _LearningObject(yoloClass: 'book',         display: 'book',          plural: 'books'),
+  4: _LearningObject(yoloClass: 'sports ball',  display: 'ball',          plural: 'balls'),
+  5: _LearningObject(yoloClass: 'cup',          display: 'cup',           plural: 'cups'),
+  6: _LearningObject(yoloClass: 'bottle',       display: 'bottle',        plural: 'bottles'),
+  7: _LearningObject(yoloClass: 'scissors',     display: 'pair of scissors', plural: 'pairs of scissors'),
+  8: _LearningObject(yoloClass: 'remote',       display: 'remote control', plural: 'remote controls'),
+  9: _LearningObject(yoloClass: 'bowl',         display: 'bowl',          plural: 'bowls'),
+  10: _LearningObject(yoloClass: 'chair',       display: 'chair',         plural: 'chairs'),
+};
+
+/// Returns the learning object for [number], falling back to a rotating default.
+_LearningObject _getLearningObject(int number) {
+  if (_kLearningObjects.containsKey(number)) {
+    return _kLearningObjects[number]!;
+  }
+  // For numbers > 10 rotate through the list
+  final keys = _kLearningObjects.keys.toList();
+  return _kLearningObjects[keys[(number - 1) % keys.length]]!;
+}
+
+class _LearningObject {
+  final String yoloClass;
+  final String display;
+  final String plural;
+  const _LearningObject(
+      {required this.yoloClass, required this.display, required this.plural});
+}
+
 /// ObjectDetectionActivityScreen - Real-time object detection with ML
 class ObjectDetectionActivityScreen extends StatefulWidget {
   final Activity activity;
@@ -57,35 +93,15 @@ class _ObjectDetectionActivityScreenState
     super.dispose();
   }
   
-  /// Extract target object from question metadata
+  /// Extract target object from question metadata.
+  /// In learning mode we always use the practical per-number object map
+  /// so students use affordable, common items instead of apples.
   void _extractTargetObject() {
-    // Get the current question
-    final question = widget.activity.questions?.first;
-    if (question != null && question.question != null) {
-      // Extract object name from question like "Can you show me 2 apples?"
-      final questionText = question.question!.toLowerCase();
-      
-      // Common objects that might be in questions
-      final commonObjects = [
-        'apple', 'apples', 'banana', 'bananas', 'orange', 'oranges',
-        'ball', 'balls', 'star', 'stars', 'book', 'books',
-        'pencil', 'pencils', 'pen', 'pens', 'bottle', 'bottles',
-        'cup', 'cups', 'person', 'people', 'car', 'cars',
-      ];
-      
-      for (final obj in commonObjects) {
-        if (questionText.contains(obj)) {
-          // Convert plural to singular for YOLO classes
-          _targetObject = obj.replaceAll('s', '').trim();
-          if (_targetObject == 'apple') _targetObject = 'apple';
-          // YOLO uses 'person' not 'people'
-          if (obj == 'people') _targetObject = 'person';
-          break;
-        }
-      }
-    }
-    
-    debugPrint('🎯 Target object: $_targetObject');
+    // Always use the learning object map for this screen (learning mode only).
+    // The progress test uses ObjectDetectionQuestionWidget separately.
+    final learningObj = _getLearningObject(widget.currentNumber);
+    _targetObject = learningObj.yoloClass;
+    debugPrint('🎯 Target object (learning map): $_targetObject');
   }
   
   Future<void> _initializeCamera() async {
@@ -170,12 +186,13 @@ class _ObjectDetectionActivityScreenState
             if (_result != null)
               _result!
                   ? SuccessAnimation(
-                      message: _detectionResult?.validation?.feedback ?? 'Correct!',
+                      message: _detectionResult?.validation?.feedback ?? 'Great job!',
                       onComplete: _onSuccess,
                     )
                   : FailureAnimation(
                       message: _detectionResult?.validation?.feedback ?? 'Try again!',
                       onRetry: _resetDetection,
+                      onGoBack: _goBackToLearning,
                     ),
           ],
         ),
@@ -184,8 +201,11 @@ class _ObjectDetectionActivityScreenState
   }
   
   Widget _buildInstructionCard() {
-    final question = widget.activity.questions?.first;
-    final instruction = question?.question ?? 'Find ${widget.currentNumber} objects';
+    final learningObj = _getLearningObject(widget.currentNumber);
+    final countLabel = widget.currentNumber == 1
+        ? '1 ${learningObj.display}'
+        : '${widget.currentNumber} ${learningObj.plural}';
+    final instruction = 'Can you show me $countLabel?';
     
     return Container(
       margin: const EdgeInsets.all(AppConstants.standardPadding),
@@ -217,14 +237,13 @@ class _ObjectDetectionActivityScreenState
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (_targetObject != null)
-                  Text(
-                    'Looking for: $_targetObject',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                Text(
+                  'Hold up ${widget.currentNumber == 1 ? "a" : "${widget.currentNumber}"} ${widget.currentNumber == 1 ? learningObj.display : learningObj.plural} in front of the camera',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
                   ),
+                ),
               ],
             ),
           ),
@@ -517,6 +536,25 @@ class _ObjectDetectionActivityScreenState
           ),
         );
       }
+    }
+  }
+
+  /// Navigate back to the first activity for this number (learning restart)
+  void _goBackToLearning() async {
+    setState(() {
+      _result = null;
+      _detectionResult = null;
+    });
+    final learningFlowManager = LearningFlowManager.instance;
+    try {
+      await learningFlowManager.startLearningFromNumber(
+        level: widget.level.levelNumber,
+        startNumber: widget.currentNumber,
+        levelData: widget.level,
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error going back to learning: $e');
     }
   }
 }

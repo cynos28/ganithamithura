@@ -151,12 +151,13 @@ class _ReadActivityScreenState extends State<ReadActivityScreen> {
             if (_result != null)
               _result!
                   ? SuccessAnimation(
-                      message: 'Correct!',
+                      message: 'Great job! That is correct!',
                       onComplete: _onSuccess,
                     )
                   : FailureAnimation(
-                      message: 'Not quite right!',
+                      message: 'Not quite right! Try again.',
                       onRetry: _resetQuestion,
+                      onGoBack: _goBackToLearning,
                     ),
           ],
         ),
@@ -317,6 +318,25 @@ class _ReadActivityScreenState extends State<ReadActivityScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// Navigate back to the first activity for this number (learning restart)
+  void _goBackToLearning() async {
+    setState(() {
+      _result = null;
+      _selectedAnswer = null;
+    });
+    final learningFlowManager = LearningFlowManager.instance;
+    try {
+      await learningFlowManager.startLearningFromNumber(
+        level: widget.level.levelNumber,
+        startNumber: widget.currentNumber,
+        levelData: widget.level,
+        isTutorial: true,
+      );
+    } catch (e) {
+      debugPrint('❌ Error going back to learning: $e');
     }
   }
 }

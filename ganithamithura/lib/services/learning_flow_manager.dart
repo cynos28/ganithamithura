@@ -32,12 +32,14 @@ class LearningFlowManager {
     required int startNumber,
     required LearningLevel levelData,
     bool isTutorial = true,
+    String?
+    startFromActivityType, // Optional: start from specific activity (for resuming)
   }) async {
     try {
       // Fetch activities for the starting number
       // For tutorial mode, get only easy questions
       final activities = await _apiService.getActivitiesForNumber(
-        level, 
+        level,
         startNumber,
         difficulty: isTutorial ? 'easy' : null,
       );
@@ -46,8 +48,20 @@ class LearningFlowManager {
         throw Exception('No activities found for number $startNumber');
       }
 
-      // Navigate to first activity (video)
-      final firstActivity = activities.first;
+      // Find the activity to start from
+      Activity firstActivity;
+      if (startFromActivityType != null) {
+        // Resume from specific activity type
+        firstActivity = activities.firstWhere(
+          (a) => a.type == startFromActivityType,
+          orElse: () => activities.first,
+        );
+        debugPrint('📍 Resuming from activity: ${firstActivity.type}');
+      } else {
+        // Start from first activity
+        firstActivity = activities.first;
+      }
+
       await _navigateToActivity(
         activity: firstActivity,
         allActivities: activities,
@@ -61,6 +75,64 @@ class LearningFlowManager {
     }
   }
 
+  /// Check if there's a saved learning session
+  bool hasSavedSession() {
+    return _storageService.getLearningSession() != null;
+  }
+
+  /// Get the saved learning session (if any)
+  LearningSession? getSavedSession() {
+    return _storageService.getLearningSession();
+  }
+
+  /// Resume learning from saved session
+  /// Returns true if there was a session to resume, false otherwise
+  Future<bool> resumeLearning({required LearningLevel levelData}) async {
+    final session = _storageService.getLearningSession();
+
+    if (session == null) {
+      debugPrint('📭 No saved learning session found');
+      return false;
+    }
+
+    debugPrint('📥 Found saved session: $session');
+
+    // Get the activity to resume from
+    final resumeActivityType = session.resumeActivityType;
+
+    if (resumeActivityType == null) {
+      // All activities for this number were completed, move to next number
+      debugPrint('✅ Previous number completed, starting next number');
+      final nextNumber = session.number + 1;
+
+      if (nextNumber <= levelData.maxNumber) {
+        await startLearningFromNumber(
+          level: session.level,
+          startNumber: nextNumber,
+          levelData: levelData,
+        );
+        return true;
+      } else {
+        // Level completed
+        debugPrint('🎉 Level completed!');
+        await _storageService.clearLearningSession();
+        return false;
+      }
+    }
+
+    // Resume from the saved position
+    debugPrint(
+      '▶️ Resuming from: Number ${session.number}, Activity $resumeActivityType',
+    );
+    await startLearningFromNumber(
+      level: session.level,
+      startNumber: session.number,
+      levelData: levelData,
+      startFromActivityType: resumeActivityType,
+    );
+    return true;
+  }
+
   /// Move to next activity in the sequence
   /// If all activities for current number are complete, move to next number
   Future<void> moveToNextActivity({
@@ -71,7 +143,10 @@ class LearningFlowManager {
   }) async {
     try {
       debugPrint('🔄 Moving to next activity from: ${currentActivity.id}');
-      
+
+      // Mark current activity as completed in session
+      await _storageService.markActivityCompleted(currentActivity.type);
+
       // Get all activities for current number
       final activities = await _apiService.getActivitiesForNumber(
         level.levelNumber,
@@ -79,13 +154,17 @@ class LearningFlowManager {
         difficulty: isTutorial ? 'easy' : null,
       );
 
-      debugPrint('📚 Fetched ${activities.length} activities for number $currentNumber');
+      debugPrint(
+        '📚 Fetched ${activities.length} activities for number $currentNumber',
+      );
       for (var act in activities) {
         debugPrint('  - ${act.type} (${act.id})');
       }
 
       // Find current activity index
-      final currentIndex = activities.indexWhere((a) => a.id == currentActivity.id);
+      final currentIndex = activities.indexWhere(
+        (a) => a.id == currentActivity.id,
+      );
 
       debugPrint('📍 Current activity index: $currentIndex');
 
@@ -98,7 +177,9 @@ class LearningFlowManager {
       if (currentIndex < activities.length - 1) {
         // Move to next activity in the same number
         final nextActivity = activities[currentIndex + 1];
-        debugPrint('➡️ Moving to next activity: ${nextActivity.type} (${nextActivity.id})');
+        debugPrint(
+          '➡️ Moving to next activity: ${nextActivity.type} (${nextActivity.id})',
+        );
         await _navigateToActivity(
           activity: nextActivity,
           allActivities: activities,
@@ -126,7 +207,10 @@ class LearningFlowManager {
     required LearningLevel level,
   }) async {
     // Save progress
-    await _storageService.saveNumberCompletion(level.levelNumber, currentNumber);
+    await _storageService.saveNumberCompletion(
+      level.levelNumber,
+      currentNumber,
+    );
 
     // Check if this was the last number in the level
     if (currentNumber >= level.maxNumber) {
@@ -135,12 +219,14 @@ class LearningFlowManager {
     } else {
       // Move to next number
       final nextNumber = currentNumber + 1;
-      
+
       // Show congratulations and move to next number
       await Get.dialog(
         AlertDialog(
           title: Text('Great Job! 🎉'),
-          content: Text('You completed number $currentNumber!\nLet\'s learn number $nextNumber now.'),
+          content: Text(
+            'You completed number $currentNumber!\nLet\'s learn number $nextNumber now.',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -176,7 +262,7 @@ class LearningFlowManager {
         title: Text('Level ${level.levelNumber} Completed! 🎊'),
         content: Text(
           'Congratulations! You\'ve mastered all numbers in Level ${level.levelNumber}!\n\n'
-          '${level.levelNumber == 1 ? "Level 2 is now unlocked!" : "Keep up the great work!"}'
+          '${level.levelNumber == 1 ? "Level 2 is now unlocked!" : "Keep up the great work!"}',
         ),
         actions: [
           TextButton(
@@ -201,14 +287,24 @@ class LearningFlowManager {
     bool isTutorial = true,
   }) async {
     debugPrint('🚀 Navigating to activity: ${activity.type}');
-    
+
+    // Save the current learning session position
+    await _storageService.saveLearningSession(
+      level: level.levelNumber,
+      number: currentNumber,
+      activityType: activity.type,
+    );
+    debugPrint(
+      '💾 Saved learning session: Level ${level.levelNumber}, Number $currentNumber, Activity ${activity.type}',
+    );
+
     // Get the current context from Get
     final context = Get.context;
     if (context == null) {
       debugPrint('❌ Context is null!');
       return;
     }
-    
+
     Widget screen;
 
     switch (activity.type) {
@@ -270,9 +366,9 @@ class LearningFlowManager {
 
     // Replace current screen with new activity
     debugPrint('  ✅ Using Navigator.pushReplacement');
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => screen),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (context) => screen));
     debugPrint('  ✅ Navigation executed');
   }
 
@@ -290,14 +386,14 @@ class LearningFlowManager {
   /// Get the next number to learn for a level
   Future<int> getNextNumberToLearn(int level, int maxNumber) async {
     final completedNumbers = await _storageService.getCompletedNumbers(level);
-    
+
     // Find first incomplete number
     for (int i = 1; i <= maxNumber; i++) {
       if (completedNumbers[i] != true) {
         return i;
       }
     }
-    
+
     // All numbers completed
     return maxNumber;
   }
