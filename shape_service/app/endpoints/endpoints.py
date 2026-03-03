@@ -65,6 +65,13 @@ async def get_user_progress():
     mock_user = {"user_name": "user1"}
     return await game_controller.get_user_progress(mock_user)
 
+@router.get("/game/build-match-progress")
+async def get_build_match_progress():
+    """Get user's Build & Match challenge progress"""
+    # TEMPORARY: Bypass authentication for testing - hardcoded user
+    mock_user = {"user_name": "user1"}
+    return await game_controller.get_build_match_progress(mock_user)
+
 @router.get("/game/report")
 async def get_user_game_report(user: dict = Depends(get_current_user)):
     return await report_controller.get_user_game_report(user)
