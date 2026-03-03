@@ -45,3 +45,5 @@ parts/
 sdist/
 var/
 wheels
+/number-service/training/data
+/number-service/debug_images
