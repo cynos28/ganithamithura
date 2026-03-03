@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./authentication-service/authentication_service",
+        "./authentication-service"
+    ]
+}

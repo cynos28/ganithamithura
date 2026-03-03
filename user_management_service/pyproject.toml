@@ -1,0 +1,28 @@
+[project]
+name = "user-management-service"
+version = "0.1.0"
+description = "A service for user management in the Ganithamithura project."
+readme = "README.md"
+authors = [
+    { name = "Dilshan Kumara", email = "140689829+Dilshankumara0122@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.120.4",
+    "motor>=3.7.1",
+    "uvicorn[standard]>=0.38.0",
+    "python-dotenv>=1.0.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[argon2]>=1.7.4",
+]
+
+[project.scripts]
+user-management-service = "app.main:app"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

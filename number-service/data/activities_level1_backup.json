@@ -1,0 +1,554 @@
+{
+  "activities": [
+    {
+      "id": "level1_num1_video",
+      "type": "video",
+      "number": 1,
+      "title": "Learn Number 1",
+      "description": "Watch and learn about number one",
+      "metadata": {
+        "video_url": "assets/videos/number_1.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num1_trace",
+      "type": "trace",
+      "number": 1,
+      "title": "Trace Number 1",
+      "description": "Practice tracing the number 1",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_1.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num1_read",
+      "type": "read",
+      "number": 1,
+      "title": "Read Number 1",
+      "description": "Identify the number 1",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num1_say",
+      "type": "say",
+      "number": 1,
+      "title": "Say Number 1",
+      "description": "Say 'one' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num1_detect",
+      "type": "object_detection",
+      "number": 1,
+      "title": "Find 1 Object",
+      "description": "Count one object",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num2_video",
+      "type": "video",
+      "number": 2,
+      "title": "Learn Number 2",
+      "description": "Watch and learn about number two",
+      "metadata": {
+        "video_url": "assets/videos/number_2.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num2_trace",
+      "type": "trace",
+      "number": 2,
+      "title": "Trace Number 2",
+      "description": "Practice tracing the number 2",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_2.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num2_read",
+      "type": "read",
+      "number": 2,
+      "title": "Read Number 2",
+      "description": "Identify the number 2",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num2_say",
+      "type": "say",
+      "number": 2,
+      "title": "Say Number 2",
+      "description": "Say 'two' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num2_detect",
+      "type": "object_detection",
+      "number": 2,
+      "title": "Find 2 Objects",
+      "description": "Count two objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num3_video",
+      "type": "video",
+      "number": 3,
+      "title": "Learn Number 3",
+      "description": "Watch and learn about number three",
+      "metadata": {
+        "video_url": "assets/videos/number_3.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num3_trace",
+      "type": "trace",
+      "number": 3,
+      "title": "Trace Number 3",
+      "description": "Practice tracing the number 3",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_3.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num3_read",
+      "type": "read",
+      "number": 3,
+      "title": "Read Number 3",
+      "description": "Identify the number 3",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num3_say",
+      "type": "say",
+      "number": 3,
+      "title": "Say Number 3",
+      "description": "Say 'three' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num3_detect",
+      "type": "object_detection",
+      "number": 3,
+      "title": "Find 3 Objects",
+      "description": "Count three objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num4_video",
+      "type": "video",
+      "number": 4,
+      "title": "Learn Number 4",
+      "description": "Watch and learn about number four",
+      "metadata": {
+        "video_url": "assets/videos/number_4.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num4_trace",
+      "type": "trace",
+      "number": 4,
+      "title": "Trace Number 4",
+      "description": "Practice tracing the number 4",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_4.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num4_read",
+      "type": "read",
+      "number": 4,
+      "title": "Read Number 4",
+      "description": "Identify the number 4",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num4_say",
+      "type": "say",
+      "number": 4,
+      "title": "Say Number 4",
+      "description": "Say 'four' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num4_detect",
+      "type": "object_detection",
+      "number": 4,
+      "title": "Find 4 Objects",
+      "description": "Count four objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num5_video",
+      "type": "video",
+      "number": 5,
+      "title": "Learn Number 5",
+      "description": "Watch and learn about number five",
+      "metadata": {
+        "video_url": "assets/videos/number_5.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num5_trace",
+      "type": "trace",
+      "number": 5,
+      "title": "Trace Number 5",
+      "description": "Practice tracing the number 5",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_5.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num5_read",
+      "type": "read",
+      "number": 5,
+      "title": "Read Number 5",
+      "description": "Identify the number 5",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num5_say",
+      "type": "say",
+      "number": 5,
+      "title": "Say Number 5",
+      "description": "Say 'five' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num5_detect",
+      "type": "object_detection",
+      "number": 5,
+      "title": "Find 5 Objects",
+      "description": "Count five objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num6_video",
+      "type": "video",
+      "number": 6,
+      "title": "Learn Number 6",
+      "description": "Watch and learn about number six",
+      "metadata": {
+        "video_url": "assets/videos/number_6.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num6_trace",
+      "type": "trace",
+      "number": 6,
+      "title": "Trace Number 6",
+      "description": "Practice tracing the number 6",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_6.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num6_read",
+      "type": "read",
+      "number": 6,
+      "title": "Read Number 6",
+      "description": "Identify the number 6",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num6_say",
+      "type": "say",
+      "number": 6,
+      "title": "Say Number 6",
+      "description": "Say 'six' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num6_detect",
+      "type": "object_detection",
+      "number": 6,
+      "title": "Find 6 Objects",
+      "description": "Count six objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num7_video",
+      "type": "video",
+      "number": 7,
+      "title": "Learn Number 7",
+      "description": "Watch and learn about number seven",
+      "metadata": {
+        "video_url": "assets/videos/number_7.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num7_trace",
+      "type": "trace",
+      "number": 7,
+      "title": "Trace Number 7",
+      "description": "Practice tracing the number 7",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_7.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num7_read",
+      "type": "read",
+      "number": 7,
+      "title": "Read Number 7",
+      "description": "Identify the number 7",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num7_say",
+      "type": "say",
+      "number": 7,
+      "title": "Say Number 7",
+      "description": "Say 'seven' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num7_detect",
+      "type": "object_detection",
+      "number": 7,
+      "title": "Find 7 Objects",
+      "description": "Count seven objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num8_video",
+      "type": "video",
+      "number": 8,
+      "title": "Learn Number 8",
+      "description": "Watch and learn about number eight",
+      "metadata": {
+        "video_url": "assets/videos/number_8.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num8_trace",
+      "type": "trace",
+      "number": 8,
+      "title": "Trace Number 8",
+      "description": "Practice tracing the number 8",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_8.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num8_read",
+      "type": "read",
+      "number": 8,
+      "title": "Read Number 8",
+      "description": "Identify the number 8",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num8_say",
+      "type": "say",
+      "number": 8,
+      "title": "Say Number 8",
+      "description": "Say 'eight' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num8_detect",
+      "type": "object_detection",
+      "number": 8,
+      "title": "Find 8 Objects",
+      "description": "Count eight objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num9_video",
+      "type": "video",
+      "number": 9,
+      "title": "Learn Number 9",
+      "description": "Watch and learn about number nine",
+      "metadata": {
+        "video_url": "assets/videos/number_9.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num9_trace",
+      "type": "trace",
+      "number": 9,
+      "title": "Trace Number 9",
+      "description": "Practice tracing the number 9",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_9.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num9_read",
+      "type": "read",
+      "number": 9,
+      "title": "Read Number 9",
+      "description": "Identify the number 9",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num9_say",
+      "type": "say",
+      "number": 9,
+      "title": "Say Number 9",
+      "description": "Say 'nine' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num9_detect",
+      "type": "object_detection",
+      "number": 9,
+      "title": "Find 9 Objects",
+      "description": "Count nine objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    },
+    {
+      "id": "level1_num10_video",
+      "type": "video",
+      "number": 10,
+      "title": "Learn Number 10",
+      "description": "Watch and learn about number ten",
+      "metadata": {
+        "video_url": "assets/videos/number_10.mp4",
+        "duration": 30
+      },
+      "level": 1,
+      "order": 1
+    },
+    {
+      "id": "level1_num10_trace",
+      "type": "trace",
+      "number": 10,
+      "title": "Trace Number 10",
+      "description": "Practice tracing the number 10",
+      "metadata": {
+        "svg_path": "assets/numbers/trace_10.svg"
+      },
+      "level": 1,
+      "order": 2
+    },
+    {
+      "id": "level1_num10_read",
+      "type": "read",
+      "number": 10,
+      "title": "Read Number 10",
+      "description": "Identify the number 10",
+      "metadata": {},
+      "level": 1,
+      "order": 3
+    },
+    {
+      "id": "level1_num10_say",
+      "type": "say",
+      "number": 10,
+      "title": "Say Number 10",
+      "description": "Say 'ten' aloud",
+      "metadata": {},
+      "level": 1,
+      "order": 4
+    },
+    {
+      "id": "level1_num10_detect",
+      "type": "object_detection",
+      "number": 10,
+      "title": "Find 10 Objects",
+      "description": "Count ten objects",
+      "metadata": {},
+      "level": 1,
+      "order": 5
+    }
+  ]
+}

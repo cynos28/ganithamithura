@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: authentication-service
+Version: 0.1.0
+Summary: A common authentication service for the ganithamithura project.
+Requires-Dist: fastapi
+Requires-Dist: python-jose[cryptography]
+Requires-Dist: passlib[bcrypt]
+Requires-Dist: motor
+Requires-Dist: python-dotenv
