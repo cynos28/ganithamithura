@@ -5,16 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="04341d4a-a528-411d-ac81-7cff2db09c71" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/models/games.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/routes/games.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/services/adaptive_game_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/utils/game_domain_adapter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/utils/game_rules.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/utils/game_seed.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/measurement-service/app/utils/game_variant_switcher.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/measurement-service/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/measurement-service/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/ar_measurement.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/ar_measurement.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/ar_measurement.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/ar_measurement.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/unit_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/models/unit_models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ai_tutor/ai_tutor_chat_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ai_tutor/ai_tutor_chat_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/ar_measurement_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/ar_measurement_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/ar_questions_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/ar_questions_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/arcore_measurement_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/ar_challenges/arcore_measurement_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/unit_card_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/unit_card_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/question_practice_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/question_practice_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/unit_home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/unit_home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/units_list_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/learn/units/units_list_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/measurement_home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/screens/measurements/measurement_home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/services/api/games_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/services/api/games_api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/services/api/unit_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/services/api/unit_api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/utils/kids_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/gmfrontend/gmfrontend/lib/utils/kids_theme.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/unit-rag-service/app/utils/game_domain_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/unit-rag-service/app/utils/game_domain_adapter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
