@@ -56,6 +56,7 @@ class QuestionResponse(BaseModel):
     concepts: List[str] = []
     explanation: Optional[str] = None
     hints: List[str] = []
+    image_url: Optional[str] = None  # URL to question image
 
     class Config:
         from_attributes = True
@@ -69,6 +70,20 @@ class QuestionUpdate(BaseModel):
     difficulty_level: Optional[int] = None
     explanation: Optional[str] = None
     hints: Optional[List[str]] = None
+    image_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class SubmitAnswerRequest(BaseModel):
+    """Schema for submitting an answer"""
+    student_id: str = Field(..., description="Student identifier")
+    question_id: str = Field(..., description="Question ID")
+    unit_id: str = Field(..., description="Unit ID")
+    answer: str = Field(..., description="Student's answer")
+    grade_level: int = Field(default=1, ge=1, le=5, description="Grade level")
+    time_taken: Optional[int] = Field(default=None, description="Time taken in seconds")
 
     class Config:
         from_attributes = True

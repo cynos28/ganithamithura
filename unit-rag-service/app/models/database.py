@@ -63,7 +63,7 @@ class QuestionModel(Document):
     """Questions generated from documents"""
     document_id: Optional[str] = None  # MongoDB ObjectId as string
     unit_id: Optional[str] = None  # For linking to Flutter app units (e.g., "unit_length_1")
-    topic: Optional[str] = None  # Length, Area, Capacity, Weight
+    topic: Optional[str] = None  # Length, Area, Volume, Weight
     question_text: str
     question_type: str  # mcq, short_answer, true_false
     correct_answer: str
@@ -74,6 +74,7 @@ class QuestionModel(Document):
     concepts: List[str] = Field(default_factory=list)  # Tags for concepts covered
     explanation: Optional[str] = None
     hints: List[str] = Field(default_factory=list)
+    image_url: Optional[str] = None  # URL to question image (for visual questions)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     class Settings:

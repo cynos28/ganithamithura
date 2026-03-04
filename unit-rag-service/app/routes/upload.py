@@ -5,7 +5,10 @@ from app.models.database import DocumentModel
 from app.models.schemas import DocumentResponse
 from app.utils.document_processor import document_processor
 from app.services.embeddings_service import embeddings_service
+from app.utils.llm_client import llm_client
 from app.config import settings
+
+router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 
 router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 
@@ -146,9 +149,45 @@ async def upload_document(
             # Save generated questions
             from app.models.database import QuestionModel
             question_count = 0
+            
+            # Get objects list for image generation based on topic
+            from app.services.question_generator import question_generator
+            domain_context = question_generator._get_domain_context(topic, 2)  # Use grade 2 as middle ground
+            topic_objects = domain_context.get("objects", ["objects"])
+            
             for q_data in questions:
                 # Generate unit_id based on document topic and grade
                 unit_id = f"unit_{topic.lower()}_{q_data['grade_level']}" if topic else None
+                
+                # Generate image for this question
+                image_url = None
+                try:
+                    print(f"🎨 Generating image for question: {q_data['question_text'][:50]}...")
+                    
+                    # Generate image prompt from question (with correct answer for accurate proportions)
+                    image_prompt = await llm_client.generate_image_prompt_from_question(
+                        question_text=q_data["question_text"],
+                        topic=topic,
+                        objects=topic_objects,
+                        correct_answer=q_data.get("correct_answer", "")
+                    )
+                    
+                    # Generate the actual image
+                    image_url = await llm_client.generate_image(
+                        prompt=image_prompt,
+                        size="1024x1024",
+                        quality="standard",
+                        base_url=settings.api_base_url
+                    )
+                    
+                    if image_url:
+                        print(f"✅ Image generated for question {question_count + 1}")
+                    else:
+                        print(f"⚠️ No image generated for question {question_count + 1}")
+                        
+                except Exception as img_error:
+                    print(f"⚠️ Image generation failed for question: {str(img_error)}")
+                    image_url = None
                 
                 question = QuestionModel(
                     document_id=str(document.id),
@@ -163,11 +202,12 @@ async def upload_document(
                     bloom_level=q_data.get("bloom_level"),
                     concepts=q_data.get("concepts", []),
                     explanation=q_data.get("explanation"),
-                    hints=q_data.get("hints", [])
+                    hints=q_data.get("hints", []),
+                    image_url=image_url
                 )
                 await question.insert()
                 question_count += 1
-                print(f"💾 Auto-saved question {question_count}: unit_id={unit_id}, topic={topic}, grade={q_data['grade_level']}")
+                print(f"💾 Auto-saved question {question_count}: unit_id={unit_id}, topic={topic}, grade={q_data['grade_level']}, has_image={image_url is not None}")
             
             # Update document question count
             document.questions_count = question_count

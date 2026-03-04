@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     target_success_rate: float = 0.7
     learning_rate: float = 0.3
     
+    # API Base URL (for serving static files)
+    api_base_url: str = "http://localhost:8000"
+    
     # CORS
     cors_origins: str = "http://localhost:3000,http://localhost:3001"
     

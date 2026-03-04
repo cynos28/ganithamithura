@@ -8,6 +8,8 @@ from app.models.schemas import (
     QuestionUpdate
 )
 from app.services.question_generator import question_generator
+from app.utils.llm_client import llm_client
+from app.config import settings
 
 router = APIRouter(prefix="/api/v1/questions", tags=["questions"])
 
@@ -116,11 +118,45 @@ async def generate_questions_task(
         
         print(f"💡 Received {len(questions)} questions from generator")
         
+        # Get objects list for image generation based on topic
+        domain_context = question_generator._get_domain_context(document.topic or "measurement", 2)
+        topic_objects = domain_context.get("objects", ["objects"])
+        
         # Save to MongoDB
         question_count = 0
         for q_data in questions:
             # Generate unit_id based on document topic and grade
             unit_id = f"unit_{document.topic.lower()}_{q_data['grade_level']}" if document.topic else None
+            
+            # Generate image for this question
+            image_url = None
+            try:
+                print(f"🎨 Generating image for question: {q_data['question_text'][:50]}...")
+                
+                # Generate image prompt from question (with correct answer for accurate proportions)
+                image_prompt = await llm_client.generate_image_prompt_from_question(
+                    question_text=q_data["question_text"],
+                    topic=document.topic or "measurement",
+                    objects=topic_objects,
+                    correct_answer=q_data.get("correct_answer", "")
+                )
+                
+                # Generate the actual image
+                image_url = await llm_client.generate_image(
+                    prompt=image_prompt,
+                    size="1024x1024",
+                    quality="standard",
+                    base_url=settings.api_base_url
+                )
+                
+                if image_url:
+                    print(f"✅ Image generated for question {question_count + 1}")
+                else:
+                    print(f"⚠️ No image generated for question {question_count + 1}")
+                    
+            except Exception as img_error:
+                print(f"⚠️ Image generation failed for question: {str(img_error)}")
+                image_url = None
             
             question = QuestionModel(
                 document_id=document_id,
@@ -135,11 +171,12 @@ async def generate_questions_task(
                 bloom_level=q_data.get("bloom_level"),
                 concepts=q_data.get("concepts", []),
                 explanation=q_data.get("explanation"),
-                hints=q_data.get("hints", [])
+                hints=q_data.get("hints", []),
+                image_url=image_url
             )
             await question.insert()
             question_count += 1
-            print(f"💾 Saved question {question_count} with document_id: {document_id}, unit_id: {unit_id}, question_id: {str(question.id)}")
+            print(f"💾 Saved question {question_count} with document_id: {document_id}, unit_id: {unit_id}, has_image={image_url is not None}")
         
         # Update document question count (INCREMENT existing count)
         document.questions_count = document.questions_count + question_count
@@ -189,7 +226,8 @@ async def get_questions_by_document(
             bloom_level=q.bloom_level,
             concepts=q.concepts,
             explanation=q.explanation,
-            hints=q.hints
+            hints=q.hints,
+            image_url=q.image_url
         )
         for q in questions
     ]
@@ -234,7 +272,8 @@ async def get_question(question_id: str):
         bloom_level=question.bloom_level,
         concepts=question.concepts,
         explanation=question.explanation,
-        hints=question.hints
+        hints=question.hints,
+        image_url=question.image_url
     )
 
 
@@ -267,7 +306,8 @@ async def update_question(question_id: str, update: QuestionUpdate):
         bloom_level=question.bloom_level,
         concepts=question.concepts,
         explanation=question.explanation,
-        hints=question.hints
+        hints=question.hints,
+        image_url=question.image_url
     )
 
 
