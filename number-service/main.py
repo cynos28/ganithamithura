@@ -638,10 +638,13 @@ COUNTING_OBJECTS = [
     {"name": "butterflies", "emoji": "🦋", "image": "assets/images/butterfly_{n}.png"},
 ]
 
-# Objects suitable for real-world camera detection
+# Objects suitable for real-world camera detection (YOLO COCO dataset)
+# Only use these for counts 1-5 in tests
 DETECTABLE_OBJECTS = [
-    "bottle", "cup", "book", "chair", "pen", "phone", "shoe", "bag",
-    "spoon", "fork", "plate", "remote", "mouse", "keyboard", "clock",
+    "bottle", "cup", "book", "spoon", "fork", "knife", "bowl",
+    "banana", "orange", "carrot",
+    "chair", "keyboard", "mouse", "remote", "cell phone",
+    "scissors", "toothbrush", "pen", "pencil",
 ]
 
 
@@ -990,23 +993,47 @@ def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> D
     
     elif activity_type == 'show':
         count = q.get('correct_answer', number)
-        options = sorted(list(set([
-            str(count), str(max(1, count - 1)), 
-            str(count + 1), str(max(1, count - 2))
-        ])))[:4]
+        
+        # For numbers > 10, use image_counting (emojis) instead of camera detection
+        # Camera detection is impractical for large quantities
+        if count > 10:
+            options = sorted(list(set([
+                str(count), str(max(1, count - 1)), 
+                str(count + 1), str(max(1, count - 2))
+            ])))[:4]
+            
+            object_name = q.get('object_name', 'objects')
+            # Don't reveal the answer in the question!
+            return {
+                "id": q.get('id', f"show_{number}_{q.get('difficulty', 'easy')}"),
+                "type": "image_counting",
+                "difficulty": q.get('difficulty', 'easy'),
+                "points": q.get('points', 10),
+                "question": f"How many {object_name} do you see?",
+                "instruction": "Count the objects",
+                "object_name": object_name,
+                "object_emoji": q.get('object_emoji'),
+                "object_count": count,
+                "options": options,
+                "correct_answer": str(count),
+            }
+        
+        # For counts 1-10, use camera detection
+        object_name = q.get('object_name', 'any')
+        # Remove plural 's' for detection (e.g., 'apples' -> 'apple')
+        if object_name.endswith('s') and len(object_name) > 1:
+            object_name = object_name[:-1]
+        
         return {
             "id": q.get('id', f"show_{number}_{q.get('difficulty', 'easy')}"),
-            "type": "image_counting",
+            "type": "object_detection",
             "difficulty": q.get('difficulty', 'easy'),
             "points": q.get('points', 10),
-            "question": q.get('question', f"How many objects do you see?"),
-            "instruction": "Count the objects",
-            "help_image": q.get('help_image'),
-            "object_name": q.get('object_name'),
-            "object_emoji": q.get('object_emoji'),
+            "question": q.get('question', f"Show me {count} {object_name}(s) using the camera"),
+            "instruction": "Use camera to show the objects",
+            "object_name": object_name,
             "object_count": count,
-            "options": options,
-            "correct_answer": str(count),
+            "object_emoji": q.get('object_emoji'),
         }
     
     elif activity_type == 'say':
@@ -1034,7 +1061,7 @@ def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> D
             "points": q.get('points', 10),
             "question": q.get('question', ''),
             "options": q.get('options', []),
-            "correct_answer": q.get('answer', ''),
+            "correct_answer": q.get('correct_answer', ''),
         }
     
     # Fallback
@@ -1277,6 +1304,9 @@ async def recognize_digit(request: DigitRecognitionRequest):
             if request.expected_digit is not None:
                 # Validation mode for multi-digit numbers
                 import base64 as b64
+                import os
+                from datetime import datetime
+                
                 image_data = b64.b64decode(request.image)
                 nparr = np.frombuffer(image_data, np.uint8)
                 image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -1284,10 +1314,21 @@ async def recognize_digit(request: DigitRecognitionRequest):
                 if image is None:
                     raise HTTPException(status_code=400, detail="Failed to decode image")
                 
+                # Save debug image for multi-digit validation
+                debug_dir = "debug_images"
+                os.makedirs(debug_dir, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                debug_path_original = os.path.join(debug_dir, f"validate_number_{request.expected_digit}_{timestamp}.png")
+                debug_path_segmented = os.path.join(debug_dir, f"validate_number_{request.expected_digit}_{timestamp}_segmented.png")
+                cv2.imwrite(debug_path_original, image)
+                logger.info(f"💾 Saved validation image to: {debug_path_original}")
+                
                 validation_result = recognition_service.validate_number(
                     image=image,
                     expected_number=request.expected_digit,
-                    confidence_threshold=request.confidence_threshold
+                    confidence_threshold=request.confidence_threshold,
+                    save_debug=True,
+                    debug_path=debug_path_segmented
                 )
                 
                 if 'error' in validation_result and validation_result.get('predicted') == -1:

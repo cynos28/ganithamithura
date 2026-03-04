@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Progress;
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -182,15 +183,11 @@ class _SayActivityScreenState extends State<SayActivityScreen>
             if (!mounted) return;
             setState(() {});
 
-            // If we finished listening but didn't get any text, show hint
-            if (status == 'done' && _recognizedText.isEmpty) {
-              Future.delayed(const Duration(milliseconds: 500), () {
+            // When speech recognition finishes, check the result if we have text
+            if (status == 'done' && _recognizedText.isNotEmpty && _result == null) {
+              Future.delayed(const Duration(milliseconds: 200), () {
                 if (mounted) {
-                  _showErrorSnackbar(
-                    'Try Again',
-                    'No speech detected. Tap the microphone and speak clearly.',
-                    Color(AppColors.infoColor),
-                  );
+                  _checkResult();
                 }
               });
             }
@@ -468,15 +465,31 @@ class _SayActivityScreenState extends State<SayActivityScreen>
 
   Future<void> _toggleListening() async {
     if (_isListening) {
+      // Provide haptic feedback when stopping microphone
+      HapticFeedback.heavyImpact();
+      
       await _speech.stop();
       setState(() {
         _isListening = false;
       });
+      
+      // Check result if we have recognized text
+      if (_recognizedText.isNotEmpty && _result == null) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _checkResult();
+          }
+        });
+      }
     } else {
       setState(() {
         _recognizedText = '';
         _result = null;
       });
+      
+      // Provide haptic feedback when starting microphone
+      HapticFeedback.heavyImpact();
+      
       await _speech.listen(
         onResult: _onSpeechResult,
         listenFor: const Duration(seconds: 10),
