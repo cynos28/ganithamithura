@@ -192,9 +192,19 @@ async def startup_event():
     """Initialize database on startup"""
     await init_db()
     await seed_game_parameters()
-    print(f"✅ Server running on {settings.host}:{settings.port}")
-    print(f"✅ Environment: {settings.environment}")
-    print(f"✅ Docs available at: http://{settings.host}:{settings.port}/docs")
+    
+    # Print startup banner
+    print("\n" + "="*60)
+    print("🚀 GANITHAMITHURA BACKEND SERVER RUNNING")
+    print("="*60)
+    print(f"📡 Host: {settings.host}")
+    print(f"🔌 Port: {settings.port}")
+    print(f"🌍 Environment: {settings.environment}")
+    print(f"📚 API Docs: http://{settings.host}:{settings.port}/docs")
+    print(f"❤️  Health Check: http://{settings.host}:{settings.port}/health")
+    print("="*60)
+    print("✅ Waiting for frontend connections...")
+    print("="*60 + "\n")
 
 
 @app.get("/")
@@ -212,10 +222,18 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     from app.services.embeddings_service import embeddings_service
+    from fastapi import Request
     
     try:
         # Check vector database
         stats = embeddings_service.get_collection_stats()
+        
+        # Log frontend connection (only first time or periodically)
+        import time
+        current_time = time.time()
+        if not hasattr(health_check, '_last_log_time') or current_time - health_check._last_log_time > 30:
+            print("🔗 Frontend connected - Health check OK")
+            health_check._last_log_time = current_time
         
         return {
             "status": "healthy",

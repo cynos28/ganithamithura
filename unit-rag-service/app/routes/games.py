@@ -12,6 +12,7 @@ POST /evaluate                    — legacy: full-session evaluation (rule-base
 POST /round-result                — NEW: per-round IRT update for L-V4
 GET  /irt-state/{student_id}      — fetch the full IRT session for a student+variant
 GET  /irt-stats/{student_id}      — aggregated analytics from round history
+DELETE /reset-progress/{student_id} — reset student IRT progress for a domain+variant
 """
 
 from fastapi import APIRouter, HTTPException, Query
@@ -334,3 +335,58 @@ async def get_irt_stats(
         theta_trend=stats["theta_trend"],
         difficulty_trend=stats["difficulty_trend"],
     )
+
+
+# ─── DELETE /reset-progress/{student_id} ────────────────────────────────────
+
+@router.delete("/reset-progress/{student_id}")
+async def reset_student_progress(
+    student_id: str,
+    domain: str = Query("length", description="Domain to reset (length/area/volume/weight)"),
+    variant: Optional[str] = Query(None, description="Specific variant to reset (e.g. L-V4). If omitted, resets all variants for the domain."),
+):
+    """
+    Reset a student's IRT progress for a specific domain and variant.
+    
+    This will:
+    - Delete the GameSession document(s)
+    - Student will start fresh with theta=0.0, difficulty_level=1
+    
+    Examples:
+    - DELETE /reset-progress/student_001?domain=length&variant=L-V4  → Reset only L-V4
+    - DELETE /reset-progress/student_001?domain=area                 → Reset all area variants
+    """
+    if variant:
+        # Reset specific variant
+        session = await GameSession.find_one(
+            GameSession.student_id == student_id,
+            GameSession.domain == domain,
+            GameSession.variant == variant,
+        )
+        if session:
+            await session.delete()
+            return {
+                "status": "success",
+                "message": f"Reset progress for {student_id} in {domain}/{variant}",
+                "deleted": 1,
+            }
+        else:
+            return {
+                "status": "info",
+                "message": f"No progress found for {student_id} in {domain}/{variant}",
+                "deleted": 0,
+            }
+    else:
+        # Reset all variants for the domain
+        sessions = await GameSession.find(
+            GameSession.student_id == student_id,
+            GameSession.domain == domain,
+        ).to_list()
+        count = len(sessions)
+        for session in sessions:
+            await session.delete()
+        return {
+            "status": "success",
+            "message": f"Reset all {count} variant(s) for {student_id} in domain '{domain}'",
+            "deleted": count,
+        }
