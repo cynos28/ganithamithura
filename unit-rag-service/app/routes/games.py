@@ -91,6 +91,29 @@ class IRTStatsResponse(BaseModel):
     difficulty_trend: List[int]
 
 
+class DomainProgressSummary(BaseModel):
+    domain: str
+    variants: List[str]
+    total_rounds: int
+    total_correct: int
+    total_attempts: int
+    total_stars: int
+    accuracy: float
+    avg_theta: float
+    avg_difficulty: float
+    best_variant: Optional[str] = None
+    theta_trend: List[float] = []
+    difficulty_trend: List[int] = []
+
+
+class MeasurementProgressResponse(BaseModel):
+    student_id: str
+    overall_accuracy: float
+    overall_rounds: int
+    overall_stars: int
+    domains: List[DomainProgressSummary]
+
+
 # ─── GET /parameters/{domain} ───────────────────────────────────────────────
 
 @router.get("/parameters/{domain}")
@@ -334,6 +357,93 @@ async def get_irt_stats(
         avg_time=stats["avg_time"],
         theta_trend=stats["theta_trend"],
         difficulty_trend=stats["difficulty_trend"],
+    )
+
+
+# ─── GET /measurement-progress/{student_id} ─────────────────────────────────
+
+@router.get("/measurement-progress/{student_id}", response_model=MeasurementProgressResponse)
+async def get_measurement_progress(student_id: str):
+    """
+    Aggregate progress across ALL measurement domains (length, area, volume, weight).
+    Returns per-domain summaries + overall stats for the progress dashboard.
+    """
+    domains = ["length", "area", "volume", "weight"]
+    domain_summaries: List[DomainProgressSummary] = []
+    overall_rounds = 0
+    overall_correct = 0
+    overall_attempts = 0
+    overall_stars = 0
+
+    for domain in domains:
+        sessions = await GameSession.find(
+            GameSession.student_id == student_id,
+            GameSession.domain == domain,
+        ).to_list()
+
+        if not sessions:
+            domain_summaries.append(DomainProgressSummary(
+                domain=domain,
+                variants=[],
+                total_rounds=0,
+                total_correct=0,
+                total_attempts=0,
+                total_stars=0,
+                accuracy=0.0,
+                avg_theta=0.0,
+                avg_difficulty=0.0,
+            ))
+            continue
+
+        d_rounds = sum(s.rounds_played for s in sessions)
+        d_correct = sum(s.total_correct for s in sessions)
+        d_attempts = sum(s.total_attempts for s in sessions)
+        d_stars = sum(s.total_stars for s in sessions)
+        d_accuracy = d_correct / max(d_rounds, 1)
+        d_avg_theta = sum(s.theta for s in sessions) / len(sessions)
+        d_avg_diff = sum(s.difficulty_level for s in sessions) / len(sessions)
+
+        # Find the best variant (highest theta)
+        best = max(sessions, key=lambda s: s.theta)
+        best_variant = best.variant if best.rounds_played > 0 else None
+
+        # Merge theta_trend from all variants (interleaved by time)
+        all_history = []
+        for s in sessions:
+            for i, rnd in enumerate(s.round_history):
+                all_history.append(rnd)
+
+        theta_trend = [rnd.get("theta_after", 0.0) for rnd in all_history[-20:]]
+        difficulty_trend = [int(rnd.get("difficulty_level", 1)) if "difficulty_level" in rnd
+                           else theta_to_level(rnd.get("theta_after", 0.0))
+                           for rnd in all_history[-20:]]
+
+        domain_summaries.append(DomainProgressSummary(
+            domain=domain,
+            variants=[s.variant for s in sessions],
+            total_rounds=d_rounds,
+            total_correct=d_correct,
+            total_attempts=d_attempts,
+            total_stars=d_stars,
+            accuracy=round(d_accuracy, 3),
+            avg_theta=round(d_avg_theta, 3),
+            avg_difficulty=round(d_avg_diff, 1),
+            best_variant=best_variant,
+            theta_trend=[round(t, 3) for t in theta_trend],
+            difficulty_trend=difficulty_trend,
+        ))
+
+        overall_rounds += d_rounds
+        overall_correct += d_correct
+        overall_attempts += d_attempts
+        overall_stars += d_stars
+
+    return MeasurementProgressResponse(
+        student_id=student_id,
+        overall_accuracy=round(overall_correct / max(overall_rounds, 1), 3),
+        overall_rounds=overall_rounds,
+        overall_stars=overall_stars,
+        domains=domain_summaries,
     )
 
 
