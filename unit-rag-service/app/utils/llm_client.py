@@ -180,8 +180,8 @@ Subject: {prompt}"""
                     with open(filepath, "wb") as f:
                         f.write(img_response.content)
                     
-                    # Return local URL
-                    local_url = f"{base_url}/static/images/{filename}"
+                    # Return relative URL (frontend will prepend the correct base URL)
+                    local_url = f"/static/images/{filename}"
                     print(f"✅ Image saved locally: {filename}")
                     return local_url
                 else:
@@ -206,47 +206,76 @@ Subject: {prompt}"""
         correct_answer: str = ""
     ) -> str:
         """
-        Generate an appropriate image description for a question.
-        Uses GPT to extract visual elements from the question.
-        The correct answer is used to ensure accurate proportions/comparisons.
+        Generate a child-friendly, measurement-focused image description
+        that makes the correct answer visually obvious.
         """
         try:
-            prompt = f"""Extract the main visual elements from this math question to create an educational illustration.
+            # Build a stricter, layout-focused prompt so images clearly match the question
+            prompt = f"""
+You are designing ONE clear educational picture for young children (ages 6–10)
+to go with a math measurement question.
 
-Question: {question_text}
-Topic: {topic}
-Related objects: {', '.join(objects)}
-Correct Answer: {correct_answer}
+QUESTION (for context only, do NOT write the question text in the image):
+{question_text}
 
-CRITICAL REQUIREMENTS:
-1. The image MUST accurately reflect the CORRECT ANSWER
-2. If comparing sizes/lengths/weights, show the objects with ACCURATE proportions based on the correct answer
-3. Example: If asking "which is longer, pen or book?" and the answer is "book", the book MUST be clearly BIGGER/LONGER than the pen
-4. Example: If asking "which is heavier, apple or watermelon?" and the answer is "watermelon", the watermelon MUST appear LARGER/HEAVIER
-5. Make objects clearly distinguishable with obvious size/measurement differences
+TOPIC: {topic}
+TYPICAL OBJECTS IN THIS TOPIC: {', '.join(objects)}
+CORRECT ANSWER (object or choice that must visually "win"): {correct_answer}
 
-Create a brief image description (2-3 sentences) that:
-1. Shows the objects with CORRECT relative sizes/proportions based on the answer
-2. Makes the measurement comparison visually obvious to children
-3. Is suitable for a colorful children's illustration with clear, exaggerated differences
+GLOBAL RULES FOR THE PICTURE:
+- Show ONLY the few objects needed to answer the question (usually 2–3 items).
+- Use a simple, bright, kid‑friendly cartoon style on a plain light background.
+- Do NOT include any text, numbers, labels or arrows in the image.
+- Avoid complex scenes or extra decorations that might distract from the comparison.
+- Make the measurement idea so clear that a 6‑year‑old can answer just by looking.
 
-Return ONLY the image description, nothing else.
-Example: "A large blue book (about 30cm) placed next to a small yellow pencil (about 15cm), clearly showing the book is much longer."
-"""
-            
+IF IT IS A LENGTH / HEIGHT QUESTION:
+- Place the objects side by side on the SAME straight baseline.
+- The correct object MUST be clearly longer/taller than the other(s).
+- Exaggerate the length difference so it is obvious at first glance.
+
+IF IT IS A WEIGHT / MASS QUESTION:
+- Show a very simple balance scale OR just the objects side by side.
+- The heavier correct object should look noticeably larger/denser or tip the scale down.
+
+IF IT IS AN AREA QUESTION:
+- Show flat shapes or surfaces filled with solid color or tiles.
+- The correct answer must clearly cover MORE surface area than the others.
+
+IF IT IS A VOLUME / CAPACITY QUESTION:
+- Show containers with visible liquid or blocks inside.
+- The correct container must clearly hold MORE or LESS, with very different fill levels.
+
+WHAT YOU MUST RETURN:
+- Write 1–2 sentences describing exactly what should be drawn, including:
+  - Which objects appear (with simple colors).
+  - How they are arranged (left/right, on a table, on a scale, etc.).
+  - How the correct answer is made visually obvious (bigger/longer/heavier/higher level).
+- Do NOT mention the question text or any answer letters like A/B/C/D.
+
+Example description:
+"A bright blue storybook lying flat on a table, much longer than a short yellow pencil beside it, both aligned on the same straight line so it is clear the book is longer."
+""".strip()
+
             response = await self.generate_completion(
                 prompt=prompt,
-                system_message="You are an expert at creating accurate educational illustrations. You ALWAYS show correct proportions based on the answer.",
-                temperature=0.5,  # Lower temperature for more accurate proportions
-                max_tokens=150
+                system_message=(
+                    "You are an expert at creating accurate, child‑friendly educational illustrations. "
+                    "You ALWAYS show correct visual proportions so the right answer is obvious to young students."
+                ),
+                temperature=0.5,  # Lower temperature for more consistent, precise layouts
+                max_tokens=180,
             )
-            
+
             return response.strip()
-            
+
         except Exception as e:
             # Fallback to a simple description using the topic and objects
             print(f"⚠️ Could not generate image prompt: {str(e)}")
-            return f"Educational illustration showing {topic} measurement with {objects[0] if objects else 'common objects'}"
+            return (
+                f"Simple, colorful illustration showing {topic.lower()} measurement with "
+                f"{objects[0] if objects else 'two everyday objects'} where the correct one is clearly larger for kids."
+            )
 
 
 # Singleton instance

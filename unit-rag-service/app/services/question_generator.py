@@ -165,13 +165,14 @@ class QuestionGenerator:
     # Grade-specific prompts with enhanced pedagogical approach
     GRADE_PROMPTS = {
         1: {
-            "system": """You are creating questions for Grade 1 students (ages 6-7). 
-Use ONLY simple words from the 200 most common English words.
+            "system": """You are creating measurement questions for Grade 1 students (ages 6-7). 
+Use ONLY very simple words from the 200 most common English words.
 Keep questions 5-10 words long.
-Focus on visual recognition, counting, and basic identification.
-Use emojis to make it fun and engaging! 🎉
+Focus on visual recognition, counting, and basic comparisons like longer/shorter, heavier/lighter, more/less.
+Use friendly emojis to make it fun and engaging! 🎉
 All numbers should be small (1-20).
-Questions should be about real objects children know.""",
+Questions must be about real objects children know at home or school (pencil, book, ball, bottle, table).
+Do not use more than 2-3 objects in a single question.""",
             "bloom_levels": ["remember", "understand"],
             "question_types": ["mcq", "true_false"],
             "difficulty_range": [1, 2],
@@ -181,12 +182,13 @@ Questions should be about real objects children know.""",
             "sentence_length": "5-10 words"
         },
         2: {
-            "system": """You are creating questions for Grade 2 students (ages 7-8).
+            "system": """You are creating measurement questions for Grade 2 students (ages 7-8).
 Use simple vocabulary with short sentences (10-15 words).
-Focus on basic comprehension, simple calculations, and comparisons.
+Focus on basic comprehension, simple calculations, and clear comparisons (longer/shorter, heavier/lighter, bigger/smaller).
 Include friendly emojis! 😊
 Numbers can be up to 100.
-Questions should involve real-world objects and scenarios.""",
+Questions should involve real-world objects and scenarios children see at home, school, or playground.
+Do not use more than 3 objects in a single question.""",
             "bloom_levels": ["remember", "understand"],
             "question_types": ["mcq", "true_false"],
             "difficulty_range": [2, 3],
@@ -196,12 +198,12 @@ Questions should involve real-world objects and scenarios.""",
             "sentence_length": "10-15 words"
         },
         3: {
-            "system": """You are creating questions for Grade 3 students (ages 8-9).
-Use grade-appropriate vocabulary.
-Focus on application, simple problem-solving, and multi-step thinking.
+            "system": """You are creating measurement questions for Grade 3 students (ages 8-9).
+Use grade-appropriate but still simple vocabulary.
+Focus on application, simple problem-solving, unit conversions, and multi-step thinking.
 Include helpful hints!
 Numbers can be up to 1000.
-Questions should require some reasoning and calculation.""",
+Questions should require some reasoning and calculation, but still be based on concrete, everyday objects and situations.""",
             "bloom_levels": ["understand", "apply"],
             "question_types": ["mcq", "true_false"],
             "difficulty_range": [3, 4],
@@ -211,11 +213,11 @@ Questions should require some reasoning and calculation.""",
             "sentence_length": "15-20 words"
         },
         4: {
-            "system": """You are creating questions for Grade 4 students (ages 9-10).
-Focus on analysis, reasoning, word problems, and applying concepts to new situations.
-Encourage critical thinking!
+            "system": """You are creating measurement questions for Grade 4 students (ages 9-10).
+Focus on analysis, reasoning, word problems, and applying measurement concepts to new situations.
+Encourage critical thinking and clear explanations!
 Numbers can include decimals (one decimal place).
-Questions should be challenging but fair, requiring multi-step reasoning.""",
+Questions should be challenging but fair, requiring multi-step reasoning with real-world contexts children can imagine (school, home, sports, shopping).""",
             "bloom_levels": ["apply", "analyze"],
             "question_types": ["mcq", "true_false"],
             "difficulty_range": [4, 5],

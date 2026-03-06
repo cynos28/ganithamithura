@@ -181,7 +181,8 @@ async def get_questions_by_document_alias(
             bloom_level=q.bloom_level,
             concepts=q.concepts,
             explanation=q.explanation,
-            hints=q.hints
+            hints=q.hints,
+            image_url=q.image_url
         )
         for q in questions
     ]
