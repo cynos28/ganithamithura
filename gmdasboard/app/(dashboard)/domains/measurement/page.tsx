@@ -61,7 +61,7 @@ export default function MeasurementPage() {
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [questionsPerGrade, setQuestionsPerGrade] = useState('5');
 
-  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8000';
+  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8004';
 
   const topics = [
     { id: 'length', name: 'Length', icon: Ruler, units: 'cm, m, km', color: 'blue' },
