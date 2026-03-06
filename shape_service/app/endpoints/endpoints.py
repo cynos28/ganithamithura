@@ -1,7 +1,9 @@
 ﻿from fastapi import APIRouter, UploadFile, File, Request, Depends
 from app.controllers.shapes_detection import ShapesDetectionController
 from app.controllers.shapes_controller import ShapesController
-from authentication_service.auth_service import get_current_user
+# TEMPORARY: Dummy auth for testing
+async def get_current_user():
+    return {"user_name": "user1"}
 from app.controllers.game_controller import GameController
 from app.controllers.report_controller import ReportController
 from app.models.model import GameAnswer, UserBadgeList
