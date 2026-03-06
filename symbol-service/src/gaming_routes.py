@@ -59,6 +59,19 @@ async def save_score(user_id: str, score_data: ScoreUpdate):
         },
         upsert=True
     )
+    
+    # Store into unified activity collection
+    activity_col = get_collection("sym_activity")
+    if activity_col is not None:
+        activity_col.insert_one({
+            "user_id": user_id,
+            "activity_type": "gaming",
+            "game_name": score_data.game_name,
+            "level": score_data.level,
+            "score": score_data.score,
+            "timestamp": datetime.utcnow()
+        })
+        
     return {"status": "success", "score": score_data.score}
 
 @router.get("/api/game/leaderboard")

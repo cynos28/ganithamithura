@@ -44,6 +44,9 @@ async def lifespan(app: FastAPI):
         if "sym_performance" not in collections:
             db.create_collection("sym_performance")
             logger.info("Initialized 'sym_performance' collection in MongoDB.")
+        if "sym_activity" not in collections:
+            db.create_collection("sym_activity")
+            logger.info("Initialized 'sym_activity' collection in MongoDB.")
     yield
 
 app = FastAPI(lifespan=lifespan)
