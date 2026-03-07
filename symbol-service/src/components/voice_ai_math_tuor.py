@@ -261,19 +261,13 @@ class SimpleVoiceMathTutor(BaseMathTutor):
 
             # Check if correct
             if user_answer == correct_answer:
-                responses = [
-                    f"Excellent! {correct_answer} is correct!",
-                    f"Perfect! The answer is {correct_answer}!",
-                    f"Great job! {correct_answer} is right!",
-                    f"Well done! {correct_answer} is the answer!"
-                ]
-                self.speak(random.choice(responses))
+                self.speak("Wow..! Good Job..!")
                 return True
             else:
                 if attempt < max_attempts - 1:
-                    self.speak(f"Not quite. You said {user_answer}. Try again.")
+                    self.speak("Incorrect. Try again.")
                 else:
-                    self.speak(f"The correct answer is {correct_answer}. You said {user_answer}.")
+                    self.speak("Incorrect")
                     return False
 
         return False
