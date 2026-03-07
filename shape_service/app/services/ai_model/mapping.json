@@ -1,0 +1,22 @@
+{
+  "0":  { "class_name": "person", "shape": "irregular" },
+  
+  "56": { "class_name": "chair", "shape": "rectangle" },
+  "57": { "class_name": "couch", "shape": "rectangle" },
+  "60": {"class_name": "dining table","alias": "table","shape": "rectangle"},
+  "73": { "class_name": "book", "shape": "rectangle" },
+  "62": { "class_name": "tv", "shape": "rectangle" },
+  "63": { "class_name": "laptop", "shape": "rectangle" },
+  "64": { "class_name": "mouse", "shape": "oval" },
+  "65": { "class_name": "remote", "shape": "rectangle" },
+  "66": { "class_name": "keyboard", "shape": "rectangle" },
+  "67": { "class_name": "cell phone", "shape": "rectangle" },
+  "39": { "class_name": "bottle", "shape": "cylinder" },
+  "41": { "class_name": "cup", "shape": "cylinder" },
+  "45": { "class_name": "bowl", "shape": "hemisphere" },
+  "74": { "class_name": "clock", "shape": "circle" },
+  "75": { "class_name": "vase", "shape": "cylinder" },
+  "59": { "class_name": "bed", "shape": "rectangle" },
+  "71": { "class_name": "sink", "shape": "rectangle" },
+  "72": { "class_name": "refrigerator", "shape": "rectangle" }
+}

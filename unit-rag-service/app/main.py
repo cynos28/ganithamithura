@@ -1,0 +1,258 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from app.config import settings
+from app.models.database import init_db
+from app.routes import upload, questions, adaptive, progress, contextual, chat
+from app.routes import measurement
+from app.routes.games import router as adaptive_games_router
+from app.utils.game_seed import seed_game_parameters
+from typing import Optional
+import os
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Ganithamithura RAG Service",
+    description="Adaptive learning question generation using RAG",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files for serving images
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# Include routers
+app.include_router(upload.router)
+app.include_router(questions.router)
+app.include_router(adaptive.router)
+app.include_router(progress.router)
+app.include_router(contextual.router)
+app.include_router(measurement.router)
+app.include_router(adaptive_games_router)
+app.include_router(chat.router)
+
+
+
+@app.get("/documents")
+async def list_all_documents(
+    topic: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    """
+    Alias endpoint for Next.js dashboard compatibility
+    Returns documents in the format expected by the frontend
+    """
+    from app.models.database import DocumentModel
+    from app.models.schemas import DocumentResponse
+    
+    query = {}
+    if topic:
+        query["topic"] = topic
+    
+    documents = await DocumentModel.find(query).skip(skip).limit(limit).to_list()
+    
+    return {
+        "documents": [
+            {
+                "id": str(doc.id),
+                "title": doc.title,
+                "grade_levels": doc.grade_levels,
+                "topic": doc.topic,
+                "status": doc.status,
+                "questions_count": doc.questions_count,
+                "created_at": doc.uploaded_at.isoformat(),
+                "file_path": doc.vector_db_id or ""
+            }
+            for doc in documents
+        ]
+    }
+
+
+@app.delete("/documents/{document_id}")
+async def delete_document_alias(document_id: str):
+    """Alias for DELETE endpoint compatible with Next.js dashboard"""
+    from fastapi import HTTPException
+    from app.models.database import DocumentModel, QuestionModel
+    from app.services.embeddings_service import embeddings_service
+    from bson import ObjectId
+    
+    try:
+        document = await DocumentModel.find_one(DocumentModel.id == ObjectId(document_id))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid document ID: {str(e)}")
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Delete from vector database if exists
+    if document.vector_db_id:
+        try:
+            embeddings_service.delete_document(document.vector_db_id)
+        except Exception as e:
+            print(f"Warning: Could not delete from vector DB: {e}")
+    
+    # Delete associated questions
+    questions_deleted = 0
+    try:
+        questions = await QuestionModel.find(QuestionModel.document_id == document_id).to_list()
+        for question in questions:
+            await question.delete()
+            questions_deleted += 1
+        print(f"✅ Deleted {questions_deleted} questions associated with document {document_id}")
+    except Exception as e:
+        print(f"Warning: Error deleting associated questions: {e}")
+    
+    # Delete from MongoDB
+    await document.delete()
+    
+    return {
+        "message": "Document deleted successfully",
+        "id": document_id,
+        "questions_deleted": questions_deleted
+    }
+
+
+@app.get("/questions/document/{document_id}")
+async def get_questions_by_document_alias(
+    document_id: str,
+    grade_level: Optional[int] = None,
+    difficulty_level: Optional[int] = None,
+    question_type: Optional[str] = None,
+    topic: Optional[str] = None
+):
+    """Alias endpoint for Next.js dashboard - Get questions for a document"""
+    from app.models.database import QuestionModel
+    from app.models.schemas import QuestionResponse
+    
+    print(f"🔍 [ALIAS] Looking for questions with document_id: {document_id}")
+    query = {"document_id": document_id}
+    
+    if grade_level:
+        query["grade_level"] = grade_level
+        print(f"🔍 [ALIAS] Filtering by grade_level: {grade_level}")
+    if difficulty_level:
+        query["difficulty_level"] = difficulty_level
+    if question_type:
+        query["question_type"] = question_type
+    if topic:
+        query["topic"] = topic
+        print(f"🔍 [ALIAS] Filtering by topic: {topic}")
+    
+    print(f"🔍 [ALIAS] Query: {query}")
+    questions = await QuestionModel.find(query).to_list()
+    print(f"📊 [ALIAS] Found {len(questions)} questions")
+    
+    # Return empty list instead of 404 if no questions found
+    if not questions:
+        print(f"⚠️ [ALIAS] No questions found for document {document_id}")
+        return []
+    
+    # Group questions by topic and grade for better organization
+    questions_by_topic_grade = {}
+    for q in questions:
+        key = f"{q.topic or 'Unknown'}_{q.grade_level}"
+        if key not in questions_by_topic_grade:
+            questions_by_topic_grade[key] = []
+        questions_by_topic_grade[key].append(q)
+    
+    print(f"📋 [ALIAS] Questions grouped: {[(k, len(v)) for k, v in questions_by_topic_grade.items()]}")
+    
+    return [
+        QuestionResponse(
+            id=str(q.id),
+            question_text=q.question_text,
+            question_type=q.question_type,
+            options=q.options,
+            grade_level=q.grade_level,
+            difficulty_level=q.difficulty_level,
+            bloom_level=q.bloom_level,
+            concepts=q.concepts,
+            explanation=q.explanation,
+            hints=q.hints,
+            image_url=q.image_url
+        )
+        for q in questions
+    ]
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    await init_db()
+    await seed_game_parameters()
+    
+    # Print startup banner
+    print("\n" + "="*60)
+    print("🚀 GANITHAMITHURA BACKEND SERVER RUNNING")
+    print("="*60)
+    print(f"📡 Host: {settings.host}")
+    print(f"🔌 Port: {settings.port}")
+    print(f"🌍 Environment: {settings.environment}")
+    print(f"📚 API Docs: http://{settings.host}:{settings.port}/docs")
+    print(f"❤️  Health Check: http://{settings.host}:{settings.port}/health")
+    print("="*60)
+    print("✅ Waiting for frontend connections...")
+    print("="*60 + "\n")
+
+
+@app.get("/")
+async def root():
+    """Root endpoint - health check"""
+    return {
+        "service": "Measurement Service",
+        "status": "running",
+        "version": "1.0.0",
+        "environment": settings.environment
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    from app.services.embeddings_service import embeddings_service
+    from fastapi import Request
+    
+    try:
+        # Check vector database
+        stats = embeddings_service.get_collection_stats()
+        
+        # Log frontend connection (only first time or periodically)
+        import time
+        current_time = time.time()
+        if not hasattr(health_check, '_last_log_time') or current_time - health_check._last_log_time > 30:
+            print("🔗 Frontend connected - Health check OK")
+            health_check._last_log_time = current_time
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "vector_store": stats
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host=settings.host,
+        port=settings.port,
+        reload=settings.debug
+    )
