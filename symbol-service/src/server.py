@@ -51,6 +51,12 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+@app.get("/")
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "symbol"}
+
 app.include_router(gaming_router)
 app.include_router(performance_router)
 

@@ -14,7 +14,7 @@ echo -e "${BLUE}==============================================${NC}"
 
 # 🧹 Aggressive Cleanup of Orphaned Processes
 echo -e "${YELLOW}🧹 Cleaning up any orphaned processes from previous runs...${NC}"
-lsof -ti:8000,8001,8003,4040 | xargs kill -9 2>/dev/null || true
+lsof -ti:8000,8001,8003,8004,8005,4040 | xargs kill -9 2>/dev/null || true
 killall ngrok 2>/dev/null || true
 sleep 1
 
@@ -52,6 +52,23 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload &
 SHAPE_PID=$!
 cd ..
 
+# Wait 1 second to ensure ports don't clash
+sleep 1
+
+# Start the Number Service on port 8004
+echo -e "${GREEN}4. Starting Number Service (Port 8004)...${NC}"
+cd number-service
+source .venv/bin/activate 2>/dev/null || echo "No .venv found in number-service, using global python."
+uvicorn main:app --reload --host 0.0.0.0 --port 8004 &
+NUMBER_PID=$!
+cd ..
+
+# Start the Gateway on port 8005
+echo -e "${GREEN}5. Starting Gateway Service (Port 8005)...${NC}"
+source symbol-service/venv/bin/activate 2>/dev/null # Use a venv that has fastapi/httpx
+python gateway.py &
+GATEWAY_PID=$!
+
 # Wait a couple seconds to make sure Uvicorn instances are running
 sleep 3
 
@@ -64,6 +81,8 @@ function cleanup() {
     kill $AUTH_PID
     kill $SYMBOL_PID
     kill $SHAPE_PID
+    kill $NUMBER_PID
+    kill $GATEWAY_PID
     echo -e "${GREEN}Goodbye!${NC}"
     exit 0
 }

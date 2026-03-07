@@ -20,15 +20,15 @@ def update_cloud_urls():
         print("   Please create a .env file in this directory with GITHUB_TOKEN=ghp_your_token")
         return
 
-    print("🚀 Starting Ngrok tunnels...")
-    # Port 8000 (Symbol), Port 8001 (Auth), Port 8003 (Shape)
-    symbol_url = ngrok.connect(8000, bind_tls=True).public_url
-    auth_url = ngrok.connect(8001, bind_tls=True).public_url
-    shape_url = ngrok.connect(8003, bind_tls=True).public_url
+    print("🚀 Starting Ngrok Gateway tunnel...")
+    # Tunnel ONLY the Gateway port
+    gateway_url = ngrok.connect(8005, bind_tls=True).public_url
     
-    print(f"✅ Symbol API: {symbol_url}")
-    print(f"✅ Auth API:   {auth_url}")
-    print(f"✅ Shape API:  {shape_url}")
+    print(f"🌍 Gateway URL: {gateway_url}")
+    print(f"✅ Symbol API: {gateway_url}/symbol")
+    print(f"✅ Auth API:   {gateway_url}/auth")
+    print(f"✅ Shape API:  {gateway_url}/shape")
+    print(f"✅ Number API: {gateway_url}/number")
 
     print("☁️ Sending URLs to the cloud Gist...")
     headers = {
@@ -39,7 +39,7 @@ def update_cloud_urls():
     data = {
         "files": {
             "ganithamithura_urls.json": {
-                "content": f'{{\n  "symbol_api": "{symbol_url}",\n  "auth_api": "{auth_url}",\n  "shape_api": "{shape_url}"\n}}'
+                "content": f'{{\n  "symbol_api": "{gateway_url}/symbol",\n  "auth_api": "{gateway_url}/auth",\n  "shape_api": "{gateway_url}/shape",\n  "number_api": "{gateway_url}/number"\n}}'
             }
         }
     }

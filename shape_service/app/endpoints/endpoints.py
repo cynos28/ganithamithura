@@ -11,6 +11,11 @@ from app.models.model import GameAnswer, UserBadgeList
 
 router = APIRouter()
 
+@router.get("/")
+async def health():
+    """Health check for shapes service"""
+    return {"status": "healthy", "service": "shapes"}
+
 shapes_detection_controller = ShapesDetectionController()
 shapes_controller = ShapesController()
 game_controller = GameController()
