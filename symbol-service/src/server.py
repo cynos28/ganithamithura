@@ -6,6 +6,7 @@ import threading
 import logging
 import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.staticfiles import StaticFiles
 from queue import Queue
 from pydantic import BaseModel
 from datetime import datetime
@@ -52,6 +53,32 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(gaming_router)
 app.include_router(performance_router)
+
+# Mount videos directory for static serving
+videos_dir = os.path.join(os.path.dirname(__file__), '..', 'videos')
+if os.path.exists(videos_dir):
+    app.mount("/videos", StaticFiles(directory=videos_dir), name="videos")
+
+@app.get("/api/videos/{grade}")
+async def get_videos(grade: int):
+    grade_dir = os.path.join(videos_dir, f"GRADE {grade}")
+    if not os.path.exists(grade_dir):
+        return {"videos": []}
+    
+    videos = []
+    # Filter out hidden files
+    for f in sorted(os.listdir(grade_dir)):
+        if f.endswith(".mp4") and not f.startswith("."):
+            video_id = f.split(".")[0]
+            videos.append({
+                "id": video_id,
+                "filename": f,
+                "url": f"/videos/GRADE {grade}/{f}",
+                "title": f"Learn Grade {grade:02d} Mathematics",
+                "subtitle": f"Video Lesson {video_id}",
+                "progress": 0.0
+            })
+    return {"videos": videos}
 
 # --- VOICE WRAPPER ---
 class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
@@ -136,7 +163,7 @@ class WebSocketVoiceWrapper(SimpleVoiceMathTutor):
                  asyncio.run_coroutine_threadsafe(
                     self.websocket.send_json({
                         "type": "feedback", 
-                        "text": "Correct!" if result is True else "Practice makes perfect!",
+                        "text": "Wow..! Good Job..!" if result is True else "Incorrect",
                         "isCorrect": result is True
                     }), 
                     self.main_loop
