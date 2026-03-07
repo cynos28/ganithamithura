@@ -10,12 +10,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import DocumentUpload from '@/components/DocumentUpload';
-import { 
-  FileText, 
-  Calendar, 
-  Download, 
-  Trash2, 
-  Eye, 
+import {
+  FileText,
+  Calendar,
+  Download,
+  Trash2,
+  Eye,
   Loader2,
   BookOpen,
   Ruler,
@@ -61,7 +61,7 @@ export default function MeasurementPage() {
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [questionsPerGrade, setQuestionsPerGrade] = useState('5');
 
-  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8004';
+  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8002';
 
   const topics = [
     { id: 'length', name: 'Length', icon: Ruler, units: 'cm, m, km', color: 'blue' },
@@ -80,19 +80,19 @@ export default function MeasurementPage() {
 
     try {
       const response = await fetch(`${ragBase}/documents`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch documents');
       }
 
       const data = await response.json();
       const allDocs = data.documents || [];
-      
+
       const topicName = topics.find(t => t.id === activeTab)?.name || '';
-      const filtered = allDocs.filter((doc: Document) => 
+      const filtered = allDocs.filter((doc: Document) =>
         doc.topic.toLowerCase() === topicName.toLowerCase()
       );
-      
+
       setDocuments(filtered);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load documents');
@@ -105,27 +105,27 @@ export default function MeasurementPage() {
   const handleUploadSuccess = async (documentId?: string) => {
     // Immediately refresh to show the new document
     await fetchDocuments();
-    
+
     // If documentId provided, poll for question generation completion
     if (documentId) {
       const maxAttempts = 40; // 40 * 3 seconds = 2 minutes
       let attempts = 0;
-      
+
       const pollInterval = setInterval(async () => {
         attempts++;
-        
+
         try {
           const response = await fetch(`${ragBase}/documents`);
-          
+
           if (response.ok) {
             const data = await response.json();
             const allDocs = data.documents || [];
             const uploadedDoc = allDocs.find((doc: Document) => doc.id === documentId);
-            
+
             // If questions have been generated (count > 0), refresh and stop polling
             if (uploadedDoc && uploadedDoc.questions_count > 0) {
               const topicName = topics.find(t => t.id === activeTab)?.name || '';
-              const filtered = allDocs.filter((doc: Document) => 
+              const filtered = allDocs.filter((doc: Document) =>
                 doc.topic.toLowerCase() === topicName.toLowerCase()
               );
               setDocuments(filtered);
@@ -136,7 +136,7 @@ export default function MeasurementPage() {
         } catch (err) {
           console.error('Error polling for upload updates:', err);
         }
-        
+
         // Stop after max attempts
         if (attempts >= maxAttempts) {
           clearInterval(pollInterval);
@@ -174,7 +174,7 @@ export default function MeasurementPage() {
 
     try {
       const response = await fetch(`${ragBase}/questions/document/${doc.id}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch questions');
       }
@@ -195,81 +195,81 @@ export default function MeasurementPage() {
   };
 
   const handleGenerateQuestions = async () => {
-  if (!selectedDocument) return;
+    if (!selectedDocument) return;
 
-  setGenerating(true);
-  setShowGenerateDialog(false);
+    setGenerating(true);
+    setShowGenerateDialog(false);
 
-  try {
-    const response = await fetch(`${ragBase}/api/v1/questions/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        document_id: selectedDocument.id,
-        grade_levels: selectedDocument.grade_levels,
-        questions_per_grade: parseInt(questionsPerGrade) || 5,
-        question_types: ['mcq', 'short_answer']
-      })
-    });
+    try {
+      const response = await fetch(`${ragBase}/api/v1/questions/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          document_id: selectedDocument.id,
+          grade_levels: selectedDocument.grade_levels,
+          questions_per_grade: parseInt(questionsPerGrade) || 5,
+          question_types: ['mcq', 'short_answer']
+        })
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to generate questions');
-    }
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to generate questions');
+      }
 
-    const expectedNewQuestions = parseInt(questionsPerGrade) * selectedDocument.grade_levels.length;
-    alert(`✅ Generating ${expectedNewQuestions} questions in background. The question count will update automatically.`);
-    
-    // Poll for updates every 3 seconds for up to 2 minutes
-    const maxAttempts = 40;
-    let attempts = 0;
-    const initialCount = selectedDocument.questions_count;
-    const docId = selectedDocument.id;
-    
-    const pollInterval = setInterval(async () => {
-      attempts++;
-      
-      try {
-        const response = await fetch(`${ragBase}/documents`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          const allDocs = data.documents || [];
-          const updatedDoc = allDocs.find((doc: Document) => doc.id === docId);
-          
-          // Check if questions were added (count increased)
-          if (updatedDoc && updatedDoc.questions_count > initialCount) {
-            const topicName = topics.find(t => t.id === activeTab)?.name || '';
-            const filtered = allDocs.filter((doc: Document) => 
-              doc.topic.toLowerCase() === topicName.toLowerCase()
-            );
-            setDocuments(filtered);
-            clearInterval(pollInterval);
-            setGenerating(false);
-            
-            const addedQuestions = updatedDoc.questions_count - initialCount;
-            console.log(`✅ ${addedQuestions} new questions generated successfully`);
-            return;
+      const expectedNewQuestions = parseInt(questionsPerGrade) * selectedDocument.grade_levels.length;
+      alert(`✅ Generating ${expectedNewQuestions} questions in background. The question count will update automatically.`);
+
+      // Poll for updates every 3 seconds for up to 2 minutes
+      const maxAttempts = 40;
+      let attempts = 0;
+      const initialCount = selectedDocument.questions_count;
+      const docId = selectedDocument.id;
+
+      const pollInterval = setInterval(async () => {
+        attempts++;
+
+        try {
+          const response = await fetch(`${ragBase}/documents`);
+
+          if (response.ok) {
+            const data = await response.json();
+            const allDocs = data.documents || [];
+            const updatedDoc = allDocs.find((doc: Document) => doc.id === docId);
+
+            // Check if questions were added (count increased)
+            if (updatedDoc && updatedDoc.questions_count > initialCount) {
+              const topicName = topics.find(t => t.id === activeTab)?.name || '';
+              const filtered = allDocs.filter((doc: Document) =>
+                doc.topic.toLowerCase() === topicName.toLowerCase()
+              );
+              setDocuments(filtered);
+              clearInterval(pollInterval);
+              setGenerating(false);
+
+              const addedQuestions = updatedDoc.questions_count - initialCount;
+              console.log(`✅ ${addedQuestions} new questions generated successfully`);
+              return;
+            }
           }
+        } catch (err) {
+          console.error('Error polling for updates:', err);
         }
-      } catch (err) {
-        console.error('Error polling for updates:', err);
-      }
-      
-      // Stop after max attempts and reset state
-      if (attempts >= maxAttempts) {
-        clearInterval(pollInterval);
-        setGenerating(false);
-        await fetchDocuments();
-        console.log('⏱️ Polling timeout reached');
-      }
-    }, 3000);
-    
-  } catch (err) {
-    alert(err instanceof Error ? err.message : 'Failed to generate questions');
-    setGenerating(false);
-  }
-};
+
+        // Stop after max attempts and reset state
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          setGenerating(false);
+          await fetchDocuments();
+          console.log('⏱️ Polling timeout reached');
+        }
+      }, 3000);
+
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to generate questions');
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="space-y-10 pb-10 px-4 sm:px-6 lg:px-8">
@@ -386,8 +386,8 @@ export default function MeasurementPage() {
                           </div>
 
                           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="default"
                               className="gap-2 flex-1 sm:flex-initial"
                               onClick={() => handleViewQuestions(doc)}
@@ -395,8 +395,8 @@ export default function MeasurementPage() {
                               <Eye className="h-4 w-4" />
                               <span>View</span>
                             </Button>
-                            <Button 
-                              variant="default" 
+                            <Button
+                              variant="default"
                               size="default"
                               className="flex-1 sm:flex-initial bg-purple-600 hover:bg-purple-700"
                               onClick={() => handleGenerateMore(doc)}
@@ -444,7 +444,7 @@ export default function MeasurementPage() {
               {selectedDocument?.title}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <Label htmlFor="questions-count">Questions per grade level</Label>
@@ -467,8 +467,8 @@ export default function MeasurementPage() {
               <Button variant="outline" onClick={() => setShowGenerateDialog(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button 
-                onClick={handleGenerateQuestions} 
+              <Button
+                onClick={handleGenerateQuestions}
                 disabled={generating}
                 className="flex-1 bg-purple-600 hover:bg-purple-700"
               >
@@ -498,7 +498,7 @@ export default function MeasurementPage() {
               {selectedDocument?.title} • {questions.length} questions
             </DialogDescription>
           </DialogHeader>
-          
+
           <ScrollArea className="h-[60vh] pr-4">
             {loadingQuestions ? (
               <div className="flex items-center justify-center py-20">
@@ -526,7 +526,7 @@ export default function MeasurementPage() {
                         </div>
                       </div>
                     </CardHeader>
-                    
+
                     {question.options && question.options.length > 0 && (
                       <CardContent className="space-y-3">
                         <div className="space-y-2">
@@ -535,11 +535,10 @@ export default function MeasurementPage() {
                             {question.options.map((option, optIndex) => (
                               <div
                                 key={optIndex}
-                                className={`p-3 rounded-lg border ${
-                                  option === question.correct_answer
+                                className={`p-3 rounded-lg border ${option === question.correct_answer
                                     ? 'bg-green-50 border-green-300 text-green-900'
                                     : 'bg-neutral-50 border-neutral-200'
-                                }`}
+                                  }`}
                               >
                                 <span className="font-medium mr-2">{String.fromCharCode(65 + optIndex)}.</span>
                                 {option}
@@ -550,7 +549,7 @@ export default function MeasurementPage() {
                             ))}
                           </div>
                         </div>
-                        
+
                         {question.explanation && (
                           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-sm font-medium text-blue-900 mb-1">Explanation:</p>
@@ -559,14 +558,14 @@ export default function MeasurementPage() {
                         )}
                       </CardContent>
                     )}
-                    
+
                     {(!question.options || question.options.length === 0) && (
                       <CardContent>
                         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                           <p className="text-sm font-medium text-green-900 mb-1">Answer:</p>
                           <p className="text-sm text-green-800 font-medium">{question.correct_answer}</p>
                         </div>
-                        
+
                         {question.explanation && (
                           <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-sm font-medium text-blue-900 mb-1">Explanation:</p>

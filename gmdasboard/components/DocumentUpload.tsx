@@ -22,7 +22,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
-  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8004';
+  const ragBase = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:8002';
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
