@@ -289,6 +289,7 @@ class DigitRecognitionService:
         bboxes.sort(key=lambda b: b[0])
         
         # Merge overlapping or very close bounding boxes (they belong to the same digit)
+
         merged = [bboxes[0]]
         for box in bboxes[1:]:
             prev = merged[-1]
@@ -388,6 +389,7 @@ class DigitRecognitionService:
             # Segment into digit regions
             digit_bboxes = self._segment_digits(gray)
             
+
             if not digit_bboxes:
                 # Fallback: treat entire image as single digit
                 logger.warning("No digit segments found, falling back to single-digit recognition")
