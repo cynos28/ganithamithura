@@ -14,4 +14,5 @@ async def root():
     return {"message": "Welcome to Shape Patterns Backend 🚀"}
 
 
-app.include_router(endpoints.router)
+# Mount the endpoints router with /shapes-patterns prefix
+app.include_router(endpoints.router, prefix="/shapes-patterns")

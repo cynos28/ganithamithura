@@ -167,7 +167,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level == 2:
                     correct_answers = game_data.get("correct_answers", {})
@@ -186,7 +186,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level == 3:
                     # Level 3 is similar to level 1 - shape matching
@@ -206,7 +206,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level == 4:
                     # Level 4 is similar to level 2 - question round
@@ -226,7 +226,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level in [5, 6]:
                     # Levels 5 and 6 are pattern matching
@@ -248,7 +248,7 @@ class GameController:
                                 "is_correct": is_correct,
                                 "correct_answer": pattern["correct_answer"]["name"]
                             })
-                    total_questions = len(game_data.get("patterns", []))
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level >= 7:
                     # Levels 7+ are Build & Match challenges
