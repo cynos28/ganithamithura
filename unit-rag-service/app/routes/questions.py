@@ -69,10 +69,11 @@ async def generate_questions(
         grade_levels=request.grade_levels,
         questions_per_grade=request.questions_per_grade,
         question_types=['mcq', 'true_false'],  # Only MCQ and true/false for Flutter UI
-        use_rag=request.use_rag
+        use_rag=request.use_rag,
+        use_images=request.use_images
     )
     
-    print(f"🚀 Starting question generation for document {request.document_id} (RAG: {request.use_rag})")
+    print(f"🚀 Starting question generation for document {request.document_id} (RAG: {request.use_rag}, Images: {request.use_images})")
     
     return {
         "message": "Question generation started in background",
@@ -80,6 +81,7 @@ async def generate_questions(
         "estimated_questions": len(request.grade_levels) * request.questions_per_grade,
         "status": "processing",
         "use_rag": request.use_rag,
+        "use_images": request.use_images,
         "note": "Check GET /api/v1/questions/document/{document_id} to see generated questions"
     }
 
@@ -89,13 +91,17 @@ async def generate_questions_task(
     grade_levels: List[int],
     questions_per_grade: int,
     question_types: List[str],
-    use_rag: bool = True
+    use_rag: bool = True,
+    use_images: bool = True
 ):
-    """Background task to generate questions using RAG or full document"""
+    """Background task to generate questions using RAG, images, or full document"""
     mode = "RAG" if use_rag else "Full Document"
+    mode += " + Vision" if use_images else ""
     print(f"📝 Question generation task started for document {document_id} (Mode: {mode})")
     try:
         from bson import ObjectId
+        from app.services.image_question_generator import image_question_generator
+        
         document = await DocumentModel.find_one(DocumentModel.id == ObjectId(document_id))
         
         if not document:
@@ -103,60 +109,78 @@ async def generate_questions_task(
             return
         
         print(f"📄 Found document: {document.title}")
+        print(f"📂 Topic: {document.topic}")
         print(f"🎯 Generating {questions_per_grade} questions per grade for grades {grade_levels}")
         
-        # Generate questions using the service with topic filter and RAG
-        questions = await question_generator.generate_questions_for_document(
-            document_id=document_id,
-            document_content=document.content,
-            grade_levels=grade_levels,
-            topic=document.topic or "measurement",  # Use document's topic
-            questions_per_grade=questions_per_grade,
-            question_types=question_types,
-            use_rag=use_rag  # Enable/disable RAG retrieval
-        )
+        all_questions = []
         
-        print(f"💡 Received {len(questions)} questions from generator")
+        # Check if topic is a measurement topic that has images
+        measurement_topics = ["length", "area", "weight", "volume"]
+        has_images = document.topic and document.topic.lower() in measurement_topics
         
-        # Get objects list for image generation based on topic
-        domain_context = question_generator._get_domain_context(document.topic or "measurement", 2)
-        topic_objects = domain_context.get("objects", ["objects"])
+        for grade in grade_levels:
+            grade_questions = []
+            
+            # Strategy 1: Generate image-based questions if enabled and images available
+            if use_images and has_images:
+                try:
+                    print(f"\n📸 Generating ALL {questions_per_grade} image-based questions for Grade {grade}...")
+                    print(f"   GPT-4 Vision will analyze real measurement photos")
+                    
+                    # Retrieve document context for vision prompts
+                    context = await question_generator.retrieve_relevant_chunks(
+                        document_id=document_id,
+                        topic=document.topic,
+                        grade_level=grade,
+                        num_chunks=3
+                    )
+                    
+                    # Generate ALL questions from images (100% image-based)
+                    image_questions = await image_question_generator.generate_image_based_questions(
+                        topic=document.topic.lower(),
+                        grade_level=grade,
+                        total_questions=questions_per_grade,
+                        document_context=context
+                    )
+                    
+                    grade_questions.extend(image_questions)
+                    print(f"✅ Generated {len(image_questions)} image-based questions for Grade {grade}")
+                    
+                except Exception as img_err:
+                    print(f"⚠️ Image generation failed: {img_err}")
+                    import traceback
+                    print(traceback.format_exc())
+                    print("   Falling back to text-only generation")
+            
+            # Strategy 2: Generate text-based questions ONLY if image generation failed or disabled
+            remaining_needed = questions_per_grade - len(grade_questions)
+            
+            if remaining_needed > 0:
+                print(f"\n📝 Generating {remaining_needed} text-based questions for Grade {grade}...")
+                
+                text_questions = await question_generator.generate_questions_for_document(
+                    document_id=document_id,
+                    document_content=document.content,
+                    grade_levels=[grade],
+                    topic=document.topic or "measurement",
+                    questions_per_grade=remaining_needed,
+                    question_types=question_types,
+                    use_rag=use_rag
+                )
+                
+                grade_questions.extend(text_questions)
+                print(f"✅ Generated {len(text_questions)} text-based questions for Grade {grade}")
+            
+            all_questions.extend(grade_questions)
+            print(f"📊 Total Grade {grade} questions: {len(grade_questions)}")
+        
+        print(f"\n💡 Total questions generated: {len(all_questions)}")
         
         # Save to MongoDB
         question_count = 0
-        for q_data in questions:
+        for q_data in all_questions:
             # Generate unit_id based on document topic and grade
             unit_id = f"unit_{document.topic.lower()}_{q_data['grade_level']}" if document.topic else None
-            
-            # Generate image for this question
-            image_url = None
-            try:
-                print(f"🎨 Generating image for question: {q_data['question_text'][:50]}...")
-                
-                # Generate image prompt from question (with correct answer for accurate proportions)
-                image_prompt = await llm_client.generate_image_prompt_from_question(
-                    question_text=q_data["question_text"],
-                    topic=document.topic or "measurement",
-                    objects=topic_objects,
-                    correct_answer=q_data.get("correct_answer", "")
-                )
-                
-                # Generate the actual image
-                image_url = await llm_client.generate_image(
-                    prompt=image_prompt,
-                    size="1024x1024",
-                    quality="standard",
-                    base_url=settings.api_base_url
-                )
-                
-                if image_url:
-                    print(f"✅ Image generated for question {question_count + 1}")
-                else:
-                    print(f"⚠️ No image generated for question {question_count + 1}")
-                    
-            except Exception as img_error:
-                print(f"⚠️ Image generation failed for question: {str(img_error)}")
-                image_url = None
             
             question = QuestionModel(
                 document_id=document_id,
@@ -172,20 +196,26 @@ async def generate_questions_task(
                 concepts=q_data.get("concepts", []),
                 explanation=q_data.get("explanation"),
                 hints=q_data.get("hints", []),
-                image_url=image_url
+                image_url=q_data.get("image_url"),
+                object_images=q_data.get("object_images")
             )
             await question.insert()
             question_count += 1
-            print(f"💾 Saved question {question_count} with document_id: {document_id}, unit_id: {unit_id}, has_image={image_url is not None}")
+            
+            has_image = "Image" if q_data.get("image_url") else "Icons" if q_data.get("object_images") else "Text"
+            print(f"💾 Saved question {question_count}/{len(all_questions)} [{has_image}] - Grade {q_data['grade_level']}")
         
-        # Update document question count (INCREMENT existing count)
+        # Update document question count
         document.questions_count = document.questions_count + question_count
         await document.save()
         
-        print(f"✅ Generated {question_count} new questions for document {document_id} (Total: {document.questions_count})")
+        print(f"\n✅ Generated {question_count} new questions for document {document_id}")
+        print(f"📈 Total document questions: {document.questions_count}")
         
     except Exception as e:
+        import traceback
         print(f"❌ Error generating questions: {str(e)}")
+        print(traceback.format_exc())
 
 
 @router.get("/document/{document_id}", response_model=List[QuestionResponse])
@@ -309,6 +339,41 @@ async def update_question(question_id: str, update: QuestionUpdate):
         hints=question.hints,
         image_url=question.image_url
     )
+
+
+@router.delete("/document/{document_id}/all")
+async def delete_all_questions_for_document(document_id: str):
+    """Delete all questions for a document"""
+    try:
+        from bson import ObjectId
+        
+        # Verify document exists
+        document = await DocumentModel.find_one(DocumentModel.id == ObjectId(document_id))
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        # Delete all questions for this document
+        questions = await QuestionModel.find({"document_id": document_id}).to_list()
+        deleted_count = 0
+        
+        for question in questions:
+            await question.delete()
+            deleted_count += 1
+        
+        # Reset document question count
+        document.questions_count = 0
+        await document.save()
+        
+        print(f"🗑️ Deleted {deleted_count} questions for document {document_id}")
+        
+        return {
+            "message": f"Deleted all questions for document",
+            "document_id": document_id,
+            "questions_deleted": deleted_count
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting questions: {str(e)}")
 
 
 @router.delete("/{question_id}")

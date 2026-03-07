@@ -96,6 +96,7 @@ class QuestionGenerationRequest(BaseModel):
     questions_per_grade: int = Field(default=10, description="Number of questions per grade level", ge=1, le=50)
     question_types: List[str] = Field(default=["mcq", "true_false"], description="Types of questions to generate (MCQ and true/false only for Flutter UI)")
     use_rag: bool = Field(default=True, description="Use RAG (vector search) to retrieve relevant chunks instead of full document")
+    use_images: bool = Field(default=True, description="Generate questions from measurement images using GPT-4 Vision (for length, area, weight, volume)")
 
 
 class QuestionGenerationResponse(BaseModel):

@@ -117,6 +117,73 @@ class LLMClient:
         except Exception as e:
             raise Exception(f"Embedding generation error: {str(e)}")
     
+    async def generate_with_vision(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        image_base64: str,
+        model: str = "gpt-4o",
+        temperature: float = 0.7,
+        max_tokens: int = 2000
+    ) -> str:
+        """
+        Generate completion using GPT-4 Vision with image input
+        
+        Args:
+            system_prompt: System message for context
+            user_prompt: User's text prompt
+            image_base64: Base64-encoded image
+            model: Model to use (gpt-4o, gpt-4-turbo, etc.)
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            
+        Returns:
+            Generated text response
+        """
+        try:
+            print(f"👁️ Calling GPT-4 Vision API...")
+            
+            response = self.openai_client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{image_base64}",
+                                    "detail": "high"  # Use "high" for detailed image analysis
+                                }
+                            }
+                        ]
+                    }
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=90.0  # Vision API might take longer
+            )
+            
+            content = response.choices[0].message.content
+            print(f"✅ Vision response generated ({model})")
+            return content
+            
+        except Exception as e:
+            error_msg = str(e)
+            print(f"❌ Vision API error: {error_msg}")
+            
+            if "insufficient_quota" in error_msg or "429" in error_msg:
+                print("\n" + "="*70)
+                print("🚨 OPENAI QUOTA EXCEEDED 🚨")
+                print("="*70)
+                print("❌ Your OpenAI API has no credits available")
+                print("💡 GPT-4 Vision requires credits. Add at least $10 to your account.")
+                print("="*70 + "\n")
+            
+            raise Exception(f"Vision API error: {error_msg}")
+    
     async def generate_image(
         self,
         prompt: str,
