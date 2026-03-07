@@ -17,6 +17,7 @@ SERVICES = {
     "auth": "http://localhost:8001",
     "shape": "http://localhost:8003",
     "number": "http://localhost:8004",
+    "measurement": "http://localhost:8002",
 }
 
 # WS Mappings (Websocket uses ws:// instead of http://)
@@ -25,6 +26,7 @@ WS_SERVICES = {
     "auth": "ws://localhost:8001",
     "shape": "ws://localhost:8003",
     "number": "ws://localhost:8004",
+    "measurement": "ws://localhost:8002",
 }
 
 @asynccontextmanager

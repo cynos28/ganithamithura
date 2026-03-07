@@ -14,7 +14,7 @@ echo -e "${BLUE}==============================================${NC}"
 
 # 🧹 Aggressive Cleanup of Orphaned Processes
 echo -e "${YELLOW}🧹 Cleaning up any orphaned processes from previous runs...${NC}"
-lsof -ti:8000,8001,8003,8004,8005,4040 | xargs kill -9 2>/dev/null || true
+lsof -ti:8000,8001,8002,8003,8004,8005,4040 | xargs kill -9 2>/dev/null || true
 killall ngrok 2>/dev/null || true
 sleep 1
 
@@ -63,8 +63,16 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8004 &
 NUMBER_PID=$!
 cd ..
 
+# Start the Unit RAG Service on port 8002
+echo -e "${GREEN}5. Starting Unit RAG Service (Port 8002)...${NC}"
+cd unit-rag-service
+source venv/bin/activate 2>/dev/null || echo "No venv found in unit-rag-service, using global python."
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload &
+UNIT_PID=$!
+cd ..
+
 # Start the Gateway on port 8005
-echo -e "${GREEN}5. Starting Gateway Service (Port 8005)...${NC}"
+echo -e "${GREEN}6. Starting Gateway Service (Port 8005)...${NC}"
 source symbol-service/venv/bin/activate 2>/dev/null # Use a venv that has fastapi/httpx
 python gateway.py &
 GATEWAY_PID=$!
@@ -82,6 +90,7 @@ function cleanup() {
     kill $SYMBOL_PID
     kill $SHAPE_PID
     kill $NUMBER_PID
+    kill $UNIT_PID
     kill $GATEWAY_PID
     echo -e "${GREEN}Goodbye!${NC}"
     exit 0

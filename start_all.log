@@ -5,59 +5,133 @@
 [0;32m1. Starting Auth Service (Port 8001)...[0m
 INFO:     Will watch for changes in these directories: ['/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/auth_service']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [58623] using WatchFiles
-INFO:     Started server process [58626]
+INFO:     Started reloader process [74567] using WatchFiles
+INFO:     Started server process [74574]
 INFO:     Waiting for application startup.
 [0;32m2. Starting Symbol Service (Port 8000)...[0m
 INFO:     Will watch for changes in these directories: ['/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/symbol-service']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [58635] using WatchFiles
+INFO:     Started reloader process [74585] using WatchFiles
 INFO:     Application startup complete.
+INFO:     Started server process [74590]
+INFO:     Waiting for application startup.
 [0;32m3. Starting Shape Service (Port 8003)...[0m
 INFO:     Will watch for changes in these directories: ['/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/shape_service']
 INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
-INFO:     Started reloader process [58648] using WatchFiles
+INFO:     Started reloader process [74593] using WatchFiles
+INFO:src.database.mongodb_connection:Connected to MongoDB database: ganithamithura
+INFO:     Application startup complete.
 [0;32m4. Starting Number Service (Port 8004)...[0m
-[0;32m5. Starting Gateway Service (Port 8005)...[0m
-INFO:     Started server process [58638]
-INFO:     Waiting for application startup.
+[0;32m5. Starting Unit RAG Service (Port 8002)...[0m
+[0;32m6. Starting Gateway Service (Port 8005)...[0m
 INFO:     Will watch for changes in these directories: ['/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/number-service']
 INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
-INFO:     Started reloader process [58660] using StatReload
-INFO:     Started server process [58663]
+INFO:     Started reloader process [74608] using StatReload
+INFO:     Will watch for changes in these directories: ['/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/unit-rag-service']
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     Started reloader process [74611] using WatchFiles
+INFO:     Started server process [74614]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8005 (Press CTRL+C to quit)
-INFO:src.database.mongodb_connection:Connected to MongoDB database: ganithamithura
-INFO:     Application startup complete.
-[0;32m3. Starting Ngrok Tunnels and updating Cloud JSON...[0m
-INFO:     Started server process [58673]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Started server process [58651]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-AsyncIOMotorCollection(Collection(Database(MongoClient(host='mongodb+srv://ganithamithura.79etlwh.mongodb.net', document_class=dict, tz_aware=False, connect=False, driver=DriverInfo(name='Motor', version='3.7.1', platform='asyncio')), 'ganithamithura'), 'users'))
-INFO:     112.134.171.128:0 - "GET / HTTP/1.1" 200 OK
-INFO:httpx:HTTP Request: GET http://localhost:8001/ "HTTP/1.1 200 OK"
-INFO:gateway:Proxying: GET /auth/ -> http://localhost:8001/ [200]
-INFO:     112.134.171.128:0 - "GET /auth/ HTTP/1.1" 200 OK
-INFO:     112.134.171.128:0 - "GET /health HTTP/1.1" 200 OK
-INFO:httpx:HTTP Request: GET http://localhost:8000/health "HTTP/1.1 200 OK"
-INFO:gateway:Proxying: GET /symbol/health -> http://localhost:8000/health [200]
-INFO:     112.134.171.128:0 - "GET /symbol/health HTTP/1.1" 200 OK
-🚀 Starting Ngrok Gateway tunnel...
-🌍 Gateway URL: https://6cff-112-134-171-128.ngrok-free.app
-✅ Symbol API: https://6cff-112-134-171-128.ngrok-free.app/symbol
-✅ Auth API:   https://6cff-112-134-171-128.ngrok-free.app/auth
-✅ Shape API:  https://6cff-112-134-171-128.ngrok-free.app/shape
-✅ Number API: https://6cff-112-134-171-128.ngrok-free.app/number
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Python-dotenv could not parse statement starting at line 64
+Python-dotenv could not parse statement starting at line 67
+Python-dotenv could not parse statement starting at line 68
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientCreateCollectionEvent: capture() takes 1 positional argument but 3 were given
+INFO:     Started server process [74603]
+INFO:     Waiting for application star🚀 Starting Ngrok Gateway tunnel...
+🌍 Gateway URL: https://d66a-112-134-171-128.ngrok-free.app
+✅ Symbol API: https://d66a-112-134-171-128.ngrok-free.app/symbol
+✅ Auth API:   https://d66a-112-134-171-128.ngrok-free.app/auth
+✅ Shape API:  https://d66a-112-134-171-128.ngrok-free.app/shape
+✅ Number API: https://d66a-112-134-171-128.ngrok-free.app/number
 ☁️ Sending URLs to the cloud Gist...
 ✅ Success! Your Flutter app will automatically fetch these URLs on startup.
 
 Press Ctrl+C to stop tunnels and exit.
-./start_all.sh: line 77: 58623 Killed: 9               uvicorn main:app --reload --host 0.0.0.0 --port 8001  (wd: ~/Documents/GitHub/anjana/ganithamithura/auth_service)
-./start_all.sh: line 77: 58635 Killed: 9               uvicorn src.server:app --reload --host 0.0.0.0 --port 8000  (wd: ~/Documents/GitHub/anjana/ganithamithura/symbol-service)
-./start_all.sh: line 77: 58648 Killed: 9               python -m uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload  (wd: ~/Documents/GitHub/anjana/ganithamithura/shape_service)
-./start_all.sh: line 77: 58660 Killed: 9               uvicorn main:app --reload --host 0.0.0.0 --port 8004  (wd: ~/Documents/GitHub/anjana/ganithamithura/number-service)
-./start_all.sh: line 77: 58663 Killed: 9               python gateway.py
+ile and running `ngrok start --all`.
+ERROR:  Read more about the agent configuration file: https://ngrok.com/docs/agent/config/ 
+ERROR:  You can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:
+ERROR:  https://dashboard.ngrok.com/billing/choose-a-plan
+ERROR:  
+ERROR:  ERR_NGROK_108
+ERROR:  https://ngrok.com/docs/errors/err_ngrok_108
+ERROR:  
+t=2026-03-08T03:34:04+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="authentication failed: Your account is limited to 1 simultaneous ngrok agent sessions.\nRun multiple endpoints at the same time from a single agent by defining them in your agent configuration file and running `ngrok start --all`.\nRead more about the agent configuration file: https://ngrok.com/docs/agent/config/ \nYou can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:\nhttps://dashboard.ngrok.com/billing/choose-a-plan\r\n\r\nERR_NGROK_108\r\n"
+t=2026-03-08T03:34:04+0530 lvl=eror msg="session closing" obj=tunnels.session err="authentication failed: Your account is limited to 1 simultaneous ngrok agent sessions.\nRun multiple endpoints at the same time from a single agent by defining them in your agent configuration file and running `ngrok start --all`.\nRead more about the agent configuration file: https://ngrok.com/docs/agent/config/ \nYou can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:\nhttps://dashboard.ngrok.com/billing/choose-a-plan\r\n\r\nERR_NGROK_108\r\n"
+t=2026-03-08T03:34:04+0530 lvl=eror msg="terminating with error" obj=app err="authentication failed: Your account is limited to 1 simultaneous ngrok agent sessions.\nRun multiple endpoints at the same time from a single agent by defining them in your agent configuration file and running `ngrok start --all`.\nRead more about the agent configuration file: https://ngrok.com/docs/agent/config/ \nYou can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:\nhttps://dashboard.ngrok.com/billing/choose-a-plan\r\n\r\nERR_NGROK_108\r\n"
+t=2026-03-08T03:34:04+0530 lvl=crit msg="command failed" err="authentication failed: Your account is limited to 1 simultaneous ngrok agent sessions.\nRun multiple endpoints at the same time from a single agent by defining them in your agent configuration file and running `ngrok start --all`.\nRead more about the agent configuration file: https://ngrok.com/docs/agent/config/ \nYou can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:\nhttps://dashboard.ngrok.com/billing/choose-a-plan\r\n\r\nERR_NGROK_108\r\n"
+t=2026-03-08T03:34:04+0530 lvl=warn msg="failed to check for update" obj=updater err="Post \"https://update.ngrok-agent.com/check\": context canceled"
+🚀 Starting Ngrok Gateway tunnel...
+Traceback (most recent call last):
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/start_tunnels.py", line 64, in <module>
+    update_cloud_urls()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/start_tunnels.py", line 25, in update_cloud_urls
+    gateway_url = ngrok.connect(8005, bind_tls=True).public_url
+                  ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/symbol-service/venv/lib/python3.13/site-packages/pyngrok/ngrok.py", line 335, in connect
+    api_url = get_ngrok_process(pyngrok_config).api_url
+              ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/symbol-service/venv/lib/python3.13/site-packages/pyngrok/ngrok.py", line 202, in get_ngrok_process
+    return process.get_process(pyngrok_config)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/symbol-service/venv/lib/python3.13/site-packages/pyngrok/process.py", line 271, in get_process
+    return _start_process(pyngrok_config)
+  File "/Users/sathsarasithum/Documents/GitHub/anjana/ganithamithura/symbol-service/venv/lib/python3.13/site-packages/pyngrok/process.py", line 447, in _start_process
+    raise PyngrokNgrokError(f"The ngrok process errored on start: {ngrok_process.startup_error}.",
+                            ngrok_process.logs,
+                            ngrok_process.startup_error)
+pyngrok.exception.PyngrokNgrokError: The ngrok process errored on start: authentication failed: Your account is limited to 1 simultaneous ngrok agent sessions.\nRun multiple endpoints at the same time from a single agent by defining them in your agent configuration file and running `ngrok start --all`.\nRead more about the agent configuration file: https://ngrok.com/docs/agent/config/ \nYou can view your current agent sessions in the dashboard: https://dashboard.ngrok.com/agents. Upgrade to a paid plan to remove this limit:\nhttps://dashboard.ngrok.com/billing/choose-a-plan\r\n\r\nERR_NGROK_108\r\n.
+INFO:     Started server process [74619]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+✅ MongoDB connected: ganithamithura_rag
+  ✅ Game parameters for 'length' already exist — skipping
+  ✅ Game parameters for 'area' already exist — skipping
+  ✅ Game parameters for 'volume' already exist — skipping
+  ✅ Game parameters for 'weight' already exist — skipping
+
+============================================================
+🚀 GANITHAMITHURA BACKEND SERVER RUNNING
+============================================================
+📡 Host: 0.0.0.0
+🔌 Port: 8002
+🌍 Environment: development
+📚 API Docs: http://0.0.0.0:8002/docs
+❤️  Health Check: http://0.0.0.0:8002/health
+============================================================
+✅ Waiting for frontend connections...
+============================================================
+
+🔗 Frontend connected - Health check OK
+INFO:     112.134.171.128:0 - "GET /health HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET http://localhost:8002/health "HTTP/1.1 200 OK"
+INFO:gateway:Proxying: GET /measurement/health -> http://localhost:8002/health [200]
+INFO:     112.134.171.128:0 - "GET /measurement/health HTTP/1.1" 200 OK
+./start_all.sh: line 103: 74567 Killed: 9               uvicorn main:app --reload --host 0.0.0.0 --port 8001  (wd: ~/Documents/GitHub/anjana/ganithamithura/auth_service)
+./start_all.sh: line 103: 74585 Killed: 9               uvicorn src.server:app --reload --host 0.0.0.0 --port 8000  (wd: ~/Documents/GitHub/anjana/ganithamithura/symbol-service)
+./start_all.sh: line 103: 74593 Killed: 9               python -m uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload  (wd: ~/Documents/GitHub/anjana/ganithamithura/shape_service)
+./start_all.sh: line 103: 74608 Killed: 9               uvicorn main:app --reload --host 0.0.0.0 --port 8004  (wd: ~/Documents/GitHub/anjana/ganithamithura/number-service)
+./start_all.sh: line 103: 74614 Killed: 9               python gateway.py
+./start_all.sh: line 103: 74611 Killed: 9               python -m uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload  (wd: ~/Documents/GitHub/anjana/ganithamithura/unit-rag-service)

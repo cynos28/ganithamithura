@@ -39,7 +39,7 @@ def update_cloud_urls():
     data = {
         "files": {
             "ganithamithura_urls.json": {
-                "content": f'{{\n  "symbol_api": "{gateway_url}/symbol",\n  "auth_api": "{gateway_url}/auth",\n  "shape_api": "{gateway_url}/shape",\n  "number_api": "{gateway_url}/number"\n}}'
+                "content": f'{{\n  "symbol_api": "{gateway_url}/symbol",\n  "auth_api": "{gateway_url}/auth",\n  "shape_api": "{gateway_url}/shape",\n  "number_api": "{gateway_url}/number",\n  "measurement_api": "{gateway_url}/measurement"\n}}'
             }
         }
     }
