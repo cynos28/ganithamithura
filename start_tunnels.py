@@ -21,12 +21,14 @@ def update_cloud_urls():
         return
 
     print("🚀 Starting Ngrok tunnels...")
-    # Port 8000 (Symbol) and Port 8001 (Auth)
+    # Port 8000 (Symbol), Port 8001 (Auth), Port 8003 (Shape)
     symbol_url = ngrok.connect(8000, bind_tls=True).public_url
     auth_url = ngrok.connect(8001, bind_tls=True).public_url
+    shape_url = ngrok.connect(8003, bind_tls=True).public_url
     
     print(f"✅ Symbol API: {symbol_url}")
     print(f"✅ Auth API:   {auth_url}")
+    print(f"✅ Shape API:  {shape_url}")
 
     print("☁️ Sending URLs to the cloud Gist...")
     headers = {
@@ -37,7 +39,7 @@ def update_cloud_urls():
     data = {
         "files": {
             "ganithamithura_urls.json": {
-                "content": f'{{\n  "symbol_api": "{symbol_url}",\n  "auth_api": "{auth_url}"\n}}'
+                "content": f'{{\n  "symbol_api": "{symbol_url}",\n  "auth_api": "{auth_url}",\n  "shape_api": "{shape_url}"\n}}'
             }
         }
     }
