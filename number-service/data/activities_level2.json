@@ -43,21 +43,12 @@
             "id": "show_11_easy",
             "difficulty": "easy",
             "points": 10,
-<<<<<<< HEAD
             "question": "Can you show me 11 books?",
             "correct_answer": 11,
             "help_text": "Count carefully: 10 + 1 = 11",
             "max_objects": 15,
             "object_name": "books",
             "object_emoji": "📖"
-=======
-            "question": "Can you show me 11 apples?",
-            "correct_answer": 11,
-            "help_text": "Count carefully: 10 + 1 = 11",
-            "max_objects": 15,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_11_medium",
@@ -447,13 +438,8 @@
             "question": "Show 16 items",
             "correct_answer": 16,
             "max_objects": 20,
-<<<<<<< HEAD
             "object_name": "books",
             "object_emoji": "📖"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           }
         ]
       },
@@ -471,13 +457,8 @@
               "16",
               "sixteen"
             ],
-<<<<<<< HEAD
             "object_name": "books",
             "object_emoji": "📖"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           }
         ]
       },

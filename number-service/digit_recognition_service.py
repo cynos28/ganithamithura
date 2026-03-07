@@ -262,12 +262,7 @@ class DigitRecognitionService:
         _, binary = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
         
         # Optional: slight dilation to connect broken strokes within a digit
-<<<<<<< HEAD
-        # Reduced dilation to avoid merging separate digits
-        kernel = np.ones((2, 2), np.uint8)
-=======
         kernel = np.ones((3, 3), np.uint8)
->>>>>>> feature/shape_int
         dilated = cv2.dilate(binary, kernel, iterations=1)
         
         # Find contours
@@ -294,22 +289,13 @@ class DigitRecognitionService:
         bboxes.sort(key=lambda b: b[0])
         
         # Merge overlapping or very close bounding boxes (they belong to the same digit)
-<<<<<<< HEAD
-        # But be more conservative to avoid merging separate digits like "2" and "0"
-=======
->>>>>>> feature/shape_int
+
         merged = [bboxes[0]]
         for box in bboxes[1:]:
             prev = merged[-1]
             prev_right = prev[0] + prev[2]
-<<<<<<< HEAD
-            # Reduced gap threshold to avoid merging separate digits
-            # Only merge if overlapping or gap is tiny (< 15% of digit width)
-            gap_threshold = max(prev[2], box[2]) * 0.15
-=======
             # Merge if horizontally overlapping or gap is small relative to digit width
             gap_threshold = max(prev[2], box[2]) * 0.3
->>>>>>> feature/shape_int
             if box[0] <= prev_right + gap_threshold:
                 # Merge: union of both boxes
                 new_x = min(prev[0], box[0])
@@ -360,11 +346,7 @@ class DigitRecognitionService:
         normalized = resized.astype('float32') / 255.0
         return normalized.reshape(1, 28, 28, 1)
 
-<<<<<<< HEAD
-    def recognize_number(self, image: np.ndarray, save_debug: bool = False, debug_path: str = None) -> dict:
-=======
     def recognize_number(self, image: np.ndarray) -> dict:
->>>>>>> feature/shape_int
         """
         Recognize a multi-digit number from an image.
         
@@ -373,11 +355,6 @@ class DigitRecognitionService:
         
         Args:
             image: NumPy array of image (can be color or grayscale)
-<<<<<<< HEAD
-            save_debug: Whether to save debug visualization
-            debug_path: Path prefix for debug images
-=======
->>>>>>> feature/shape_int
             
         Returns:
             dict with:
@@ -412,19 +389,7 @@ class DigitRecognitionService:
             # Segment into digit regions
             digit_bboxes = self._segment_digits(gray)
             
-<<<<<<< HEAD
-            # Save debug visualization if requested
-            if save_debug and debug_path and digit_bboxes:
-                debug_img = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR) if len(gray.shape) == 2 else image.copy()
-                for i, bbox in enumerate(digit_bboxes):
-                    x, y, w, h = bbox
-                    cv2.rectangle(debug_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                    cv2.putText(debug_img, f"#{i}", (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-                cv2.imwrite(debug_path, debug_img)
-                logger.info(f"💾 Saved segmentation debug image to: {debug_path}")
-            
-=======
->>>>>>> feature/shape_int
+
             if not digit_bboxes:
                 # Fallback: treat entire image as single digit
                 logger.warning("No digit segments found, falling back to single-digit recognition")
@@ -528,11 +493,7 @@ class DigitRecognitionService:
             }
 
     def validate_number(self, image: np.ndarray, expected_number: int,
-<<<<<<< HEAD
-                        confidence_threshold: float = 0.1, save_debug: bool = False, debug_path: str = None) -> dict:
-=======
                         confidence_threshold: float = 0.1) -> dict:
->>>>>>> feature/shape_int
         """
         Validate if drawn number matches expected number (supports multi-digit).
         
@@ -540,20 +501,11 @@ class DigitRecognitionService:
             image: NumPy array of drawn image
             expected_number: The number that should have been drawn
             confidence_threshold: Minimum average confidence for validation
-<<<<<<< HEAD
-            save_debug: Whether to save debug visualization
-            debug_path: Path prefix for debug images
-=======
->>>>>>> feature/shape_int
             
         Returns:
             dict with validation results
         """
-<<<<<<< HEAD
-        result = self.recognize_number(image, save_debug=save_debug, debug_path=debug_path)
-=======
         result = self.recognize_number(image)
->>>>>>> feature/shape_int
         
         if 'error' in result:
             return {

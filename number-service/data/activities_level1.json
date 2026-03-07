@@ -44,17 +44,10 @@
             "points": 10,
             "question": "Can you show me 1 spoon?",
             "correct_answer": 1,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_1.png",
             "max_objects": 3,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_1.png",
-            "max_objects": 3,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_1_medium_1",
@@ -95,13 +88,8 @@
               "1",
               "one"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_1_medium_1",
@@ -223,17 +211,10 @@
             "points": 10,
             "question": "Can you show me 2 spoons?",
             "correct_answer": 2,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_2.png",
             "max_objects": 4,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_2.png",
-            "max_objects": 4,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_2_medium_1",
@@ -274,13 +255,8 @@
               "2",
               "two"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_2_medium_1",
@@ -402,17 +378,10 @@
             "points": 10,
             "question": "Can you show me 3 spoons?",
             "correct_answer": 3,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_3.png",
             "max_objects": 5,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_3.png",
-            "max_objects": 5,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_3_medium_1",
@@ -453,13 +422,8 @@
               "3",
               "three"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_3_medium_1",
@@ -581,17 +545,10 @@
             "points": 10,
             "question": "Can you show me 4 spoons?",
             "correct_answer": 4,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_4.png",
             "max_objects": 6,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_4.png",
-            "max_objects": 6,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_4_medium_1",
@@ -632,13 +589,8 @@
               "4",
               "four"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_4_medium_1",
@@ -760,17 +712,10 @@
             "points": 10,
             "question": "Can you show me 5 spoons?",
             "correct_answer": 5,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_5.png",
             "max_objects": 7,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_5.png",
-            "max_objects": 7,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_5_medium_1",
@@ -811,13 +756,8 @@
               "5",
               "five"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_5_medium_1",
@@ -939,17 +879,10 @@
             "points": 10,
             "question": "Can you show me 6 spoons?",
             "correct_answer": 6,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_6.png",
             "max_objects": 8,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_6.png",
-            "max_objects": 8,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_6_medium_1",
@@ -990,13 +923,8 @@
               "6",
               "six"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_6_medium_1",
@@ -1119,17 +1047,10 @@
             "points": 10,
             "question": "Can you show me 7 spoons?",
             "correct_answer": 7,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_7.png",
             "max_objects": 9,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_7.png",
-            "max_objects": 9,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_7_medium_1",
@@ -1170,13 +1091,8 @@
               "7",
               "seven"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_7_medium_1",
@@ -1298,17 +1214,10 @@
             "points": 10,
             "question": "Can you show me 8 spoons?",
             "correct_answer": 8,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_8.png",
             "max_objects": 10,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_8.png",
-            "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_8_medium_1",
@@ -1349,13 +1258,8 @@
               "8",
               "eight"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_8_medium_1",
@@ -1384,13 +1288,8 @@
               "8",
               "eight"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           }
         ]
       },
@@ -1482,17 +1381,10 @@
             "points": 10,
             "question": "Can you show me 9 spoons?",
             "correct_answer": 9,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_9.png",
             "max_objects": 10,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_9.png",
-            "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_9_medium_1",
@@ -1533,13 +1425,8 @@
               "9",
               "nine"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_9_medium_1",
@@ -1661,17 +1548,10 @@
             "points": 10,
             "question": "Can you show me 10 spoons?",
             "correct_answer": 10,
-<<<<<<< HEAD
             "help_image": "assets/images/spoon_10.png",
             "max_objects": 10,
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "help_image": "assets/images/apple_10.png",
-            "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "show_10_medium_1",
@@ -1712,13 +1592,8 @@
               "10",
               "ten"
             ],
-<<<<<<< HEAD
             "object_name": "spoons",
             "object_emoji": "🥄"
-=======
-            "object_name": "apples",
-            "object_emoji": "🍎"
->>>>>>> feature/shape_int
           },
           {
             "id": "say_10_medium_1",
