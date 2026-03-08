@@ -106,10 +106,18 @@ async def get_leaderboard():
             
         user_name = "Unknown Player"
         try:
+            user = None
             if len(user_id_str) == 24: # Check if it might be a valid ObjectId
                 user = users_collection.find_one({"_id": ObjectId(user_id_str)})
-                if user and "name" in user:
-                    user_name = user["name"]
+            if user is None:
+                user = users_collection.find_one({"_id": user_id_str})
+            if user is None:
+                user = users_collection.find_one({"user_id": user_id_str})
+                
+            if user and "name" in user:
+                user_name = user["name"]
+            elif user and "user_name" in user:
+                user_name = user["user_name"] # Fallback for some older users
         except Exception:
             pass
             

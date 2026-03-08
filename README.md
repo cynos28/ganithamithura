@@ -143,7 +143,7 @@ The script will:
 
 ### Flutter App
 ```bash
-cd ../gmfrontend
+cd gmfrontend
 flutter run
 ```
 
