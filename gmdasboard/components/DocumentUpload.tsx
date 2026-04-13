@@ -181,7 +181,7 @@ export default function DocumentUpload({ onUploadSuccess }: DocumentUploadProps)
               </SelectContent>
             </Select>
             <p className="text-xs text-neutral-500">
-              Questions will be generated specifically for this measurement type
+              📸 Image-based questions available for all measurement topics
             </p>
           </div>
 

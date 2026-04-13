@@ -66,7 +66,7 @@ export default function MeasurementPage() {
   const topics = [
     { id: 'length', name: 'Length', icon: Ruler, units: 'cm, m, km', color: 'blue' },
     { id: 'area', name: 'Area', icon: Square, units: 'cm², m²', color: 'green' },
-    { id: 'capacity', name: 'Capacity', icon: Droplet, units: 'ml, l', color: 'cyan' },
+    { id: 'volume', name: 'Volume', icon: Droplet, units: 'ml, l', color: 'cyan' },
     { id: 'weight', name: 'Weight', icon: WeightIcon, units: 'g, kg', color: 'purple' },
   ];
 
@@ -208,7 +208,9 @@ export default function MeasurementPage() {
           document_id: selectedDocument.id,
           grade_levels: selectedDocument.grade_levels,
           questions_per_grade: parseInt(questionsPerGrade) || 5,
-          question_types: ['mcq', 'short_answer']
+          question_types: ['mcq', 'true_false'],
+          use_rag: false,  // Use full vision analysis instead of RAG chunks
+          use_images: true // Generate questions from measurement images using GPT-4 Vision
         })
       });
 

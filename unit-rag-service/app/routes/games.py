@@ -106,12 +106,21 @@ class DomainProgressSummary(BaseModel):
     difficulty_trend: List[int] = []
 
 
+class CognitiveSkillProgress(BaseModel):
+    name: str
+    description: str
+    emoji: str
+    score: float
+    color_hex: str
+
+
 class MeasurementProgressResponse(BaseModel):
     student_id: str
     overall_accuracy: float
     overall_rounds: int
     overall_stars: int
     domains: List[DomainProgressSummary]
+    cognitive_skills: List[CognitiveSkillProgress]
 
 
 # ─── GET /parameters/{domain} ───────────────────────────────────────────────
@@ -438,12 +447,28 @@ async def get_measurement_progress(student_id: str):
         overall_attempts += d_attempts
         overall_stars += d_stars
 
+    domain_scores = {ds.domain: ds.accuracy for ds in domain_summaries}
+    c_spatial = (domain_scores.get('area', 0.0) + domain_scores.get('length', 0.0)) / 2.0
+    c_logic = (domain_scores.get('weight', 0.0) + domain_scores.get('volume', 0.0)) / 2.0
+    c_estimation = (domain_scores.get('length', 0.0) + domain_scores.get('volume', 0.0)) / 2.0
+    c_conservation = domain_scores.get('weight', 0.0)
+    c_unitizing = domain_scores.get('area', 0.0)
+
+    cognitive_skills = [
+        CognitiveSkillProgress(name="Spatial Reasoning", description="Visualizing and organizing spaces.", emoji="🧩", score=round(c_spatial, 3), color_hex="#2196F3"),
+        CognitiveSkillProgress(name="Logic & Comparing", description="Understanding relationships.", emoji="⚖️", score=round(c_logic, 3), color_hex="#9C27B0"),
+        CognitiveSkillProgress(name="Estimation", description="Making good visual guesses.", emoji="🤔", score=round(c_estimation, 3), color_hex="#FF9800"),
+        CognitiveSkillProgress(name="Conservation", description="Knowing quantity persists.", emoji="🪄", score=round(c_conservation, 3), color_hex="#4CAF50"),
+        CognitiveSkillProgress(name="Using Units", description="Measuring with standard units.", emoji="📏", score=round(c_unitizing, 3), color_hex="#00BCD4"),
+    ]
+
     return MeasurementProgressResponse(
         student_id=student_id,
         overall_accuracy=round(overall_correct / max(overall_rounds, 1), 3),
         overall_rounds=overall_rounds,
         overall_stars=overall_stars,
         domains=domain_summaries,
+        cognitive_skills=cognitive_skills,
     )
 
 
