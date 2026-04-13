@@ -136,58 +136,64 @@ async def upload_document(
         # Auto-generate questions in background after upload
         from app.services.question_generator import question_generator
         try:
-            print(f"🚀 Auto-generating questions for document {document.id} using RAG")
-            questions = await question_generator.generate_questions_for_document(
-                document_id=str(document.id),
-                document_content=text_content,
-                grade_levels=grade_list,
-                topic=topic,  # Pass the topic to focus question generation
-                questions_per_grade=5,  # Generate 5 questions per grade automatically
-                use_rag=True  # Enable RAG for auto-generation
-            )
+            # Check if topic is a measurement topic that has images
+            measurement_topics = ["length", "area", "weight", "volume", "capacity"]
+            use_images = topic.lower() in measurement_topics
+            
+            print(f"🚀 Auto-generating questions for document {document.id} (Topic: {topic}, use_images: {use_images})")
+            
+            # If it's a measurement topic, we want to try image-based generation
+            all_generated_questions = []
+            
+            if use_images:
+                from app.services.image_question_generator import image_question_generator
+                for grade in grade_list:
+                    try:
+                        print(f"📸 Generating image-based questions for Grade {grade}...")
+                        # Retrieve some context for the vision prompt if needed
+                        context = await question_generator.retrieve_relevant_chunks(
+                            document_id=str(document.id),
+                            topic=topic,
+                            grade_level=grade,
+                            num_chunks=2
+                        )
+                        
+                        image_questions = await image_question_generator.generate_image_based_questions(
+                            topic=topic.lower(),
+                            grade_level=grade,
+                            total_questions=3, # Fewer per grade for auto-upload
+                            document_context=context
+                        )
+                        all_generated_questions.extend(image_questions)
+                    except Exception as img_err:
+                        print(f"⚠️ Image generation failed for grade {grade}: {img_err}")
+            
+            # Fill the rest with RAG if needed or if not a measurement topic
+            remaining_per_grade = 5 if not use_images else (5 - 3) # Target 5 total per grade
+            if remaining_per_grade > 0:
+                try:
+                    rag_questions = await question_generator.generate_questions_for_document(
+                        document_id=str(document.id),
+                        document_content=text_content,
+                        grade_levels=grade_list,
+                        topic=topic,
+                        questions_per_grade=remaining_per_grade,
+                        use_rag=True
+                    )
+                    all_generated_questions.extend(rag_questions)
+                except Exception as rag_err:
+                    print(f"⚠️ RAG generation failed: {rag_err}")
             
             # Save generated questions
             from app.models.database import QuestionModel
             question_count = 0
             
-            # Get objects list for image generation based on topic
-            from app.services.question_generator import question_generator
-            domain_context = question_generator._get_domain_context(topic, 2)  # Use grade 2 as middle ground
-            topic_objects = domain_context.get("objects", ["objects"])
-            
-            for q_data in questions:
+            for q_data in all_generated_questions:
                 # Generate unit_id based on document topic and grade
                 unit_id = f"unit_{topic.lower()}_{q_data['grade_level']}" if topic else None
                 
-                # Generate image for this question
-                image_url = None
-                try:
-                    print(f"🎨 Generating image for question: {q_data['question_text'][:50]}...")
-                    
-                    # Generate image prompt from question (with correct answer for accurate proportions)
-                    image_prompt = await llm_client.generate_image_prompt_from_question(
-                        question_text=q_data["question_text"],
-                        topic=topic,
-                        objects=topic_objects,
-                        correct_answer=q_data.get("correct_answer", "")
-                    )
-                    
-                    # Generate the actual image
-                    image_url = await llm_client.generate_image(
-                        prompt=image_prompt,
-                        size="1024x1024",
-                        quality="standard",
-                        base_url=settings.api_base_url
-                    )
-                    
-                    if image_url:
-                        print(f"✅ Image generated for question {question_count + 1}")
-                    else:
-                        print(f"⚠️ No image generated for question {question_count + 1}")
-                        
-                except Exception as img_error:
-                    print(f"⚠️ Image generation failed for question: {str(img_error)}")
-                    image_url = None
+                # IMPORTANT: Use the image_url from generated question data (if any)
+                image_url = q_data.get("image_url")
                 
                 question = QuestionModel(
                     document_id=str(document.id),
@@ -203,7 +209,8 @@ async def upload_document(
                     concepts=q_data.get("concepts", []),
                     explanation=q_data.get("explanation"),
                     hints=q_data.get("hints", []),
-                    image_url=image_url
+                    image_url=image_url,
+                    object_images=q_data.get("object_images")
                 )
                 await question.insert()
                 question_count += 1
@@ -215,6 +222,8 @@ async def upload_document(
             print(f"✅ Auto-generated {question_count} questions for document {document.id}")
         except Exception as e:
             print(f"⚠️ Auto-generation failed (document still uploaded): {str(e)}")
+            import traceback
+            traceback.print_exc()
         
         return DocumentResponse(
             id=str(document.id),
