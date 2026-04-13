@@ -115,7 +115,7 @@ async def generate_questions_task(
         all_questions = []
         
         # Check if topic is a measurement topic that has images
-        measurement_topics = ["length", "area", "weight", "volume"]
+        measurement_topics = ["length", "area", "weight", "volume", "capacity"]
         has_images = document.topic and document.topic.lower() in measurement_topics
         
         for grade in grade_levels:

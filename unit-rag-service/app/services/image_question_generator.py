@@ -25,8 +25,9 @@ class ImageQuestionGenerator:
         self.topic_folders = {
             "length": "length",
             "area": "area",
-            "weight": "weight", 
-            "volume": "volume"
+            "weight": "Weight",
+            "volume": "volume",
+            "capacity": "volume" # Capacity is often used interchangeably with Volume
         }
         
         # Grade-specific vision prompts
@@ -47,7 +48,8 @@ QUESTION TYPES (use variety):
 - "Which one is shorter, the [object1] or the [object2]?"
 - "Which one is bigger, the [object1] or the [object2]?"
 - "Which object is heavier, the [object1] or the [object2]?"
-- "Which one takes more space, the [object1] or the [object2]?"
+- "Which one takes more space (Area), the [object1] or the [object2]?"
+- "Which container holds more (Volume), the [object1] or the [object2]?"
 
 OUTPUT FORMAT:
 - Answer must be one of the objects mentioned
@@ -125,9 +127,9 @@ QUESTION TYPES (analyze image to create):
 - "Look at the picture. Which one is taller/longer/bigger, the [object1] or the [object2]? Explain."
 - "Which object has a larger area of shade/surface, the [object1] or the [object2]?"
 - "If the [object1] is [X] meters tall and the [object2] is [Y] meters tall, which one is taller?"
-- "Which object can hold more things on top/inside, the [object1] or the [object2]? Why?"
+- "Which object can hold more things on top/inside (Volume), the [object1] or the [object2]? Why?"
 - "Which object is usually heavier, a [object1] or a [object2]? Estimate the difference."
-- "Which one takes more space, the [object1] or the [object2]? Calculate the approximate difference."
+- "Calculate or estimate which surface has a larger area: [object1] or [object2]?"
 - "Based on the image, estimate the height/length/area/volume of the [object]."
 
 OUTPUT FORMAT:
@@ -311,7 +313,8 @@ Generate exactly {num_questions} visual comparison questions now in valid JSON f
                 raise
             
             # Add image URL to each question
-            image_url = f"/static/images/{topic}/{image_path.name}"
+            folder_name = self.topic_folders.get(topic.lower(), topic.lower())
+            image_url = f"/static/images/{folder_name}/{image_path.name}"
             
             questions = []
             for q in questions_data.get("questions", []):
