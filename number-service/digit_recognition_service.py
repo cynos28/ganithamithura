@@ -5,8 +5,10 @@ Uses TensorFlow/Keras with MNIST model to recognize handwritten digits
 
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageOps
 import io
+import os
+from datetime import datetime
 import base64
 import logging
 
@@ -31,12 +33,11 @@ class DigitRecognitionService:
         self.model = None
         self._load_model()
         self._initialized = True
-    
+
     def _load_model(self):
         """Load custom digit recognition model"""
         try:
             import tensorflow as tf
-            from tensorflow import keras
             import os
             
             logger.info("Loading custom digit recognition model...")
@@ -46,7 +47,7 @@ class DigitRecognitionService:
             
             if os.path.exists(model_path):
                 # Load your custom trained model
-                self.model = keras.models.load_model(model_path)
+                self.model = tf.keras.models.load_model(model_path)
                 logger.info(f"✅ Loaded custom digit model from {model_path}")
                 logger.info(f"   Model input shape: {self.model.input_shape}")
                 logger.info(f"   Model output shape: {self.model.output_shape}")
@@ -55,14 +56,14 @@ class DigitRecognitionService:
                 logger.info("Building default model architecture...")
                 
                 # Build the same architecture as in HandWritten.ipynb
-                self.model = keras.models.Sequential([
-                    keras.layers.Conv2D(32, (3,3), activation="relu", input_shape=(28,28,1)),
-                    keras.layers.MaxPooling2D(),
-                    keras.layers.Conv2D(64, (3,3), activation="relu"),
-                    keras.layers.MaxPooling2D(),
-                    keras.layers.Flatten(),
-                    keras.layers.Dense(128, activation="relu"),
-                    keras.layers.Dense(10, activation="softmax")
+                self.model = tf.keras.models.Sequential([
+                    tf.keras.layers.Conv2D(32, (3,3), activation="relu", input_shape=(28,28,1)),
+                    tf.keras.layers.MaxPooling2D(),
+                    tf.keras.layers.Conv2D(64, (3,3), activation="relu"),
+                    tf.keras.layers.MaxPooling2D(),
+                    tf.keras.layers.Flatten(),
+                    tf.keras.layers.Dense(128, activation="relu"),
+                    tf.keras.layers.Dense(10, activation="softmax")
                 ])
                 
                 self.model.compile(
@@ -81,54 +82,21 @@ class DigitRecognitionService:
             self.model = None
     
     def preprocess_image(self, image: np.ndarray) -> np.ndarray:
-        """Preprocess image for digit recognition"""
+        """Preprocess single-digit image (replicates original.py upload pipeline)."""
         try:
             if image is None:
                 logger.error("Image is None")
                 return np.zeros((1, 28, 28, 1), dtype=np.float32)
             
-            # Convert to grayscale if needed
-            if len(image.shape) == 3:
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            else:
-                gray = image
-            
-            # NO INVERSION NEEDED - Flutter app sends white digits on black background
-            # which matches the training data format from HandWritten.ipynb
-            
-            # Find bounding box of drawn content
-            coords = cv2.findNonZero(gray)
-            if coords is None:
-                logger.warning("No content found in image")
-                return np.zeros((1, 28, 28, 1), dtype=np.float32)
-            
-            x, y, w, h = cv2.boundingRect(coords)
-            
-            # Add padding
-            padding = 20
-            x = max(0, x - padding)
-            y = max(0, y - padding)
-            w = min(gray.shape[1] - x, w + 2 * padding)
-            h = min(gray.shape[0] - y, h + 2 * padding)
-            
-            # Crop to content
-            cropped = gray[y:y+h, x:x+w]
-            
-            # Resize to square with aspect ratio
-            size = max(w, h)
-            square = np.zeros((size, size), dtype=np.uint8)
-            x_offset = (size - w) // 2
-            y_offset = (size - h) // 2
-            square[y_offset:y_offset+h, x_offset:x_offset+w] = cropped
-            
-            # Resize to 28x28 (MNIST size)
-            resized = cv2.resize(square, (28, 28), interpolation=cv2.INTER_AREA)
-            
-            # Normalize
-            normalized = resized.astype('float32') / 255.0
+            pil_image = Image.fromarray(image).convert("L")
+
+            self.save_debug_image(pil_image.copy(), "upload_raw")
+            resized = pil_image.resize((28, 28))
+            resized = np.array(resized) / 255.0
+            self.save_debug_image(Image.fromarray((resized * 255).astype(np.uint8)), "upload_processed")
             
             # Reshape for model input
-            processed = normalized.reshape(1, 28, 28, 1)
+            processed = resized.reshape(1, 28, 28, 1)
             
             logger.info(f"Image preprocessed: {image.shape} -> (28, 28)")
             
@@ -174,19 +142,23 @@ class DigitRecognitionService:
                     'top_3_predictions': []
                 }
             
+            # pred = model.predict(img_array)
+            # digit = np.argmax(pred)
+            # confidence = np.max(pred) * 100
+
             # Get prediction
             predictions = self.model.predict(processed_image, verbose=0)
             probabilities = predictions[0].tolist()
             
             # Get predicted digit and confidence
-            predicted_digit = int(np.argmax(probabilities))
-            confidence = float(probabilities[predicted_digit])
+            predicted_digit = np.argmax(predictions)
+            confidence = np.max(predictions)
             
             logger.info(f"Predicted digit: {predicted_digit} (confidence: {confidence:.2%})")
             
             return {
-                'predicted_digit': predicted_digit,
-                'confidence': confidence,
+                'predicted_digit': int(predicted_digit),
+                'confidence': float(confidence),
                 'probabilities': probabilities,
                 'top_3_predictions': self._get_top_predictions(probabilities, 3)
             }
@@ -203,26 +175,23 @@ class DigitRecognitionService:
     def recognize_from_base64(self, base64_image: str) -> dict:
         """Recognize digit from base64 encoded image"""
         try:
-            import os
-            from datetime import datetime
             
             # Decode base64
             image_data = base64.b64decode(base64_image)
-            nparr = np.frombuffer(image_data, np.uint8)
-            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            image = Image.open(io.BytesIO(image_data)).convert("L")
             
             if image is None:
                 raise ValueError("Failed to decode image")
             
-            # Save incoming image for debugging
-            debug_dir = "debug_images"
-            os.makedirs(debug_dir, exist_ok=True)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-            debug_path = os.path.join(debug_dir, f"incoming_{timestamp}.png")
-            cv2.imwrite(debug_path, image)
-            logger.info(f"💾 Saved incoming image to: {debug_path}")
+            # # Save incoming image for debugging
+            # debug_dir = "debug_images"
+            # os.makedirs(debug_dir, exist_ok=True)
+            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            # debug_path = os.path.join(debug_dir, f"incoming_{timestamp}.png")
+            # cv2.imwrite(debug_path, image)
+            # logger.info(f"💾 Saved incoming image to: {debug_path}")
             
-            return self.recognize_digit(image)
+            return self.recognize_digit(np.array(image))
             
         except Exception as e:
             logger.error(f"Error decoding base64 image: {e}")
@@ -505,6 +474,7 @@ class DigitRecognitionService:
         Returns:
             dict with validation results
         """
+        
         result = self.recognize_number(image)
         
         if 'error' in result:
@@ -587,6 +557,14 @@ class DigitRecognitionService:
             'top_3_predictions': result.get('top_3_predictions', [])
         }
 
+    def save_debug_image(self, img, prefix):
+        """Save a debug snapshot before preprocessing."""
+        debug_dir = "debug_images"
+        os.makedirs(debug_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        path = os.path.join(debug_dir, f"{prefix}_{timestamp}.png")
+        img.save(path)
+        print(f"Saved debug image: {path}")
 
 # Singleton instance
 _service_instance = None
