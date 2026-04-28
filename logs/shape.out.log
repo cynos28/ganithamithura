@@ -1,0 +1,260 @@
+get_user_progress for devuser: highest_passed_level=4
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 47, 681000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'status': 'pass', 'attempt_history': [{'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 36, 329000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q4', 'your_answer': 'WRONG', 'correct_answer': 'Cylinder'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 36, 766000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 37, 185000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q4', 'your_answer': 'WRONG', 'correct_answer': 'Cylinder'}]}]}, '5': {'status': 'fail', 'attempt_history': []}, '6': {'status': 'fail', 'attempt_history': []}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=False, locked=False, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33628 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_build_match_progress for devuser: highest_build_challenge=0
+Build match progress data: {}
+Build Challenge 1: passed=False, locked=False, status=fail
+Build Challenge 2: passed=False, locked=True, status=fail
+Build Challenge 3: passed=False, locked=True, status=fail
+Build Challenge 4: passed=False, locked=True, status=fail
+Build Challenge 5: passed=False, locked=True, status=fail
+Build Challenge 6: passed=False, locked=True, status=fail
+Build Challenge 7: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33630 - "GET /shapes-patterns/game/build-match-progress HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=4
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 47, 681000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'status': 'pass', 'attempt_history': [{'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 36, 329000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q4', 'your_answer': 'WRONG', 'correct_answer': 'Cylinder'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 36, 766000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 39, 37, 185000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q4', 'your_answer': 'WRONG', 'correct_answer': 'Cylinder'}]}]}, '5': {'status': 'fail', 'attempt_history': []}, '6': {'status': 'fail', 'attempt_history': []}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=False, locked=False, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33632 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=2
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=False, locked=False, status=fail
+Level 4: passed=False, locked=True, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33636 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+Updating user devuser - Level: 3, Status: pass, Score: 4/4
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 3
+INFO:     192.168.8.126:33638 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33640 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33642 - "GET /shapes-patterns/game/start?game_id=level4 HTTP/1.1" 200 OK
+Updating user devuser - Level: 4, Status: fail, Score: 3/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 3
+INFO:     192.168.8.126:33644 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 3, 10, 658000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q10', 'your_answer': 'Cylinder', 'correct_answer': 'Tin can shape'}]}], 'status': 'fail'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33646 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 3, 10, 658000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q10', 'your_answer': 'Cylinder', 'correct_answer': 'Tin can shape'}]}], 'status': 'fail'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33648 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33650 - "GET /shapes-patterns/game/start?game_id=level4 HTTP/1.1" 200 OK
+Updating user devuser - Level: 4, Status: pass, Score: 5/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 4
+INFO:     192.168.8.126:33654 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=4
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 3, 10, 658000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q10', 'your_answer': 'Cylinder', 'correct_answer': 'Tin can shape'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 4, 13, 188000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=False, locked=False, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33656 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33660 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33662 - "GET /shapes-patterns/game/start?game_id=level4 HTTP/1.1" 200 OK
+Updating user devuser - Level: 4, Status: fail, Score: 3/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 3
+INFO:     192.168.8.126:33664 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}], 'status': 'fail'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33666 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33668 - "GET /shapes-patterns/game/start?game_id=level4 HTTP/1.1" 200 OK
+Updating user devuser - Level: 4, Status: fail, Score: 4/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 3
+INFO:     192.168.8.126:33670 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=3
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}], 'status': 'fail'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=False, locked=False, status=fail
+Level 5: passed=False, locked=True, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33672 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33674 - "GET /shapes-patterns/game/start?game_id=level4 HTTP/1.1" 200 OK
+Updating user devuser - Level: 4, Status: pass, Score: 5/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 4
+INFO:     192.168.8.126:33676 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=4
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 11, 286000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=False, locked=False, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33678 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33680 - "GET /shapes-patterns/game/start?game_id=level5 HTTP/1.1" 200 OK
+Updating user devuser - Level: 5, Status: fail, Score: 2/3
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 4
+INFO:     192.168.8.126:33682 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=4
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 11, 286000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '5': {'attempt_history': [{'level': 5, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 34, 103000), 'score': 2, 'total_questions': 3, 'wrongly_answered_questions': [{'question_id': 'p3', 'your_answer': 'Triangle', 'correct_answer': 'Circle'}]}], 'status': 'fail'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=False, locked=False, status=fail
+Level 6: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33684 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33686 - "GET /shapes-patterns/game/start?game_id=level5 HTTP/1.1" 200 OK
+Updating user devuser - Level: 5, Status: pass, Score: 3/3
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 5
+INFO:     192.168.8.126:33690 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=5
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 11, 286000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '5': {'attempt_history': [{'level': 5, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 34, 103000), 'score': 2, 'total_questions': 3, 'wrongly_answered_questions': [{'question_id': 'p3', 'your_answer': 'Triangle', 'correct_answer': 'Circle'}]}, {'level': 5, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 48, 850000), 'score': 3, 'total_questions': 3, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=True, locked=False, status=pass
+Level 6: passed=False, locked=False, status=fail
+INFO:     192.168.8.126:33692 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33694 - "GET /shapes-patterns/game/start?game_id=level6 HTTP/1.1" 200 OK
+Updating user devuser - Level: 6, Status: pass, Score: 5/5
+[DEBUG] About to update database for user devuser
+[DEBUG] Database update successful
+User devuser highest_passed_level is now: 6
+INFO:     192.168.8.126:33696 - "POST /shapes-patterns/game/check-answers HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=6
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 11, 286000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '5': {'attempt_history': [{'level': 5, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 34, 103000), 'score': 2, 'total_questions': 3, 'wrongly_answered_questions': [{'question_id': 'p3', 'your_answer': 'Triangle', 'correct_answer': 'Circle'}]}, {'level': 5, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 48, 850000), 'score': 3, 'total_questions': 3, 'wrongly_answered_questions': []}], 'status': 'pass'}, '6': {'attempt_history': [{'level': 6, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 9, 16, 236000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=True, locked=False, status=pass
+Level 6: passed=True, locked=False, status=pass
+INFO:     192.168.8.126:33698 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_user_progress for devuser: highest_passed_level=6
+Level progress data: {'1': {'attempt_history': [{'level': 1, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 6, 18, 281000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '2': {'attempt_history': [{'level': 2, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 0, 7, 14, 590000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '3': {'attempt_history': [{'level': 3, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 2, 14, 71000), 'score': 4, 'total_questions': 4, 'wrongly_answered_questions': []}], 'status': 'pass'}, '4': {'attempt_history': [{'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 6, 24, 291000), 'score': 3, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q1', 'your_answer': 'Cylinder', 'correct_answer': 'Sphere'}, {'question_id': 'q7', 'your_answer': 'Sphere', 'correct_answer': 'Ball'}]}, {'level': 4, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 7, 26, 116000), 'score': 4, 'total_questions': 5, 'wrongly_answered_questions': [{'question_id': 'q8', 'your_answer': 'Cone', 'correct_answer': 'Ice-cream cone'}]}, {'level': 4, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 11, 286000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}, '5': {'attempt_history': [{'level': 5, 'status': 'fail', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 34, 103000), 'score': 2, 'total_questions': 3, 'wrongly_answered_questions': [{'question_id': 'p3', 'your_answer': 'Triangle', 'correct_answer': 'Circle'}]}, {'level': 5, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 8, 48, 850000), 'score': 3, 'total_questions': 3, 'wrongly_answered_questions': []}], 'status': 'pass'}, '6': {'attempt_history': [{'level': 6, 'status': 'pass', 'timestamp': datetime.datetime(2026, 4, 28, 1, 9, 16, 236000), 'score': 5, 'total_questions': 5, 'wrongly_answered_questions': []}], 'status': 'pass'}}
+Level 1: passed=True, locked=False, status=pass
+Level 2: passed=True, locked=False, status=pass
+Level 3: passed=True, locked=False, status=pass
+Level 4: passed=True, locked=False, status=pass
+Level 5: passed=True, locked=False, status=pass
+Level 6: passed=True, locked=False, status=pass
+INFO:     192.168.8.126:33700 - "GET /shapes-patterns/game/user-progress HTTP/1.1" 200 OK
+get_build_match_progress for devuser: highest_build_challenge=0
+Build match progress data: {}
+Build Challenge 1: passed=False, locked=False, status=fail
+Build Challenge 2: passed=False, locked=True, status=fail
+Build Challenge 3: passed=False, locked=True, status=fail
+Build Challenge 4: passed=False, locked=True, status=fail
+Build Challenge 5: passed=False, locked=True, status=fail
+Build Challenge 6: passed=False, locked=True, status=fail
+Build Challenge 7: passed=False, locked=True, status=fail
+INFO:     192.168.8.126:33702 - "GET /shapes-patterns/game/build-match-progress HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33712 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33714 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33716 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33718 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33720 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33722 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33724 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33726 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33728 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33730 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33732 - "GET /shapes-patterns/shapes/type/2d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33734 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33736 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33738 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33740 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33742 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33744 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33746 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33748 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33750 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33752 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33754 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33756 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33758 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33760 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33762 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33764 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33766 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33768 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33770 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33772 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33774 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33776 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33778 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33780 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33782 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33784 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33786 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33788 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33790 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33792 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33794 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33796 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33798 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33800 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33802 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33804 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33806 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33808 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33810 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33812 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
+INFO:     192.168.8.126:33814 - "GET /shapes-patterns/shapes/type/3d HTTP/1.1" 200 OK
