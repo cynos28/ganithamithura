@@ -6,7 +6,8 @@ import json
 import random
 from pathlib import Path
 from datetime import datetime
-import base64
+import os
+from datetime import datetime
 import cv2
 import numpy as np
 from object_detection_service import get_detection_service
@@ -326,7 +327,12 @@ async def get_beginner_test():
         
         # Get 2 easy questions from each JSON activity type
         for activity_type in ['trace', 'show', 'say', 'read']:
-            json_qs = get_activity_questions_from_json(activity_type, difficulty='easy', count=2)
+            json_qs = get_activity_questions_from_json(
+                activity_type,
+                difficulty='easy',
+                count=2,
+                levels=[1],
+            )
             for q in json_qs:
                 questions.append(convert_json_to_test_question(q, activity_type, q['number']))
         
@@ -931,19 +937,24 @@ class ProgressTestSubmission(BaseModel):
     answers: List[Dict[str, Any]]
 
 
-def get_activity_questions_from_json(activity_type: str, difficulty: str = None, count: int = 1) -> List[Dict[str, Any]]:
+def get_activity_questions_from_json(
+    activity_type: str,
+    difficulty: str = None,
+    count: int = 1,
+    levels: Optional[List[int]] = None,
+) -> List[Dict[str, Any]]:
     """Extract questions from existing JSON activity data"""
     questions = []
     
     try:
-        # Load both levels
-        level1_data = load_activities_data(1)
-        level2_data = load_activities_data(2)
-        
-        # Collect all numbers from both levels
+        # Default to currently implemented levels when none are specified.
+        selected_levels = levels if levels is not None else [1, 2]
+
+        # Collect all numbers from selected levels.
         all_numbers = {}
-        all_numbers.update(level1_data.get('numbers', {}))
-        all_numbers.update(level2_data.get('numbers', {}))
+        for level in selected_levels:
+            level_data = load_activities_data(level)
+            all_numbers.update(level_data.get('numbers', {}))
         
         # Extract questions of the specified type
         available_questions = []
@@ -1003,13 +1014,13 @@ def convert_json_to_test_question(q: Dict, activity_type: str, number: int) -> D
             ])))[:4]
             
             object_name = q.get('object_name', 'objects')
-            # Don't reveal the answer in the question!
+            # Keep image-counting prompts aligned with image_counting interactions.
             return {
                 "id": q.get('id', f"show_{number}_{q.get('difficulty', 'easy')}"),
                 "type": "image_counting",
                 "difficulty": q.get('difficulty', 'easy'),
                 "points": q.get('points', 10),
-                "question": q.get('question', f"How many {object_name} do you see?"),
+                "question": f"How many {object_name} do you see in the picture?",
                 "instruction": "Count the objects",
                 "help_image": q.get('help_image'),
                 "object_name": object_name,
@@ -1294,27 +1305,34 @@ async def recognize_digit(request: DigitRecognitionRequest):
     """
     try:        
         recognition_service = get_recognition_service()
+        decoded_image = None
         
         # Determine if we need multi-digit recognition
         use_multi_digit = (
             request.expected_digit is not None and request.expected_digit >= 10
         )
         
+        # Decode once for optional debug logging and multi-digit validation path.
+        try:
+            import base64 as b64
+
+            image_data = b64.b64decode(request.image)
+            nparr = np.frombuffer(image_data, np.uint8)
+            decoded_image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        except Exception:
+            # Debug image persistence should never block the API response.
+            decoded_image = None
+        
         if use_multi_digit:
             # Multi-digit recognition path
             if request.expected_digit is not None:
                 # Validation mode for multi-digit numbers
-                import base64 as b64
-
-                image_data = b64.b64decode(request.image)
-                nparr = np.frombuffer(image_data, np.uint8)
-                image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                if image is None:
+                if decoded_image is None:
                     raise HTTPException(status_code=400, detail="Failed to decode image")
-                
+
                 validation_result = recognition_service.validate_number(
-                    image=image,
+                    image=decoded_image,
                     expected_number=request.expected_digit,
                     confidence_threshold=request.confidence_threshold
                 )
@@ -1384,6 +1402,7 @@ async def recognize_digit(request: DigitRecognitionRequest):
                 
                 return result
         
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -1450,14 +1469,6 @@ async def recognize_number(request: DigitRecognitionRequest):
             status_code=500,
             detail=f"Error during number recognition: {str(e)}"
         )
-
-
-# Removed unused endpoint: /recognize/digit/upload
-
-# TODO: Phase 2 - Additional endpoints
-# @app.post("/progress/sync")
-# @app.get("/user/{user_id}/progress")
-# @app.post("/user/{user_id}/activity/{activity_id}/complete")
 
 
 if __name__ == "__main__":
