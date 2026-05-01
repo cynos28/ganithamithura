@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-GIST_ID = "a03d59a6c3a4e84f0688591151f6fd30"
+GIST_ID = "a7c05a2ca61b4646e1e641102b9cf2a8"
 
 def update_cloud_urls():
     if not GITHUB_TOKEN:
