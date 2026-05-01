@@ -294,48 +294,12 @@ class AIMathTutor:
             return None
 
     def _generate_correct_feedback(self, answer: float, question_text: str) -> str:
-        """Generate AI feedback for correct answer."""
-        if not self.openai_client:
-            return f"Correct! The answer is {answer}."
-            
-        try:
-            prompt = get_correct_answer_feedback_prompt(answer, question_text, self.student_profile.grade)
-            system = get_feedback_system_prompt()
-            
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.8,
-                max_tokens=60
-            )
-            return response.choices[0].message.content.strip()
-        except:
-            return f"Excellent! {answer} is correct!"
+        """Generate simple feedback for correct answer."""
+        return "Success"
 
     def _generate_wrong_feedback(self, user_answer: int, correct_answer: float, question_text: str, expression: str) -> str:
-        """Generate AI feedback for wrong answer."""
-        if not self.openai_client:
-            return f"Not quite. The answer is {correct_answer}."
-
-        try:
-            prompt = get_wrong_answer_feedback_prompt(user_answer, correct_answer, question_text, expression, self.student_profile.grade)
-            system = get_feedback_system_prompt()
-            
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=80
-            )
-            return response.choices[0].message.content.strip()
-        except:
-             return f"The correct answer is {correct_answer}."
+        """Generate simple feedback for wrong answer."""
+        return "Incorrect"
 
     def get_user_input(self):
         return input().strip()

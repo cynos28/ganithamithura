@@ -1,8 +1,8 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:ganithamithura/models/models.dart';
@@ -1282,15 +1282,72 @@ class _TraceQuestionWidgetState extends State<TraceQuestionWidget> {
   String? _feedback;
   int? _predictedDigit;
 
-  /// Capture the drawing canvas as a PNG image
+  /// Capture the drawing canvas as a PNG image with proper formatting
+  /// Converts to BLACK background with WHITE strokes for MNIST model
   Future<Uint8List?> _captureCanvas() async {
     try {
-      final boundary = _canvasKey.currentContext?.findRenderObject()
-          as RenderRepaintBoundary?;
-      if (boundary == null) return null;
+      // Get the actual render box size
+      final RenderBox? renderBox =
+          _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox == null) {
+        debugPrint('Error: Could not get render box');
+        return null;
+      }
 
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final size = renderBox.size;
+
+      // Create a custom painter with BLACK background and WHITE strokes
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+
+      // Draw BLACK background (MNIST expects white digits on black)
+      final backgroundPaint = Paint()..color = Colors.black;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        backgroundPaint,
+      );
+
+      // Draw strokes in WHITE
+      final strokePaint = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 8.0
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      // Draw all completed strokes
+      for (final stroke in _strokes) {
+        if (stroke.length < 2) continue;
+        final path = Path();
+        path.moveTo(stroke[0].dx, stroke[0].dy);
+        for (int i = 1; i < stroke.length; i++) {
+          path.lineTo(stroke[i].dx, stroke[i].dy);
+        }
+        canvas.drawPath(path, strokePaint);
+      }
+
+      // Draw current stroke if any
+      if (_currentStroke.length >= 2) {
+        final path = Path();
+        path.moveTo(_currentStroke[0].dx, _currentStroke[0].dy);
+        for (int i = 1; i < _currentStroke.length; i++) {
+          path.lineTo(_currentStroke[i].dx, _currentStroke[i].dy);
+        }
+        canvas.drawPath(path, strokePaint);
+      }
+
+      final picture = recorder.endRecording();
+
+      // Use the actual canvas size for the image
+      final image = await picture.toImage(
+        size.width.toInt(),
+        size.height.toInt(),
+      );
+
+      ByteData? byteData = await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
       return byteData?.buffer.asUint8List();
     } catch (e) {
       debugPrint('Error capturing canvas: $e');
@@ -1692,6 +1749,9 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
     await _speech.cancel();
     await Future.delayed(const Duration(milliseconds: 100));
 
+    // Provide haptic feedback when starting microphone
+    HapticFeedback.heavyImpact();
+
     setState(() {
       _isListening = true;
       _recognizedText = '';
@@ -1719,13 +1779,17 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
   }
 
   void _stopListeningAndCheck() async {
-    if (!_isListening) return; // guard against double-invocation
+    if (!_isListening || _submitted) return; // guard against double-invocation
+    
+    // Provide haptic feedback when stopping microphone
+    HapticFeedback.heavyImpact();
+    
     await _speech.stop();
     setState(() {
       _isListening = false;
     });
 
-    if (_recognizedText.isNotEmpty) {
+    if (_recognizedText.isNotEmpty && !_submitted) {
       _checkAnswer(_recognizedText.toLowerCase().trim());
     }
   }
@@ -1752,6 +1816,36 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
     });
 
     widget.onAnswered(isCorrect, answer);
+  }
+
+  Future<void> _resetSpeech() async {
+    try {
+      // Cancel current session
+      await _speech.cancel();
+      
+      // Reset state
+      setState(() {
+        _isListening = false;
+        _recognizedText = '';
+      });
+      
+      // Wait a bit before reinitializing
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Reinitialize speech
+      await _initSpeech();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Speech recognition reset'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error resetting speech: $e');
+    }
   }
 
   @override
@@ -1944,6 +2038,16 @@ class _SayQuestionWidgetState extends State<SayQuestionWidget> {
                   child: const Text('Use number pad instead'),
                 ),
               ],
+              // Reset button for speech issues
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: _resetSpeech,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Reset Microphone'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey[700],
+                ),
+              ),
             ],
           ),
 

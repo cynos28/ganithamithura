@@ -42,12 +42,12 @@
             "id": "show_1_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 1 apple?",
+            "question": "Can you show me 1 spoon?",
             "correct_answer": 1,
-            "help_image": "assets/images/apple_1.png",
+            "help_image": "assets/images/spoon_1.png",
             "max_objects": 3,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_1_medium_1",
@@ -81,15 +81,15 @@
             "difficulty": "easy",
             "points": 10,
             "image": "assets/images/apple_1.png",
-            "question": "Count the apples and say the number",
+            "question": "Count the spoons and say the number",
             "correct_answer": 1,
             "pronounce": "one (won)",
             "alternatives": [
               "1",
               "one"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_1_medium_1",
@@ -134,10 +134,10 @@
             "question": "Select the number: ONE",
             "options": [
               "1",
-              "1",
-              "2"
+              "2",
+              "3"
             ],
-            "answer": "1"
+            "correct_answer": "1"
           },
           {
             "id": "read_1_medium_1",
@@ -147,10 +147,10 @@
             "question": "Select the word for: 1",
             "options": [
               "one",
-              "one",
-              "two"
+              "two",
+              "three"
             ],
-            "answer": "one"
+            "correct_answer": "one"
           },
           {
             "id": "read_1_hard_1",
@@ -160,10 +160,10 @@
             "question": "Which number comes first?",
             "options": [
               "1",
-              "1",
-              "2"
+              "2",
+              "3"
             ],
-            "answer": "1"
+            "correct_answer": "1"
           }
         ]
       }
@@ -209,12 +209,12 @@
             "id": "show_2_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 2 apples?",
+            "question": "Can you show me 2 spoons?",
             "correct_answer": 2,
-            "help_image": "assets/images/apple_2.png",
+            "help_image": "assets/images/spoon_2.png",
             "max_objects": 4,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_2_medium_1",
@@ -248,15 +248,15 @@
             "difficulty": "easy",
             "points": 10,
             "image": "assets/images/apple_2.png",
-            "question": "Count the apples and say the number",
+            "question": "Count the spoons and say the number",
             "correct_answer": 2,
             "pronounce": "two (too)",
             "alternatives": [
               "2",
               "two"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_2_medium_1",
@@ -304,7 +304,7 @@
               "2",
               "3"
             ],
-            "answer": "2"
+            "correct_answer": "2"
           },
           {
             "id": "read_2_medium_1",
@@ -317,7 +317,7 @@
               "two",
               "three"
             ],
-            "answer": "two"
+            "correct_answer": "two"
           },
           {
             "id": "read_2_hard_1",
@@ -330,7 +330,7 @@
               "2",
               "3"
             ],
-            "answer": "2"
+            "correct_answer": "2"
           }
         ]
       }
@@ -376,12 +376,12 @@
             "id": "show_3_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 3 apples?",
+            "question": "Can you show me 3 spoons?",
             "correct_answer": 3,
-            "help_image": "assets/images/apple_3.png",
+            "help_image": "assets/images/spoon_3.png",
             "max_objects": 5,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_3_medium_1",
@@ -414,16 +414,16 @@
             "id": "say_3_easy",
             "difficulty": "easy",
             "points": 10,
-            "image": "assets/images/apple_3.png",
-            "question": "Count the apples and say the number",
+            "image": "assets/images/spoon_3.png",
+            "question": "Count the spoons and say the number",
             "correct_answer": 3,
             "pronounce": "three (thri)",
             "alternatives": [
               "3",
               "three"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_3_medium_1",
@@ -471,7 +471,7 @@
               "3",
               "4"
             ],
-            "answer": "3"
+            "correct_answer": "3"
           },
           {
             "id": "read_3_medium_1",
@@ -484,7 +484,7 @@
               "three",
               "four"
             ],
-            "answer": "three"
+            "correct_answer": "three"
           },
           {
             "id": "read_3_hard_1",
@@ -497,7 +497,7 @@
               "3",
               "4"
             ],
-            "answer": "3"
+            "correct_answer": "3"
           }
         ]
       }
@@ -543,12 +543,12 @@
             "id": "show_4_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 4 apples?",
+            "question": "Can you show me 4 spoons?",
             "correct_answer": 4,
-            "help_image": "assets/images/apple_4.png",
+            "help_image": "assets/images/spoon_4.png",
             "max_objects": 6,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_4_medium_1",
@@ -582,15 +582,15 @@
             "difficulty": "easy",
             "points": 10,
             "image": "assets/images/apple_4.png",
-            "question": "Count the apples and say the number",
+            "question": "Count the spoons and say the number",
             "correct_answer": 4,
             "pronounce": "four (for)",
             "alternatives": [
               "4",
               "four"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_4_medium_1",
@@ -638,7 +638,7 @@
               "4",
               "5"
             ],
-            "answer": "4"
+            "correct_answer": "4"
           },
           {
             "id": "read_4_medium_1",
@@ -651,7 +651,7 @@
               "four",
               "five"
             ],
-            "answer": "four"
+            "correct_answer": "four"
           },
           {
             "id": "read_4_hard_1",
@@ -664,7 +664,7 @@
               "4",
               "5"
             ],
-            "answer": "4"
+            "correct_answer": "4"
           }
         ]
       }
@@ -710,12 +710,12 @@
             "id": "show_5_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 5 apples?",
+            "question": "Can you show me 5 spoons?",
             "correct_answer": 5,
-            "help_image": "assets/images/apple_5.png",
+            "help_image": "assets/images/spoon_5.png",
             "max_objects": 7,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_5_medium_1",
@@ -748,16 +748,16 @@
             "id": "say_5_easy",
             "difficulty": "easy",
             "points": 10,
-            "image": "assets/images/apple_5.png",
-            "question": "Count the apples and say the number",
+            "image": "assets/images/spoon_5.png",
+            "question": "Count the spoons and say the number",
             "correct_answer": 5,
             "pronounce": "five (faiv)",
             "alternatives": [
               "5",
               "five"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_5_medium_1",
@@ -805,7 +805,7 @@
               "5",
               "6"
             ],
-            "answer": "5"
+            "correct_answer": "5"
           },
           {
             "id": "read_5_medium_1",
@@ -818,7 +818,7 @@
               "five",
               "six"
             ],
-            "answer": "five"
+            "correct_answer": "five"
           },
           {
             "id": "read_5_hard_1",
@@ -831,7 +831,7 @@
               "5",
               "6"
             ],
-            "answer": "5"
+            "correct_answer": "5"
           }
         ]
       }
@@ -877,12 +877,12 @@
             "id": "show_6_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 6 apples?",
+            "question": "Can you show me 6 spoons?",
             "correct_answer": 6,
-            "help_image": "assets/images/apple_6.png",
+            "help_image": "assets/images/spoon_6.png",
             "max_objects": 8,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_6_medium_1",
@@ -916,15 +916,15 @@
             "difficulty": "easy",
             "points": 10,
             "image": "assets/images/apple_6.png",
-            "question": "Count the apples and say the number",
+            "question": "Count the spoons and say the number",
             "correct_answer": 6,
             "pronounce": "six (siks)",
             "alternatives": [
               "6",
               "six"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_6_medium_1",
@@ -973,7 +973,7 @@
               "7",
               "9"
             ],
-            "answer": "6"
+            "correct_answer": "6"
           },
           {
             "id": "read_6_medium_1",
@@ -986,7 +986,7 @@
               "six",
               "seven"
             ],
-            "answer": "six"
+            "correct_answer": "six"
           },
           {
             "id": "read_6_hard_1",
@@ -999,7 +999,7 @@
               "6",
               "7"
             ],
-            "answer": "6"
+            "correct_answer": "6"
           }
         ]
       }
@@ -1045,12 +1045,12 @@
             "id": "show_7_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 7 apples?",
+            "question": "Can you show me 7 spoons?",
             "correct_answer": 7,
-            "help_image": "assets/images/apple_7.png",
+            "help_image": "assets/images/spoon_7.png",
             "max_objects": 9,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_7_medium_1",
@@ -1083,16 +1083,16 @@
             "id": "say_7_easy",
             "difficulty": "easy",
             "points": 10,
-            "image": "assets/images/apple_7.png",
-            "question": "Count the apples and say the number",
+            "image": "assets/images/spoon_7.png",
+            "question": "Count the spoons and say the number",
             "correct_answer": 7,
             "pronounce": "seven (sevən)",
             "alternatives": [
               "7",
               "seven"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_7_medium_1",
@@ -1140,7 +1140,7 @@
               "7",
               "8"
             ],
-            "answer": "7"
+            "correct_answer": "7"
           },
           {
             "id": "read_7_medium_1",
@@ -1153,7 +1153,7 @@
               "seven",
               "eight"
             ],
-            "answer": "seven"
+            "correct_answer": "seven"
           },
           {
             "id": "read_7_hard_1",
@@ -1166,7 +1166,7 @@
               "7",
               "8"
             ],
-            "answer": "7"
+            "correct_answer": "7"
           }
         ]
       }
@@ -1212,12 +1212,12 @@
             "id": "show_8_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 8 apples?",
+            "question": "Can you show me 8 spoons?",
             "correct_answer": 8,
-            "help_image": "assets/images/apple_8.png",
+            "help_image": "assets/images/spoon_8.png",
             "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_8_medium_1",
@@ -1250,16 +1250,16 @@
             "id": "say_8_easy",
             "difficulty": "easy",
             "points": 10,
-            "image": "assets/images/apple_8.png",
-            "question": "Count the apples and say the number",
+            "image": "assets/images/spoon_8.png",
+            "question": "Count the spoons and say the number",
             "correct_answer": 8,
             "pronounce": "eight (eit)",
             "alternatives": [
               "8",
               "eight"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_8_medium_1",
@@ -1288,8 +1288,8 @@
               "8",
               "eight"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           }
         ]
       },
@@ -1307,7 +1307,7 @@
               "8",
               "9"
             ],
-            "answer": "8"
+            "correct_answer": "8"
           },
           {
             "id": "read_8_medium_1",
@@ -1320,7 +1320,7 @@
               "eight",
               "nine"
             ],
-            "answer": "eight"
+            "correct_answer": "eight"
           },
           {
             "id": "read_8_hard_1",
@@ -1333,7 +1333,7 @@
               "8",
               "9"
             ],
-            "answer": "8"
+            "correct_answer": "8"
           }
         ]
       }
@@ -1379,12 +1379,12 @@
             "id": "show_9_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 9 apples?",
+            "question": "Can you show me 9 spoons?",
             "correct_answer": 9,
-            "help_image": "assets/images/apple_9.png",
+            "help_image": "assets/images/spoon_9.png",
             "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_9_medium_1",
@@ -1417,16 +1417,16 @@
             "id": "say_9_easy",
             "difficulty": "easy",
             "points": 10,
-            "image": "assets/images/apple_9.png",
-            "question": "Count the apples and say the number",
+            "image": "assets/images/spoon_9.png",
+            "question": "Count the spoons and say the number",
             "correct_answer": 9,
             "pronounce": "nine (nain)",
             "alternatives": [
               "9",
               "nine"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_9_medium_1",
@@ -1474,7 +1474,7 @@
               "9",
               "10"
             ],
-            "answer": "9"
+            "correct_answer": "9"
           },
           {
             "id": "read_9_medium_1",
@@ -1487,7 +1487,7 @@
               "nine",
               "ten"
             ],
-            "answer": "nine"
+            "correct_answer": "nine"
           },
           {
             "id": "read_9_hard_1",
@@ -1500,7 +1500,7 @@
               "9",
               "10"
             ],
-            "answer": "9"
+            "correct_answer": "9"
           }
         ]
       }
@@ -1546,12 +1546,12 @@
             "id": "show_10_easy",
             "difficulty": "easy",
             "points": 10,
-            "question": "Can you show me 10 apples?",
+            "question": "Can you show me 10 spoons?",
             "correct_answer": 10,
-            "help_image": "assets/images/apple_10.png",
+            "help_image": "assets/images/spoon_10.png",
             "max_objects": 10,
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "show_10_medium_1",
@@ -1585,15 +1585,15 @@
             "difficulty": "easy",
             "points": 10,
             "image": "assets/images/apple_10.png",
-            "question": "Count the apples and say the number",
+            "question": "Count the spoons and say the number",
             "correct_answer": 10,
             "pronounce": "ten (ten)",
             "alternatives": [
               "10",
               "ten"
             ],
-            "object_name": "apples",
-            "object_emoji": "🍎"
+            "object_name": "spoons",
+            "object_emoji": "🥄"
           },
           {
             "id": "say_10_medium_1",
@@ -1639,9 +1639,9 @@
             "options": [
               "9",
               "10",
-              "10"
+              "11"
             ],
-            "answer": "10"
+            "correct_answer": "10"
           },
           {
             "id": "read_10_medium_1",
@@ -1652,9 +1652,9 @@
             "options": [
               "nine",
               "ten",
-              "ten"
+              "eleven"
             ],
-            "answer": "ten"
+            "correct_answer": "ten"
           },
           {
             "id": "read_10_hard_1",
@@ -1665,9 +1665,9 @@
             "options": [
               "9",
               "10",
-              "10"
+              "11"
             ],
-            "answer": "10"
+            "correct_answer": "10"
           }
         ]
       }

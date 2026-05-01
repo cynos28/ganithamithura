@@ -156,6 +156,18 @@ async def save_performance(user_id: str, data: PerformanceInput):
     # Insert into MongoDB
     result = collection.insert_one(performance_doc)
     
+    # Store into unified activity collection
+    activity_col = get_collection("sym_activity")
+    if activity_col is not None:
+        activity_col.insert_one({
+            "user_id": user_id,
+            "activity_type": "learning",
+            "level": data.level,
+            "sublevel": predicted_sublevel,
+            "score": current_score_percentage,
+            "timestamp": datetime.utcnow()
+        })
+    
     logger.info(f"Saved performance for user {user_id}. Current: {current_score_percentage:.0f}%, "
                 f"Cumulative: {cumulative_score_percentage:.0f}% (Level {data.level})")
     
@@ -202,6 +214,36 @@ async def get_performance_history(user_id: str, limit: int = 20):
         "user_id": user_id,
         "total_records": len(records),
         "history": records
+    }
+
+
+@router.get("/api/users/{user_id}/activity")
+async def get_activity_history(user_id: str, limit: int = 20):
+    """
+    Get a unified activity history from the sym_activity collection.
+    """
+    activity_col = get_collection("sym_activity")
+    
+    if activity_col is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+    
+    # Get recent activities directly from sym_activity collection
+    activities = list(
+        activity_col.find({"user_id": user_id}, {"_id": 0})
+        .sort("timestamp", -1)
+        .limit(limit)
+    )
+    
+    # Format for JSON serialization
+    for act in activities:
+        timestamp = act.get("timestamp")
+        if isinstance(timestamp, datetime):
+            act["timestamp"] = timestamp.isoformat()
+            
+    return {
+        "user_id": user_id,
+        "total_records": len(activities),
+        "activities": activities
     }
 
 

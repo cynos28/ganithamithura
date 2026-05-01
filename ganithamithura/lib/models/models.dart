@@ -98,7 +98,6 @@ class ActivityQuestion {
   final String? instruction;
   final dynamic correctAnswer;
   final List<String>? options;
-  final String? answer;
   final String? image;
   final String? templateImage;
   final String? helpImage;
@@ -115,7 +114,6 @@ class ActivityQuestion {
     this.instruction,
     this.correctAnswer,
     this.options,
-    this.answer,
     this.image,
     this.templateImage,
     this.helpImage,
@@ -136,7 +134,6 @@ class ActivityQuestion {
       options: json['options'] != null
           ? List<String>.from(json['options'])
           : null,
-      answer: json['answer'] as String?,
       image: json['image'] as String?,
       templateImage: json['template_image'] as String?,
       helpImage: json['help_image'] as String?,
@@ -158,7 +155,6 @@ class ActivityQuestion {
       'instruction': instruction,
       'correct_answer': correctAnswer,
       'options': options,
-      'answer': answer,
       'image': image,
       'template_image': templateImage,
       'help_image': helpImage,
