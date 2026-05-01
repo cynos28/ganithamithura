@@ -59,6 +59,19 @@ async def save_score(user_id: str, score_data: ScoreUpdate):
         },
         upsert=True
     )
+    
+    # Store into unified activity collection
+    activity_col = get_collection("sym_activity")
+    if activity_col is not None:
+        activity_col.insert_one({
+            "user_id": user_id,
+            "activity_type": "gaming",
+            "game_name": score_data.game_name,
+            "level": score_data.level,
+            "score": score_data.score,
+            "timestamp": datetime.utcnow()
+        })
+        
     return {"status": "success", "score": score_data.score}
 
 @router.get("/api/game/leaderboard")
@@ -93,10 +106,18 @@ async def get_leaderboard():
             
         user_name = "Unknown Player"
         try:
+            user = None
             if len(user_id_str) == 24: # Check if it might be a valid ObjectId
                 user = users_collection.find_one({"_id": ObjectId(user_id_str)})
-                if user and "name" in user:
-                    user_name = user["name"]
+            if user is None:
+                user = users_collection.find_one({"_id": user_id_str})
+            if user is None:
+                user = users_collection.find_one({"user_id": user_id_str})
+                
+            if user and "name" in user:
+                user_name = user["name"]
+            elif user and "user_name" in user:
+                user_name = user["user_name"] # Fallback for some older users
         except Exception:
             pass
             

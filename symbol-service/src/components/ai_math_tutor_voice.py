@@ -527,85 +527,16 @@ Choose fresh, creative contexts that haven't been used recently.
 
     def _generate_correct_feedback(self, answer: float, question_text: str) -> str:
         """
-        Generate AI-powered feedback for correct answers.
-
-        Args:
-            answer: The correct answer
-            question_text: The question that was answered
-
-        Returns:
-            Feedback text
+        Generate simple feedback for correct answers.
         """
-        try:
-            system_prompt = get_feedback_system_prompt()
-            user_prompt = get_correct_answer_feedback_prompt(
-                answer=answer,
-                question_text=question_text,
-                grade=self.student_profile.grade
-            )
-
-            response = self.openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.9,  # High variety in responses
-                max_tokens=50
-            )
-
-            return response.choices[0].message.content.strip()
-
-        except Exception:
-            # Fallback to simple responses
-            fallback_responses = [
-                f"Excellent! {answer} is correct!",
-                f"Perfect!",
-                f"Great job!",
-                f"You got it!",
-                f"Amazing work!"
-            ]
-            return random.choice(fallback_responses)
+        return "Wow..! Good Job..!"
 
     def _generate_wrong_feedback(self, user_answer: int, correct_answer: float,
                                  question_text: str, expression: str) -> str:
         """
-        Generate AI-powered feedback for incorrect answers.
-
-        Args:
-            user_answer: Student's incorrect answer
-            correct_answer: The correct answer
-            question_text: The question that was answered
-            expression: Mathematical expression
-
-        Returns:
-            Feedback text
+        Generate simple feedback for incorrect answers.
         """
-        try:
-            system_prompt = get_feedback_system_prompt()
-            user_prompt = get_wrong_answer_feedback_prompt(
-                user_answer=user_answer,
-                correct_answer=correct_answer,
-                question_text=question_text,
-                expression=expression,
-                grade=self.student_profile.grade
-            )
-
-            response = self.openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.7,
-                max_tokens=100
-            )
-
-            return response.choices[0].message.content.strip()
-
-        except Exception:
-            # Fallback to simple response
-            return f"Not quite. The correct answer is {correct_answer}. Keep trying!"
+        return "Incorrect"
 
     def _extract_theme_from_question(self, question_text: str) -> Optional[str]:
         """

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Progress;
 import 'package:ganithamithura/utils/constants.dart';
@@ -44,6 +45,11 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
   final List<Map<String, dynamic>> _answers = [];
   ProgressTestEvaluation? _evaluation;
 
+  // Answer feedback state
+  bool _showingFeedback = false;
+  int _feedbackCountdown = 3;
+  Timer? _feedbackTimer;
+
   late AnimationController _progressAnimController;
 
   @override
@@ -59,6 +65,7 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
   @override
   void dispose() {
     _progressAnimController.dispose();
+    _feedbackTimer?.cancel();
     super.dispose();
   }
 
@@ -135,15 +142,38 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
         'is_correct': isCorrect,
         'answer': answer?.toString(),
       });
+      _showingFeedback = true;
+      _feedbackCountdown = 3;
     });
 
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!mounted) return;
+    // Start countdown timer
+    _feedbackTimer?.cancel();
+    _feedbackTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
       setState(() {
-        _currentQuestionIndex++;
+        _feedbackCountdown--;
       });
-      _progressAnimController.forward(from: 0);
+
+      if (_feedbackCountdown <= 0) {
+        timer.cancel();
+        _moveToNextQuestion();
+      }
     });
+  }
+
+  void _moveToNextQuestion() {
+    _feedbackTimer?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _currentQuestionIndex++;
+      _showingFeedback = false;
+      _feedbackCountdown = 3;
+    });
+    _progressAnimController.forward(from: 0);
   }
 
   Future<void> _evaluateTest() async {
@@ -830,7 +860,83 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildQuestionWidget(question),
+                child: Stack(
+                  children: [
+                    _buildQuestionWidget(question),
+                    
+                    // Feedback overlay with countdown
+                    if (_showingFeedback)
+                      Container(
+                        color: Colors.black.withOpacity(0.3),
+                        child: Center(
+                          child: Card(
+                            margin: const EdgeInsets.all(32),
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _results[question.id] == true
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
+                                    color: _results[question.id] == true
+                                        ? Colors.green
+                                        : Colors.red,
+                                    size: 80,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    _results[question.id] == true
+                                        ? 'Correct!'
+                                        : 'Incorrect',
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: _results[question.id] == true
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Next question in $_feedbackCountdown...',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: _moveToNextQuestion,
+                                      icon: const Icon(Icons.skip_next),
+                                      label: const Text('Next Question'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: testColor,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -843,42 +949,49 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
     switch (question.type) {
       case 'matching':
         return MatchingQuestionWidget(
+          key: ValueKey('matching_${question.id}'),
           question: question,
           onAnswered: (isCorrect) =>
               _onQuestionAnswered(question.id, isCorrect, null),
         );
       case 'drag_drop_order':
         return DragDropOrderWidget(
+          key: ValueKey('drag_order_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
       case 'drag_drop_count':
         return DragDropCountWidget(
+          key: ValueKey('drag_count_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
       case 'image_counting':
         return ImageCountingWidget(
+          key: ValueKey('image_count_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
       case 'pattern_fill':
         return PatternFillWidget(
+          key: ValueKey('pattern_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
       case 'trace':
         return TraceQuestionWidget(
+          key: ValueKey('trace_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
         );
       case 'say':
         return SayQuestionWidget(
+          key: ValueKey('say_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
@@ -886,6 +999,7 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
       case 'show':
       case 'object_detection':
         return ObjectDetectionQuestionWidget(
+          key: ValueKey('obj_detect_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),
@@ -893,6 +1007,7 @@ class _ProgressTestScreenState extends State<ProgressTestScreen>
       case 'select':
       default:
         return SelectQuestionWidget(
+          key: ValueKey('select_${question.id}'),
           question: question,
           onAnswered: (isCorrect, answer) =>
               _onQuestionAnswered(question.id, isCorrect, answer),

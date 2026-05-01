@@ -104,44 +104,46 @@ An interactive learning module that teaches shape recognition and pattern buildi
 ## 🚀 Getting Started
 
 ### Prerequisites
-```bash
-# Node.js 16+ for React frontend
-# Python 3.8+ for FastAPI backend
-# MongoDB 5.0+
-# Flutter SDK (for mobile components)
-```
+- **Python 3.10+** — backend services
+- **Flutter SDK** — mobile app
+- **MongoDB** (Atlas URI or local) — database
+- **Ngrok** — public tunneling
+- **GitHub Personal Access Token** — Gist updates
 
-### Installation
+### Quick Setup (First Time / Fresh Clone)
+
+> 📖 **Full instructions:** See [`SETUP_GUIDE.md`](./SETUP_GUIDE.md)
+
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/cynos28/ganithamithura
 cd ganithamithura
 
-# Install frontend dependencies
-cd frontend
-npm install
+# 2. Set up your environment files
+#    - Copy and fill in: ganithamithura/.env  (GITHUB_TOKEN)
+#    - Copy and fill in: auth_service/.env    (MONGODB_URL, DB_NAME)
+#    - Copy and fill in: unit-rag-service/.env (OPENAI_API_KEY, MONGODB_URL)
 
-# Install backend dependencies
-cd ../backend
-pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Configure your MongoDB URI and other settings
+# 3. Run the setup & start script (installs deps + starts all services)
+chmod +x setup_and_start.sh
+./setup_and_start.sh
 ```
 
-### Running the Application
+The script will:
+1. Create virtual environments for each service
+2. Install all Python dependencies automatically
+3. Start all 6 backend services
+4. Open a Ngrok tunnel and update the GitHub Gist so the Flutter app finds the backend
+
+### Daily Use (After First Setup)
 ```bash
-# Start the backend server
-cd backend
-uvicorn main:app --reload
+# Just start everything (skips install)
+./start_all.sh
+```
 
-# Start the frontend
-cd frontend
-npm start
-
-# For mobile components
-cd mobile
+### Flutter App
+```bash
+cd gmfrontend
 flutter run
 ```
 

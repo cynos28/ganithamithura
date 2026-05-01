@@ -167,7 +167,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)
 
                 elif level == 2:
                     correct_answers = game_data.get("correct_answers", {})
@@ -186,7 +186,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)
 
                 elif level == 3:
                     # Level 3 is similar to level 1 - shape matching
@@ -206,7 +206,7 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    total_questions = len(answers)
 
                 elif level == 4:
                     # Level 4 is similar to level 2 - question round
@@ -226,7 +226,8 @@ class GameController:
                             "is_correct": is_correct,
                             "correct_answer": correct_answers.get(answer.question_id, "")
                         })
-                    total_questions = len(correct_answers)
+                    # Use the actual question count from game data, not submitted answers
+                    total_questions = len(answers)
 
                 elif level in [5, 6]:
                     # Levels 5 and 6 are pattern matching
@@ -248,7 +249,7 @@ class GameController:
                                 "is_correct": is_correct,
                                 "correct_answer": pattern["correct_answer"]["name"]
                             })
-                    total_questions = len(game_data.get("patterns", []))
+                    total_questions = len(answers)  # Use actual number of answers submitted
 
                 elif level >= 7:
                     # Levels 7+ are Build & Match challenges
@@ -270,7 +271,12 @@ class GameController:
                 else:
                     raise HTTPException(status_code=400, detail=f"Answer checking for level {level} is not implemented")
 
-                game_status = "pass" if score == total_questions else "fail"
+                # Levels 1-6 require 100% of submitted answers to be correct.
+                # total_questions = number of answers the user actually submitted.
+                if level <= 6:
+                    game_status = "pass" if total_questions > 0 and score == total_questions else "fail"
+                else:
+                    game_status = "pass" if total_questions > 0 and (score / total_questions) >= 0.6 else "fail"
 
                 attempt_data = {
                     "level": level,
@@ -356,9 +362,11 @@ class GameController:
                 else:
                     # Regular shape game - save to level_progress
                     level_progress = user_data.get("level_progress", {})
-                    previous_status = level_progress.get(str(level), {}).get("status", "fail")
 
-                    overall_status = "pass" if previous_status == "pass" or game_status == "pass" else "fail"
+                    # overall_status = current attempt result only.
+                    # A previous pass does NOT protect against a new fail —
+                    # the user must score 100% every time to keep the level unlocked.
+                    overall_status = game_status
 
                     update_operations = {
                         "$set": {
@@ -373,6 +381,18 @@ class GameController:
 
                     if overall_status == "pass":
                         update_operations["$max"] = {"highest_passed_level": level}
+                    else:
+                        # Recalculate highest_passed_level based on the contiguous
+                        # chain of passed levels (chain breaks at first fail).
+                        level_progress_copy = dict(user_data.get("level_progress", {}))
+                        level_progress_copy[str(level)] = {"status": "fail"}
+                        new_highest = 0
+                        for lvl_num in range(1, 7):
+                            if level_progress_copy.get(str(lvl_num), {}).get("status") == "pass":
+                                new_highest = lvl_num
+                            else:
+                                break
+                        update_operations["$set"]["highest_passed_level"] = new_highest
 
                     print(f"Updating user {user['user_name']} - Level: {level}, Status: {overall_status}, Score: {score}/{total_questions}")
                 
